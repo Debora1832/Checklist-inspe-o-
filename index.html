@@ -69,7 +69,6 @@ input[type="radio"]{margin-right:7px;transform:scale(1.2);}
 .checklist-terceiro-nome-box{margin-top:8px;}
 .checklist-terceiro-nome-box label{font-size:15px;font-weight:600;margin-bottom:4px;display:block;}
 .checklist-terceiro-nome-box input{padding:8px;border-radius:4px;border:1px solid #bbb;width:99%;}
-input[type="file"]{margin-bottom:4px;}
 textarea{font-size:15px;}
 .hide{display:none !important;}
 .admin-piece-item,.admin-inspector-item {display:flex;justify-content:space-between;align-items:center;padding:5px 10px;border:1px solid #eee;margin-bottom:5px;background:#f9f9f9;border-radius:4px;}
@@ -299,7 +298,7 @@ textarea{font-size:15px;}
     </div>
 </div>
 
-<!-- SCRIPT FIREBASE (MÓDULO) -->
+<!-- FIREBASE (MÓDULO) -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
   import { 
@@ -352,7 +351,7 @@ textarea{font-size:15px;}
       };
     });
 
-    // inspectors (config/inspectors)
+    // inspectors
     let inspectors = [];
     const inspRef = doc(db, "config", "inspectors");
     const inspSnap = await getDoc(inspRef);
@@ -388,12 +387,16 @@ textarea{font-size:15px;}
   async function savePiece(piece) {
     if (!piece || !piece.code) return;
     let imageUrl = piece.imageUrl || null;
+
     if (piece.image instanceof File) {
       imageUrl = await uploadFile(
         piece.image,
         `pieces/${piece.code}/${Date.now()}_${piece.image.name}`
       );
+      piece.imageUrl = imageUrl;
+      piece.image = null;
     }
+
     const processedItems = [];
     if (Array.isArray(piece.items)) {
       for (const it of piece.items) {
@@ -403,6 +406,8 @@ textarea{font-size:15px;}
             it.image,
             `pieces/${piece.code}/items/${Date.now()}_${it.image.name}`
           );
+          it.imageUrl = itemImgUrl;
+          it.image = null;
         }
         processedItems.push({
           name: it.name,
@@ -411,6 +416,7 @@ textarea{font-size:15px;}
         });
       }
     }
+
     const ref = doc(db, "pieces", piece.code);
     await setDoc(ref, {
       code: piece.code,
@@ -470,10 +476,9 @@ textarea{font-size:15px;}
   };
 </script>
 
-<!-- SCRIPT PRINCIPAL (APP) -->
+<!-- APP PRINCIPAL -->
 <script>
-// ----------- JavaScript principal -----------
-// Variáveis globais de dados
+// ------- DADOS EM MEMÓRIA -------
 let pieces = [
     {
         code: "597-2445#01",
@@ -505,7 +510,8 @@ const screens = {
     'reports': document.getElementById('reports'),
     'admin': document.getElementById('admin')
 };
-// --- Funções de modal ---
+
+// ---------- MODAL ----------
 function showModal(html, onclose) {
   const overlay = document.getElementById('modal-overlay');
   const box = document.getElementById('modal-box');
@@ -525,12 +531,14 @@ function showModal(html, onclose) {
     }
   };
 }
+
 function showImageModal(src) {
   showModal(`
     <button class="modal-close" title="Fechar">&times;</button>
     <img src="${src}" style="max-width:80vw;max-height:80vh;display:block;margin:auto;border-radius:10px;box-shadow:0 6px 22px #0002;">
   `);
 }
+
 document.addEventListener("click", function(event) {
   if(event.target.closest(".edit-btn")) {
     const btn = event.target.closest(".edit-btn");
@@ -556,7 +564,8 @@ document.addEventListener("click", function(event) {
     }
   }
 });
-// --- Troca de telas e inicialização --- 
+
+// ---------- TROCA DE TELAS ----------
 function showScreen(screenId) {
     for (let key in screens) screens[key].classList.remove('active');
     if (screens[screenId]) screens[screenId].classList.add('active');
@@ -565,7 +574,8 @@ function showScreen(screenId) {
     if (screenId === "checklist") renderChecklist();
     if (screenId === "reports") renderReports();
 }
-// -- Tela inicial --
+
+// ---------- HOME ----------
 function renderHome() {
     const inspSel = document.getElementById("inspector");
     inspSel.innerHTML = '<option value="" disabled selected>Selecionar inspetor</option>' +
@@ -574,6 +584,7 @@ function renderHome() {
     pieceSel.innerHTML = '<option value="" disabled selected>Selecionar peça</option>' +
         pieces.map(p=>`<option value="${p.code}">${p.code}</option>`).join('');
 }
+
 function showChecklist() {
     const piece = document.getElementById('piece').value;
     const insp = document.getElementById('inspector').value;
@@ -585,6 +596,8 @@ function showChecklist() {
     showScreen('checklist');
     renderChecklist();
 }
+
+// ---------- CHECKLIST ----------
 function renderChecklist() {
     document.getElementById('checklist-header').textContent = checklistCurrentPiece ? checklistCurrentPiece.code : "";
 
@@ -657,6 +670,7 @@ function renderChecklist() {
             </div>
         </div>`;
     }).join('');
+
     document.querySelectorAll(".checklist-item-actions .btn-ok").forEach(btn=>{
         btn.onclick = function(){
             let idx = parseInt(btn.dataset.idx);
@@ -675,6 +689,7 @@ function renderChecklist() {
             renderChecklist();
         };
     });
+
     checklistItemStates.forEach((st, idx) => {
         if(st.status==='NOK') {
             let motivoEl = document.getElementById('motivo_'+idx);
@@ -701,9 +716,9 @@ function renderChecklist() {
             }
         }
     });
+
     renderNokLibrary();
 
-    // Handler do FINALIZAR INSPEÇÃO (agora async / Firebase)
     document.getElementById("finalizar-inspecao-btn").onclick = async function() {
       for (let i = 0; i < checklistItemStates.length; i++) {
         const state = checklistItemStates[i];
@@ -772,9 +787,9 @@ function renderChecklist() {
       showScreen('home');
       renderReports();
     };
-
 }
-// Biblioteca de casos NOK
+
+// ---------- HISTÓRICO NOK ----------
 function renderNokLibrary() {
   const nokDiv = document.getElementById('checklist-nok-library');
   const pieceCode = checklistCurrentPiece?.code || "";
@@ -804,7 +819,8 @@ function renderNokLibrary() {
     </div>
   `;
 }
-// Edição/remover peças/itens etc.
+
+// ---------- ADMIN (PEÇAS / ITENS / INSPETORES) ----------
 function editPiece(idx){
   const p = pieces[idx];
   showModal(`
@@ -844,6 +860,7 @@ function editPiece(idx){
     };
   }, 0);
 };
+
 function removePiece(idx){
   const p = pieces[idx];
   const codeToDelete = p.code;
@@ -867,6 +884,7 @@ function removePiece(idx){
     };
   }, 0);
 };
+
 function editPieceItem(pieceIdx,itemIdx){
   const item = pieces[pieceIdx].items[itemIdx];
   showModal(`
@@ -903,6 +921,7 @@ function editPieceItem(pieceIdx,itemIdx){
     };
   }, 0);
 };
+
 function removePieceItem(pieceIdx,itemIdx){
   showModal(`
     <button class="modal-close" title="Fechar">&times;</button>
@@ -923,7 +942,7 @@ function removePieceItem(pieceIdx,itemIdx){
     };
   }, 0);
 };
-// --- CRUD do Admin e eventos dos campos ---
+
 document.getElementById("add-piece-btn").onclick = async function() {
     const code = document.getElementById("new-code").value.trim();
     const desc = document.getElementById("new-description").value.trim();
@@ -941,14 +960,19 @@ document.getElementById("add-piece-btn").onclick = async function() {
       try { await window.fbApi.savePiece(newPiece); } catch(e){ console.error("Erro salvar peça Firebase:", e); }
     }
 };
+
 document.getElementById("clear-piece-btn").onclick = function(){
-    document.getElementById('new-code').value = "";document.getElementById('new-description').value = "";
-    document.getElementById('new-image').value = "";document.getElementById('image-file-info').textContent = "Nenhum arquivo escolhido";
+    document.getElementById('new-code').value = "";
+    document.getElementById('new-description').value = "";
+    document.getElementById('new-image').value = "";
+    document.getElementById('image-file-info').textContent = "Nenhum arquivo escolhido";
 };
+
 document.getElementById("new-image").onchange = function(e){
     let txt = e.target.files[0] ? e.target.files[0].name : "Nenhum arquivo escolhido";
     document.getElementById('image-file-info').textContent = txt;
 };
+
 document.getElementById("add-piece-item-btn").onclick = async function(){
     let idx = document.getElementById("select-piece-item").value;
     let name = document.getElementById("new-item-name").value.trim();
@@ -968,11 +992,14 @@ document.getElementById("add-piece-item-btn").onclick = async function(){
       try { await window.fbApi.savePiece(pieces[idx]); } catch(e){ console.error("Erro salvar peça Firebase:", e); }
     }
 };
+
 document.getElementById("select-piece-item").onchange = renderAdminPieceItems;
+
 document.getElementById("new-item-image").onchange = function(e){
     let txt = e.target.files[0] ? e.target.files[0].name : "Nenhum arquivo escolhido";
     document.getElementById('item-image-file-info').textContent = txt;
 };
+
 document.getElementById("add-inspector-btn").onclick = async function() {
     const name = document.getElementById("inspector-new-name").value.trim();
     if (!name) { alert("Digite o nome do inspetor!"); return; }
@@ -984,9 +1011,11 @@ document.getElementById("add-inspector-btn").onclick = async function() {
       try { await window.fbApi.setInspectors(inspectors); } catch(e){ console.error("Erro salvar inspetores Firebase:", e); }
     }
 };
+
 document.getElementById("clear-inspector-btn").onclick = function(){
     document.getElementById("inspector-new-name").value = "";
 };
+
 async function removeInspector(idx){
     inspectors.splice(idx,1); 
     renderAdmin(); 
@@ -995,6 +1024,7 @@ async function removeInspector(idx){
       try { await window.fbApi.setInspectors(inspectors); } catch(e){ console.error("Erro salvar inspetores Firebase:", e); }
     }
 };
+
 function renderAdmin() {
     let pieceListDiv = document.getElementById("admin-piece-list");
     pieceListDiv.innerHTML = pieces.map((p,idx) => {
@@ -1017,9 +1047,11 @@ function renderAdmin() {
             </div>
         </div>`;
     }).join('');
+
     let selectPieceItem = document.getElementById("select-piece-item");
     selectPieceItem.innerHTML = pieces.map((p,idx)=>`<option value="${idx}">${p.code} — ${p.description}</option>`).join('');
     renderAdminPieceItems();
+
     let inspList = document.getElementById("admin-inspector-list");
     inspList.innerHTML = inspectors.map((i,idx)=>
         `<div class="admin-inspector-item">
@@ -1029,6 +1061,7 @@ function renderAdmin() {
     ).join('');
     document.getElementById("inspector-new-name").value = "";
 }
+
 function renderAdminPieceItems(){
     let idx = document.getElementById("select-piece-item").value;
     if (idx==undefined || idx === "") return;
@@ -1052,7 +1085,8 @@ function renderAdminPieceItems(){
         </div>`;
     }).join('');
 }
-// --- Relatórios & Gráfico ---
+
+// ---------- RELATÓRIOS ----------
 function renderReports() {
     let monthsSet = new Set();
     inspections.forEach(i=>{
@@ -1098,6 +1132,7 @@ function renderReports() {
       `).join('')
       : `<tr><td colspan="4" style="text-align:center;">Nenhum histórico encontrado.</td></tr>`;
 }
+
 const ctx = document.getElementById('graficoRosca').getContext('2d');
 const graficoRosca = new Chart(ctx, {
     type: 'doughnut',
@@ -1112,7 +1147,9 @@ const graficoRosca = new Chart(ctx, {
     },
     options: {responsive:false,plugins:{legend:{display:false}},cutout:'60%'}
 });
+
 document.getElementById('report-month-select').onchange = renderReports;
+
 function exportCSV() {
     if (!inspections.length) return alert("Sem inspeções!");
     let csv = "Data,Inspetor,Peça,Descrição\n"
@@ -1125,9 +1162,9 @@ function exportCSV() {
     a.click();
     URL.revokeObjectURL(url);
 }
-// --- Inicialização ---
+
+// ---------- INICIALIZAÇÃO ----------
 document.addEventListener("DOMContentLoaded", async ()=>{
-    // Carrega dados do Firebase, se disponível
     if (window.fbApi && window.fbApi.loadAll) {
       try {
         const data = await window.fbApi.loadAll();
