@@ -265,9 +265,6 @@ textarea{font-size:15px;}
                     <p style="font-size:12px;margin-top:5px;" id="image-file-info">Nenhum arquivo escolhido</p>
                 </div>
             </div>
-            <div class="edit-control hide" id="edit-piece-controls">
-                <button class="btn-primary" id="update-piece-btn">Salvar edição</button>
-            </div>
             <button class="btn-primary" id="add-piece-btn" style="margin-right:10px;">Adicionar peça</button>
             <button class="btn-secondary" id="clear-piece-btn">Limpar</button>
             <h4 style="margin-top:30px;">Peças existentes</h4>
@@ -297,9 +294,6 @@ textarea{font-size:15px;}
                     <p style="font-size:12px;margin-top:5px;" id="item-image-file-info">Nenhum arquivo escolhido</p>
                 </div>
             </div>
-            <div class="edit-control hide" id="edit-item-controls">
-                <button class="btn-primary" id="update-piece-item-btn">Salvar edição</button>
-            </div>
             <button class="btn-primary" id="add-piece-item-btn">Adicionar item</button>
         </div>
 
@@ -321,7 +315,7 @@ textarea{font-size:15px;}
     </div>
 </div>
 
-<!-- SCRIPT FIREBASE (MÓDULO) -->
+<!-- FIREBASE (MÓDULO) -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
   import { 
@@ -341,12 +335,21 @@ textarea{font-size:15px;}
     measurementId: "G-GQS591WCBD"
   };
 
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-  const storage = getStorage(app);
+  let db = null;
+  let storage = null;
+
+  try {
+    const app = initializeApp(firebaseConfig);
+    db = getFirestore(app);
+    storage = getStorage(app);
+    console.log("Firebase inicializado.");
+  } catch (e) {
+    console.error("Erro ao inicializar Firebase:", e);
+    alert("Erro ao inicializar Firebase: " + e.message);
+  }
 
   async function uploadFile(file, path) {
-    if (!file) return null;
+    if (!file || !storage) return null;
     const ref = storageRef(storage, path);
     await uploadBytes(ref, file);
     const url = await getDownloadURL(ref);
@@ -354,128 +357,165 @@ textarea{font-size:15px;}
   }
 
   async function loadAll() {
-    // PEÇAS
-    const piecesSnap = await getDocs(collection(db, "pieces"));
-    const pieces = piecesSnap.docs.map(d => {
-      const data = d.data();
-      return {
-        code: data.code,
-        description: data.description,
-        image: null,
-        imageUrl: data.imageUrl || null,
-        items: (data.items || []).map(it => ({
-          name: it.name,
-          description: it.description,
-          image: null,
-          imageUrl: it.imageUrl || null
-        }))
-      };
-    });
-
-    // INSPETORES
-    let inspectors = [];
-    const inspRef = doc(db, "config", "inspectors");
-    const inspSnap = await getDoc(inspRef);
-    if (inspSnap.exists()) {
-      const d = inspSnap.data();
-      inspectors = d.list || [];
+    if (!db) {
+      console.warn("Firestore não inicializado.");
+      return { pieces: [], inspectors: [], inspections: [] };
     }
 
-    // INSPEÇÕES
-    const inspecSnap = await getDocs(collection(db, "inspections"));
-    const inspections = inspecSnap.docs.map(d => {
-      const data = d.data();
-      return {
-        id: d.id,
-        date: data.date,
-        inspector: data.inspector,
-        piece: data.piece,
-        descricao: data.descricao || "",
-        itens: (data.itens || []).map(it => ({
-          status: it.status,
-          motivo: it.motivo,
-          encaminhamento: it.encaminhamento,
-          nome_terceiro: it.nome_terceiro || "",
-          foto: null,
-          fotoUrl: it.fotoUrl || null
-        }))
-      };
-    });
+    try {
+      // PEÇAS
+      const piecesSnap = await getDocs(collection(db, "pieces"));
+      const pieces = piecesSnap.docs.map(d => {
+        const data = d.data();
+        return {
+          code: data.code,
+          description: data.description,
+          image: null,
+          imageUrl: data.imageUrl || null,
+          items: (data.items || []).map(it => ({
+            name: it.name,
+            description: it.description,
+            image: null,
+            imageUrl: it.imageUrl || null
+          }))
+        };
+      });
 
-    return { pieces, inspectors, inspections };
+      // INSPETORES
+      let inspectors = [];
+      const inspRef = doc(db, "config", "inspectors");
+      const inspSnap = await getDoc(inspRef);
+      if (inspSnap.exists()) {
+        const d = inspSnap.data();
+        inspectors = d.list || [];
+      }
+
+      // INSPEÇÕES
+      const inspecSnap = await getDocs(collection(db, "inspections"));
+      const inspections = inspecSnap.docs.map(d => {
+        const data = d.data();
+        return {
+          id: d.id,
+          date: data.date,
+          inspector: data.inspector,
+          piece: data.piece,
+          descricao: data.descricao || "",
+          itens: (data.itens || []).map(it => ({
+            status: it.status,
+            motivo: it.motivo,
+            encaminhamento: it.encaminhamento,
+            nome_terceiro: it.nome_terceiro || "",
+            foto: null,
+            fotoUrl: it.fotoUrl || null
+          }))
+        };
+      });
+
+      return { pieces, inspectors, inspections };
+    } catch (e) {
+      console.error("Erro ao carregar dados do Firebase:", e);
+      alert("Erro ao carregar dados do Firebase: " + e.message);
+      return { pieces: [], inspectors: [], inspections: [] };
+    }
   }
 
   async function savePiece(piece) {
-    if (!piece || !piece.code) return;
-
-    // Upload da imagem da peça
-    let imageUrl = piece.imageUrl || null;
-    if (piece.image instanceof File) {
-      imageUrl = await uploadFile(
-        piece.image,
-        `pieces/${piece.code}/${Date.now()}_${piece.image.name}`
-      );
-    }
-
-    // Upload das imagens dos itens
-    const itemsProcessed = [];
-    if (Array.isArray(piece.items)) {
-      for (const it of piece.items) {
-        let itemImgUrl = it.imageUrl || null;
-        if (it.image instanceof File) {
-          itemImgUrl = await uploadFile(
-            it.image,
-            `pieces/${piece.code}/items/${Date.now()}_${it.image.name}`
-          );
-        }
-        itemsProcessed.push({
-          name: it.name,
-          description: it.description,
-          imageUrl: itemImgUrl
-        });
+    if (!db) return;
+    try {
+      if (!piece || !piece.code) return;
+      // imagem da peça
+      let imageUrl = piece.imageUrl || null;
+      if (piece.image instanceof File) {
+        imageUrl = await uploadFile(
+          piece.image,
+          `pieces/${piece.code}/${Date.now()}_${piece.image.name}`
+        );
+        piece.imageUrl = imageUrl;
       }
-    }
 
-    const ref = doc(db, "pieces", piece.code);
-    await setDoc(ref, {
-      code: piece.code,
-      description: piece.description,
-      imageUrl,
-      items: itemsProcessed
-    });
+      // imagens dos itens
+      const itemsProcessed = [];
+      if (Array.isArray(piece.items)) {
+        for (const it of piece.items) {
+          let itemImgUrl = it.imageUrl || null;
+          if (it.image instanceof File) {
+            itemImgUrl = await uploadFile(
+              it.image,
+              `pieces/${piece.code}/items/${Date.now()}_${it.image.name}`
+            );
+            it.imageUrl = itemImgUrl;
+          }
+          itemsProcessed.push({
+            name: it.name,
+            description: it.description,
+            imageUrl: itemImgUrl
+          });
+        }
+      }
+
+      const ref = doc(db, "pieces", piece.code);
+      await setDoc(ref, {
+        code: piece.code,
+        description: piece.description,
+        imageUrl,
+        items: itemsProcessed
+      });
+      console.log("Peça salva no Firebase:", piece.code);
+    } catch (e) {
+      console.error("Erro ao salvar peça no Firebase:", e);
+      alert("Erro ao salvar peça no Firebase: " + e.message);
+    }
   }
 
   async function deletePiece(code) {
-    if (!code) return;
-    await deleteDoc(doc(db, "pieces", code));
+    if (!db) return;
+    try {
+      if (!code) return;
+      await deleteDoc(doc(db, "pieces", code));
+      console.log("Peça deletada do Firebase:", code);
+    } catch (e) {
+      console.error("Erro ao deletar peça:", e);
+      alert("Erro ao deletar peça no Firebase: " + e.message);
+    }
   }
 
   async function setInspectors(list) {
-    const ref = doc(db, "config", "inspectors");
-    await setDoc(ref, { list: list || [] });
+    if (!db) return;
+    try {
+      const ref = doc(db, "config", "inspectors");
+      await setDoc(ref, { list: list || [] });
+      console.log("Inspetores salvos no Firebase.");
+    } catch (e) {
+      console.error("Erro ao salvar inspetores:", e);
+      alert("Erro ao salvar inspetores no Firebase: " + e.message);
+    }
   }
 
   async function saveInspection(inspec) {
-    const itensProcessed = [];
-    for (const it of (inspec.itens || [])) {
-      // por enquanto NÃO estamos subindo as fotos das inspeções
-      itensProcessed.push({
+    if (!db) return null;
+    try {
+      const itensProcessed = (inspec.itens || []).map(it => ({
         status: it.status,
         motivo: it.motivo,
         encaminhamento: it.encaminhamento,
         nome_terceiro: it.nome_terceiro || "",
         fotoUrl: it.fotoUrl || null
-      });
+      }));
+      const docData = {
+        date: inspec.date,
+        inspector: inspec.inspector,
+        piece: inspec.piece,
+        descricao: inspec.descricao || "",
+        itens: itensProcessed
+      };
+      const ref = await addDoc(collection(db, "inspections"), docData);
+      console.log("Inspeção salva no Firebase:", ref.id);
+      return { id: ref.id, ...docData };
+    } catch (e) {
+      console.error("Erro ao salvar inspeção:", e);
+      alert("Erro ao salvar inspeção no Firebase: " + e.message);
+      return null;
     }
-    const docData = {
-      date: inspec.date,
-      inspector: inspec.inspector,
-      piece: inspec.piece,
-      descricao: inspec.descricao || "",
-      itens: itensProcessed
-    };
-    const ref = await addDoc(collection(db, "inspections"), docData);
-    return { id: ref.id, ...docData };
   }
 
   window.fbApi = {
@@ -553,7 +593,10 @@ document.addEventListener("click", function(event) {
     const btn = event.target.closest(".edit-btn");
     const pieceIdx = btn.getAttribute('data-pieceidx');
     const itemIdx = btn.getAttribute('data-itemidx');
-    if (itemIdx !== null && itemIdx !== undefined && itemIdx !== "") {
+    const inspIdx = btn.getAttribute('data-inspectoridx');
+    if (inspIdx !== null && inspIdx !== undefined && inspIdx !== "") {
+      removeInspector(parseInt(inspIdx));
+    } else if (itemIdx !== null && itemIdx !== undefined && itemIdx !== "") {
       editPieceItem(parseInt(pieceIdx), parseInt(itemIdx));
     } else {
       editPiece(parseInt(pieceIdx));
@@ -727,7 +770,7 @@ function renderChecklist() {
 
     renderNokLibrary();
 
-    // FINALIZAR INSPEÇÃO (salva em Firestore)
+    // FINALIZAR INSPEÇÃO
     document.getElementById("finalizar-inspecao-btn").onclick = function() {
       for (let i = 0; i < checklistItemStates.length; i++) {
         const state = checklistItemStates[i];
@@ -774,8 +817,16 @@ function renderChecklist() {
       if (window.fbApi && window.fbApi.saveInspection) {
         window.fbApi.saveInspection(inspectionToSave)
           .then(saved => {
-            inspections.push(saved);
-            alert("Inspeção finalizada e salva no Firebase!");
+            if (saved) {
+              inspections.push(saved);
+            } else {
+              // fallback local
+              inspections.push({
+                ...inspectionToSave,
+                itens: inspectionToSave.itens.map(it => ({ ...it, foto: null }))
+              });
+            }
+            alert("Inspeção finalizada!");
             showScreen('home');
             renderReports();
           })
@@ -785,7 +836,7 @@ function renderChecklist() {
               ...inspectionToSave,
               itens: inspectionToSave.itens.map(it => ({ ...it, foto: null }))
             });
-            alert("Erro ao salvar no servidor. Inspeção salva só localmente neste navegador.");
+            alert("Erro ao salvar inspeção no servidor. Salvo apenas localmente.");
             showScreen('home');
             renderReports();
           });
@@ -819,8 +870,7 @@ function renderNokLibrary() {
     <div class="checklist-nok-title">Histórico de Casos de Reprovação (${nokCases.length})</div>
     <div class="checklist-nok-library-list">
       ${nokCases.map(caso => {
-        let fotoSrc = null;
-        if (caso.fotoUrl) fotoSrc = caso.fotoUrl;
+        let fotoSrc = caso.fotoUrl || "";
         return `
         <div class="checklist-nok-case">
           <strong>${caso.inspection.date}</strong><br/>
@@ -872,9 +922,7 @@ function editPiece(idx){
       renderHome();
 
       if (window.fbApi && window.fbApi.savePiece) {
-        window.fbApi.savePiece(p).catch(e => {
-          console.error("Erro ao salvar peça no Firebase:", e);
-        });
+        window.fbApi.savePiece(p);
       }
     };
   }, 0);
@@ -899,9 +947,7 @@ function removePiece(idx){
       renderHome();
 
       if (window.fbApi && window.fbApi.deletePiece) {
-        window.fbApi.deletePiece(codeToDelete).catch(e => {
-          console.error("Erro ao apagar peça no Firebase:", e);
-        });
+        window.fbApi.deletePiece(codeToDelete);
       }
     };
   }, 0);
@@ -942,9 +988,7 @@ function editPieceItem(pieceIdx,itemIdx){
       renderAdminPieceItems();
 
       if (window.fbApi && window.fbApi.savePiece) {
-        window.fbApi.savePiece(pieces[pieceIdx]).catch(e => {
-          console.error("Erro ao salvar item no Firebase:", e);
-        });
+        window.fbApi.savePiece(pieces[pieceIdx]);
       }
     };
   }, 0);
@@ -966,9 +1010,7 @@ function removePieceItem(pieceIdx,itemIdx){
       renderAdminPieceItems();
 
       if (window.fbApi && window.fbApi.savePiece) {
-        window.fbApi.savePiece(pieces[pieceIdx]).catch(e => {
-          console.error("Erro ao salvar peça no Firebase:", e);
-        });
+        window.fbApi.savePiece(pieces[pieceIdx]);
       }
     };
   }, 0);
@@ -989,9 +1031,7 @@ document.getElementById("add-piece-btn").onclick = function() {
     renderHome();
 
     if (window.fbApi && window.fbApi.savePiece) {
-      window.fbApi.savePiece(newPiece).catch(e => {
-        console.error("Erro ao salvar peça no Firebase:", e);
-      });
+      window.fbApi.savePiece(newPiece);
     }
 };
 
@@ -1024,9 +1064,7 @@ document.getElementById("add-piece-item-btn").onclick = function(){
     document.getElementById("item-image-file-info").textContent = "Nenhum arquivo escolhido";
 
     if (window.fbApi && window.fbApi.savePiece) {
-      window.fbApi.savePiece(pieces[idx]).catch(e => {
-        console.error("Erro ao salvar peça no Firebase:", e);
-      });
+      window.fbApi.savePiece(pieces[idx]);
     }
 };
 
@@ -1046,9 +1084,7 @@ document.getElementById("add-inspector-btn").onclick = function() {
     renderHome();
 
     if (window.fbApi && window.fbApi.setInspectors) {
-      window.fbApi.setInspectors(inspectors).catch(e => {
-        console.error("Erro ao salvar inspetores no Firebase:", e);
-      });
+      window.fbApi.setInspectors(inspectors);
     }
 };
 
@@ -1062,9 +1098,7 @@ function removeInspector(idx){
     renderHome();
 
     if (window.fbApi && window.fbApi.setInspectors) {
-      window.fbApi.setInspectors(inspectors).catch(e => {
-        console.error("Erro ao salvar inspetores no Firebase:", e);
-      });
+      window.fbApi.setInspectors(inspectors);
     }
 }
 
@@ -1142,14 +1176,12 @@ function renderReports() {
     let months = Array.from(monthsSet).sort().reverse();
     selectMonth.innerHTML = months.map(m=>`<option value="${m}">${m}</option>`).join('') || `<option value="">---</option>`;
     let currentMonth = selectMonth.value || months[0] || "";
-    let vols = {};
     let embarcadas=0, retrabalho=0;
     let t = 0;
     inspections.forEach(i=>{
         if (!i.date) return;
         let [d,m,y]=i.date.split("/");
         let mes = `${m}/${y}`;
-        vols[mes]=(vols[mes]||0)+1;
         if(mes!==currentMonth) return;
         t++;
         (i.itens || []).forEach(it=>
@@ -1220,7 +1252,7 @@ document.addEventListener("DOMContentLoaded", async ()=>{
         if (data.inspectors && data.inspectors.length) inspectors = data.inspectors;
         if (data.inspections && data.inspections.length) inspections = data.inspections;
       } catch (e) {
-        console.error("Erro ao carregar dados do Firebase:", e);
+        console.error("Erro ao carregar dados do Firebase (init):", e);
       }
     }
     showScreen('home');
