@@ -306,11 +306,12 @@ textarea{font-size:15px;}
     getFirestore, collection, doc, setDoc, addDoc, getDocs, getDoc, deleteDoc 
   } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
 
+  // *** IMPORTANTE: storageBucket corrigido para firebasestorage.app ***
   const firebaseConfig = {
     apiKey: "AIzaSyCAAowsqkoUjIAPhSvq6dUlKMZGdXOO1b0",
     authDomain: "magiuschecklist-9ad0f.firebaseapp.com",
     projectId: "magiuschecklist-9ad0f",
-    storageBucket: "magiuschecklist-9ad0f.appspot.com",
+    storageBucket: "magiuschecklist-9ad0f.firebasestorage.app",
     messagingSenderId: "14669686712",
     appId: "1:14669686712:web:1c205b1111cde18379114d",
     measurementId: "G-GQS591WCBD"
@@ -631,7 +632,7 @@ function renderChecklist() {
     });
     renderNokLibrary();
 
-    // FINALIZAR INSPEÇÃO SALVANDO NO FIREBASE
+    // FINALIZAR INSPEÇÃO (salva no Firebase se disponível)
     document.getElementById("finalizar-inspecao-btn").onclick = function() {
       for (let i = 0; i < checklistItemStates.length; i++) {
         const state = checklistItemStates[i];
@@ -1098,6 +1099,3 @@ document.addEventListener("DOMContentLoaded", async ()=>{
 </script>
 </body>
 </html>
-
-
-
