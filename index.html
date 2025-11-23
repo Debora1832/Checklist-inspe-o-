@@ -6,6 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
 <style>
+/* (mantive seu CSS original sem alterações para poupar espaço no diff) */
 body { font-family: Arial,sans-serif; background:#fff; color:#333; margin:0;}
 .container { max-width:1200px; margin:32px auto; padding:20px; background:#fff; border-radius:8px; box-shadow:0 0 10px #0001;}
 .header { background:#003366; color:#fff; padding:15px 20px; border-radius:8px 8px 0 0; margin:-20px -20px 24px -20px; display:flex;justify-content:space-between;align-items:center;}
@@ -313,7 +314,8 @@ textarea{font-size:15px;}
     apiKey: "AIzaSyCAAowsqkoUjIAPhSvq6dUlKMZGdXOO1b0",
     authDomain: "magiuschecklist-9ad0f.firebaseapp.com",
     projectId: "magiuschecklist-9ad0f",
-    storageBucket: "magiuschecklist-9ad0f.firebasestorage.app",
+    // Corrigi o storageBucket para o formato appspot.com — ajuste se o seu projeto usar outro bucket
+    storageBucket: "magiuschecklist-9ad0f.appspot.com",
     messagingSenderId: "14669686712",
     appId: "1:14669686712:web:1c205b1111cde18379114d",
     measurementId: "G-GQS591WCBD"
@@ -323,11 +325,21 @@ textarea{font-size:15px;}
   const db = getFirestore(app);
   const storage = getStorage(app);
 
+  // Faz upload do arquivo e retorna a URL pública
   async function uploadFileAndGetUrl(path, file) {
     if (!file) return null;
-    const ref = sRef(storage, path);
-    await uploadBytes(ref, file);
-    return await getDownloadURL(ref);
+    try {
+      const ref = sRef(storage, path);
+      // adiciona metadata com contentType para melhor compatibilidade
+      const metadata = { contentType: file.type || 'application/octet-stream' };
+      await uploadBytes(ref, file, metadata);
+      const url = await getDownloadURL(ref);
+      return url;
+    } catch (err) {
+      console.error("Erro ao enviar arquivo para Storage em", path, ":", err);
+      // Re-lança para quem chamou poder tratar / parar o fluxo
+      throw err;
+    }
   }
 
   async function loadAll() {
@@ -385,8 +397,15 @@ textarea{font-size:15px;}
     if (!piece || !piece.code) return;
     let imageUrl = piece.imageUrl || null;
 
+    // Upload da imagem principal (se houver)
     if (piece.image instanceof File) {
-      imageUrl = await uploadFileAndGetUrl(`pieces/${piece.code}/main_${Date.now()}.jpg`, piece.image);
+      try {
+        imageUrl = await uploadFileAndGetUrl(`pieces/${encodeURIComponent(piece.code)}/main_${Date.now()}`, piece.image);
+      } catch (e) {
+        console.error("Falha no upload da imagem da peça:", e);
+        // lançar erro para que o chamador saiba que não salvou corretamente
+        throw new Error("Falha ao enviar imagem da peça: " + (e.message || e));
+      }
     }
 
     const itemsToSave = [];
@@ -394,7 +413,12 @@ textarea{font-size:15px;}
       const it = piece.items[idx];
       let itemImageUrl = it.imageUrl || null;
       if (it.image instanceof File) {
-        itemImageUrl = await uploadFileAndGetUrl(`pieces/${piece.code}/items/${idx}_${Date.now()}.jpg`, it.image);
+        try {
+          itemImageUrl = await uploadFileAndGetUrl(`pieces/${encodeURIComponent(piece.code)}/items/${idx}_${Date.now()}`, it.image);
+        } catch (e) {
+          console.error("Falha no upload da imagem do item:", e);
+          throw new Error("Falha ao enviar imagem do item: " + (e.message || e));
+        }
       }
       itemsToSave.push({
         name: it.name,
@@ -430,10 +454,15 @@ textarea{font-size:15px;}
       const it = inspec.itens[idx];
       let fotoUrl = it.fotoUrl || null;
       if (it.foto instanceof File) {
-        fotoUrl = await uploadFileAndGetUrl(
-          `inspections/${inspec.piece}/${timeStamp}_${idx}.jpg`,
-          it.foto
-        );
+        try {
+          fotoUrl = await uploadFileAndGetUrl(
+            `inspections/${encodeURIComponent(inspec.piece)}/${timeStamp}_${idx}`,
+            it.foto
+          );
+        } catch (e) {
+          console.error("Falha no upload da foto da inspeção:", e);
+          throw new Error("Falha ao enviar foto da inspeção: " + (e.message || e));
+        }
       }
       itensToSave.push({
         status: it.status,
@@ -464,8 +493,9 @@ textarea{font-size:15px;}
   };
 </script>
 
-<!-- SCRIPT PRINCIPAL -->
+<!-- SCRIPT PRINCIPAL (mantive sem alteração funcional além de usar encodeURIComponent nos caminhos de storage via funções acima) -->
 <script>
+/* (mantive seu script principal quase intacto; não alterei a lógica do front-end além do que já corrigi no módulo firebase) */
 let pieces = [
     {
         code: "597-2445#01",
