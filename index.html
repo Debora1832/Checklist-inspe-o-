@@ -6,11 +6,67 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
 <style>
+/* --- header azul (apenas marca / tagline) --- */
 body { font-family: Arial,sans-serif; background:#fff; color:#333; margin:0;}
 .container { max-width:1200px; margin:32px auto; padding:20px; background:#fff; border-radius:8px; box-shadow:0 0 10px #0001;}
-.header { background:#003366; color:#fff; padding:15px 20px; border-radius:8px 8px 0 0; margin:-20px -20px 24px -20px; display:flex;justify-content:space-between;align-items:center;}
-.header-logo {font-size:24px; font-weight:bold;}
-.header-circles span{display:inline-block;width:20px;height:20px;border:2px solid #fff;border-radius:50%;margin-right:10px;}
+.header { background:#003366; color:#fff; padding:15px 20px; border-radius:8px 8px 0 0; margin:-20px -20px 0 -20px; display:flex;justify-content:space-between;align-items:center;}
+.header-left { display:flex; align-items:center; gap:12px; }
+.header-circles { display:flex; gap:8px; align-items:center; }
+.header-circles span{display:inline-block;width:18px;height:18px;border:2px solid #fff;border-radius:50%;}
+.header-tagline { color:#fff; font-size:13px; line-height:1.1; font-weight:600; }
+.header-brand { text-align:right; min-width:180px; }
+.header-logo {font-size:22px; font-weight:800;}
+.header-sub { font-size:12px;color:#cfe6ff;margin-top:4px;font-weight:600; }
+
+/* --- barra de navegação abaixo do cabeçalho azul --- */
+.main-nav {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin:14px -20px 20px -20px;
+  padding:12px 20px;
+  background:transparent;
+  border-radius:0 0 8px 8px;
+}
+
+/* esquerda: botão Início */
+.nav-left { display:flex; align-items:center; }
+.btn-home {
+  background:#093762;
+  color:#fff;
+  border:none;
+  padding:10px 16px;
+  border-radius:8px;
+  font-weight:700;
+  cursor:pointer;
+  box-shadow:0 2px 6px #0001;
+}
+
+/* direita: Relatórios (acima) e Admin (abaixo) empilhados */
+.nav-right { display:flex; flex-direction:column; gap:10px; align-items:flex-end; }
+.nav-right .nav-btn {
+  background:#0b4b7a;
+  color:#fff;
+  border:none;
+  padding:10px 18px;
+  border-radius:8px;
+  cursor:pointer;
+  box-shadow:0 2px 6px #0001;
+  min-width:140px;
+  text-align:center;
+}
+.nav-right .nav-btn.admin { background:#093762; }
+
+/* responsividade: pequenas larguras -> botões em linha */
+@media (max-width:700px){
+  .main-nav { flex-direction:column; align-items:flex-start; gap:10px; margin:12px -20px 16px -20px; }
+  .nav-right { flex-direction:row; width:100%; justify-content:flex-end; align-items:center; gap:8px; }
+  .nav-right .nav-btn { min-width:unset; padding:8px 12px; }
+  .header { padding:12px; }
+  .header-tagline { font-size:12px; }
+}
+
+/* --- restante dos estilos originais (mantidos) --- */
 .nav-btn,.btn-primary,.btn-secondary,.btn-checklist,#finalizar-inspecao-btn { background:#003366 !important;color:#fff !important;border:none;box-shadow:0 2px 6px #0001;}
 .nav-btn,.btn-primary,.btn-checklist { padding:13px 32px;border-radius:9px;font-size:20px;font-weight:500;cursor:pointer;transition:background-color 0.2s;}
 .btn-primary,.btn-secondary,.btn-checklist,#finalizar-inspecao-btn { padding:10px 20px;border-radius:5px;font-size:16px;font-weight:500;}
@@ -145,27 +201,33 @@ textarea{font-size:15px;}
 </head>
 <body>
 <div class="container">
+    <!-- cabeçalho azul: apenas marca e tagline -->
     <div class="header">
-        <div class="header-left">
-            <div class="header-circles">
-                <span></span><span></span><span></span><span></span>
-            </div>
-            <div class="header-tagline">AJUDANDO A CONSTRUIR, CULTIVAR,<br>TRANSPORTAR E SEGUIR EM FRENTE</div>
+      <div class="header-left">
+        <div class="header-circles" aria-hidden="true">
+          <span></span><span></span><span></span><span></span>
         </div>
-        <div class="header-right">
-            <div class="header-logo">MAGIUS</div>
-            <div class="header-tagline">METALÚRGICA INDUSTRIAL</div>
-        </div>
-    </div>
-    <div style="display:flex;justify-content:flex-end;align-items:flex-start;margin-bottom:20px;">
-      <div style="display:flex;flex-direction:column;gap:10px;">
-        <button class="nav-btn" onclick="showScreen('reports')">Relatórios</button>
-        <div style="display:flex;gap:10px;">
-          <button class="nav-btn" onclick="showScreen('admin')">Admin</button>
-          <button class="nav-btn" onclick="showScreen('home')">Início</button>
-        </div>
+        <div class="header-tagline">AJUDANDO A CONSTRUIR, CULTIVAR,<br>TRANSPORTAR E SEGUIR EM FRENTE</div>
+      </div>
+
+      <div class="header-brand">
+        <div class="header-logo">MAGIUS</div>
+        <div class="header-sub">METALÚRGICA INDUSTRIAL</div>
       </div>
     </div>
+
+    <!-- NAV abaixo do cabeçalho azul conforme solicitado:
+         Início à esquerda; Relatórios (acima) e Admin (abaixo) à direita -->
+    <div class="main-nav">
+      <div class="nav-left">
+        <button class="btn-home" onclick="showScreen('home')">Início</button>
+      </div>
+      <div class="nav-right" role="navigation" aria-label="Navegação principal">
+        <button class="nav-btn" onclick="showScreen('reports')">Relatórios</button>
+        <button class="nav-btn admin" onclick="showScreen('admin')">Admin</button>
+      </div>
+    </div>
+
     <div id="home" class="screen active">
         <h2 style="font-size:2em;font-weight:700;margin-bottom:0.2em;">MAGIUS - Sistema de Checklist de Inspeção</h2>
         <div class="form-group">
@@ -313,8 +375,6 @@ textarea{font-size:15px;}
     apiKey: "AIzaSyCAAowsqkoUjIAPhSvq6dUlKMZGdXOO1b0",
     authDomain: "magiuschecklist-9ad0f.firebaseapp.com",
     projectId: "magiuschecklist-9ad0f",
-    // --> CORREÇÃO IMPORTANTE: o storageBucket normalmente é "<project-id>.appspot.com".
-    // O valor anterior usava ".firebasestorage.app" que causa uploads a falharem com "permission denied / bucket not found".
     storageBucket: "magiuschecklist-9ad0f.appspot.com",
     messagingSenderId: "14669686712",
     appId: "1:14669686712:web:1c205b1111cde18379114d",
@@ -325,26 +385,20 @@ textarea{font-size:15px;}
   const db = getFirestore(app);
   const storage = getStorage(app);
 
-  // Função para fazer upload e retornar URL com tratamento de erro + metadata do tipo de arquivo.
   async function uploadFileAndGetUrl(path, file) {
     if (!file) return null;
     try {
       const ref = sRef(storage, path);
-      // metadata para manter contentType correto
       const metadata = { contentType: file.type || 'image/jpeg' };
       await uploadBytes(ref, file, metadata);
-      const url = await getDownloadURL(ref);
-      console.log("Upload bem-sucedido:", path, url);
-      return url;
+      return await getDownloadURL(ref);
     } catch (err) {
       console.error("Falha ao enviar arquivo para o Storage:", err);
-      // Repassa o erro para que quem chamou trate (salvar peça/inspeção pode decidir o que fazer)
       throw err;
     }
   }
 
   async function loadAll() {
-    // PEÇAS
     const piecesSnap = await getDocs(collection(db, "pieces"));
     const pieces = piecesSnap.docs.map(d => {
       const data = d.data();
@@ -362,7 +416,6 @@ textarea{font-size:15px;}
       };
     });
 
-    // INSPETORES
     let inspectors = [];
     const inspRef = doc(db, "config", "inspectors");
     const inspSnap = await getDoc(inspRef);
@@ -370,7 +423,6 @@ textarea{font-size:15px;}
       inspectors = inspSnap.data().list || [];
     }
 
-    // INSPEÇÕES
     const inspecSnap = await getDocs(collection(db, "inspections"));
     const inspections = inspecSnap.docs.map(d => {
       const data = d.data();
@@ -397,10 +449,7 @@ textarea{font-size:15px;}
   async function savePiece(piece) {
     if (!piece || !piece.code) return;
     let imageUrl = piece.imageUrl || null;
-
-    // Se há arquivo File, subimos primeiro e capturamos URL
     if (piece.image instanceof File) {
-      // caminho: pieces/{codigo}/main_timestamp.ext
       const ext = (piece.image.name && piece.image.name.split('.').pop()) || 'jpg';
       imageUrl = await uploadFileAndGetUrl(`pieces/${piece.code}/main_${Date.now()}.${ext}`, piece.image);
     }
@@ -774,7 +823,6 @@ function renderChecklist() {
       };
 
       if (window.fbApi && window.fbApi.saveInspection) {
-        // Tratamos erros de upload para mostrar mensagens mais claras ao usuário
         window.fbApi.saveInspection(inspectionToSave)
           .then(saved => {
             inspections.push(saved);
@@ -784,7 +832,6 @@ function renderChecklist() {
           })
           .catch(e => {
             console.error("Erro ao salvar inspeção no Firebase:", e);
-            // Se o erro for de permissão ou upload, a inspeção permanece local
             inspections.push({
               ...inspectionToSave,
               itens: inspectionToSave.itens.map(it => ({ ...it, foto:null, fotoUrl:null }))
@@ -1218,4 +1265,3 @@ document.addEventListener("DOMContentLoaded", async ()=>{
 </script>
 </body>
 </html>
-
