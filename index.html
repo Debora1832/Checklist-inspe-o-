@@ -1,4 +1,3 @@
-TENHA UMA CONEXÃO COM O FIRABASE, POREM NÃO TA SALVANDO AS FOTOS. ME AJUDE A CRRIGIR ESSE CODIGO 
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -314,7 +313,9 @@ textarea{font-size:15px;}
     apiKey: "AIzaSyCAAowsqkoUjIAPhSvq6dUlKMZGdXOO1b0",
     authDomain: "magiuschecklist-9ad0f.firebaseapp.com",
     projectId: "magiuschecklist-9ad0f",
-    storageBucket: "magiuschecklist-9ad0f.firebasestorage.app",
+    // --> CORREÇÃO IMPORTANTE: o storageBucket normalmente é "<project-id>.appspot.com".
+    // O valor anterior usava ".firebasestorage.app" que causa uploads a falharem com "permission denied / bucket not found".
+    storageBucket: "magiuschecklist-9ad0f.appspot.com",
     messagingSenderId: "14669686712",
     appId: "1:14669686712:web:1c205b1111cde18379114d",
     measurementId: "G-GQS591WCBD"
@@ -324,11 +325,22 @@ textarea{font-size:15px;}
   const db = getFirestore(app);
   const storage = getStorage(app);
 
+  // Função para fazer upload e retornar URL com tratamento de erro + metadata do tipo de arquivo.
   async function uploadFileAndGetUrl(path, file) {
     if (!file) return null;
-    const ref = sRef(storage, path);
-    await uploadBytes(ref, file);
-    return await getDownloadURL(ref);
+    try {
+      const ref = sRef(storage, path);
+      // metadata para manter contentType correto
+      const metadata = { contentType: file.type || 'image/jpeg' };
+      await uploadBytes(ref, file, metadata);
+      const url = await getDownloadURL(ref);
+      console.log("Upload bem-sucedido:", path, url);
+      return url;
+    } catch (err) {
+      console.error("Falha ao enviar arquivo para o Storage:", err);
+      // Repassa o erro para que quem chamou trate (salvar peça/inspeção pode decidir o que fazer)
+      throw err;
+    }
   }
 
   async function loadAll() {
@@ -386,8 +398,11 @@ textarea{font-size:15px;}
     if (!piece || !piece.code) return;
     let imageUrl = piece.imageUrl || null;
 
+    // Se há arquivo File, subimos primeiro e capturamos URL
     if (piece.image instanceof File) {
-      imageUrl = await uploadFileAndGetUrl(`pieces/${piece.code}/main_${Date.now()}.jpg`, piece.image);
+      // caminho: pieces/{codigo}/main_timestamp.ext
+      const ext = (piece.image.name && piece.image.name.split('.').pop()) || 'jpg';
+      imageUrl = await uploadFileAndGetUrl(`pieces/${piece.code}/main_${Date.now()}.${ext}`, piece.image);
     }
 
     const itemsToSave = [];
@@ -395,7 +410,8 @@ textarea{font-size:15px;}
       const it = piece.items[idx];
       let itemImageUrl = it.imageUrl || null;
       if (it.image instanceof File) {
-        itemImageUrl = await uploadFileAndGetUrl(`pieces/${piece.code}/items/${idx}_${Date.now()}.jpg`, it.image);
+        const ext = (it.image.name && it.image.name.split('.').pop()) || 'jpg';
+        itemImageUrl = await uploadFileAndGetUrl(`pieces/${piece.code}/items/${idx}_${Date.now()}.${ext}`, it.image);
       }
       itemsToSave.push({
         name: it.name,
@@ -431,8 +447,9 @@ textarea{font-size:15px;}
       const it = inspec.itens[idx];
       let fotoUrl = it.fotoUrl || null;
       if (it.foto instanceof File) {
+        const ext = (it.foto.name && it.foto.name.split('.').pop()) || 'jpg';
         fotoUrl = await uploadFileAndGetUrl(
-          `inspections/${inspec.piece}/${timeStamp}_${idx}.jpg`,
+          `inspections/${inspec.piece}/${timeStamp}_${idx}.${ext}`,
           it.foto
         );
       }
@@ -757,6 +774,7 @@ function renderChecklist() {
       };
 
       if (window.fbApi && window.fbApi.saveInspection) {
+        // Tratamos erros de upload para mostrar mensagens mais claras ao usuário
         window.fbApi.saveInspection(inspectionToSave)
           .then(saved => {
             inspections.push(saved);
@@ -766,6 +784,7 @@ function renderChecklist() {
           })
           .catch(e => {
             console.error("Erro ao salvar inspeção no Firebase:", e);
+            // Se o erro for de permissão ou upload, a inspeção permanece local
             inspections.push({
               ...inspectionToSave,
               itens: inspectionToSave.itens.map(it => ({ ...it, foto:null, fotoUrl:null }))
@@ -856,6 +875,7 @@ function editPiece(idx){
       if (window.fbApi && window.fbApi.savePiece) {
         window.fbApi.savePiece(p).catch(e => {
           console.error("Erro ao salvar peça no Firebase:", e);
+          alert("Erro ao enviar imagem/peça ao Firebase. Verifique console para detalhes.");
         });
       }
     };
@@ -973,6 +993,7 @@ document.getElementById("add-piece-btn").onclick = function() {
     if (window.fbApi && window.fbApi.savePiece) {
       window.fbApi.savePiece(newPiece).catch(e => {
         console.error("Erro ao salvar peça no Firebase:", e);
+        alert("Erro ao enviar imagem/peça ao Firebase. Verifique as regras de Storage e o console.");
       });
     }
 };
