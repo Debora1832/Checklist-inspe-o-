@@ -6,8 +6,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
 <style>
-/* --- layout e estilos (base do seu projeto) --- */
-body { font-family: Arial, sans-serif; background:#fff; color:#333; margin:0;}
+/* --- header azul (apenas marca / tagline) --- */
+body { font-family: Arial,sans-serif; background:#fff; color:#333; margin:0;}
 .container { max-width:1200px; margin:32px auto; padding:20px; background:#fff; border-radius:8px; box-shadow:0 0 10px #0001;}
 .header { background:#003366; color:#fff; padding:15px 20px; border-radius:8px 8px 0 0; margin:-20px -20px 0 -20px; display:flex;justify-content:space-between;align-items:center;}
 .header-left { display:flex; align-items:center; gap:12px; }
@@ -18,7 +18,7 @@ body { font-family: Arial, sans-serif; background:#fff; color:#333; margin:0;}
 .header-logo {font-size:22px; font-weight:800;}
 .header-sub { font-size:12px;color:#cfe6ff;margin-top:4px;font-weight:600; }
 
-/* nav abaixo do cabeçalho */
+/* --- barra de navegação abaixo do cabeçalho azul --- */
 .main-nav {
   display:flex;
   justify-content:space-between;
@@ -28,23 +28,45 @@ body { font-family: Arial, sans-serif; background:#fff; color:#333; margin:0;}
   background:transparent;
   border-radius:0 0 8px 8px;
 }
-.nav-left { display:flex; align-items:center; gap:10px; }
+
+/* esquerda: botão Início */
+.nav-left { display:flex; align-items:center; }
 .btn-home {
-  background:#093762;color:#fff;border:none;padding:10px 16px;border-radius:8px;font-weight:700;cursor:pointer;box-shadow:0 2px 6px #0001;
+  background:#093762;
+  color:#fff;
+  border:none;
+  padding:10px 16px;
+  border-radius:8px;
+  font-weight:700;
+  cursor:pointer;
+  box-shadow:0 2px 6px #0001;
 }
+
+/* direita: Relatórios (acima) e Admin (abaixo) empilhados */
 .nav-right { display:flex; flex-direction:column; gap:10px; align-items:flex-end; }
-.nav-right .nav-btn { background:#0b4b7a;color:#fff;border:none;padding:10px 18px;border-radius:8px;cursor:pointer;box-shadow:0 2px 6px #0001;min-width:140px;text-align:center;}
+.nav-right .nav-btn {
+  background:#0b4b7a;
+  color:#fff;
+  border:none;
+  padding:10px 18px;
+  border-radius:8px;
+  cursor:pointer;
+  box-shadow:0 2px 6px #0001;
+  min-width:140px;
+  text-align:center;
+}
 .nav-right .nav-btn.admin { background:#093762; }
 
-/* login status */
-.auth-info { font-size:14px;color:#093762;margin-left:6px;}
+/* responsividade: pequenas larguras -> botões em linha */
+@media (max-width:700px){
+  .main-nav { flex-direction:column; align-items:flex-start; gap:10px; margin:12px -20px 16px -20px; }
+  .nav-right { flex-direction:row; width:100%; justify-content:flex-end; align-items:center; gap:8px; }
+  .nav-right .nav-btn { min-width:unset; padding:8px 12px; }
+  .header { padding:12px; }
+  .header-tagline { font-size:12px; }
+}
 
-/* modal */
-.modal-overlay {position: fixed; top:0; left:0; right:0; bottom:0;background: rgba(0,0,0,0.35);display: none; align-items:center; justify-content:center;z-index: 9999;}
-.modal-box {background: #fff;border-radius: 12px;padding:22px;min-width:320px;max-width:90vw;position:relative;}
-.modal-close {position:absolute; top:8px; right:8px;border:none;background:none;font-size:20px;color:#093762;cursor:pointer;}
-
-/* restante dos estilos originais (compactados para o exemplo) */
+/* --- restante dos estilos originais (mantidos) --- */
 .nav-btn,.btn-primary,.btn-secondary,.btn-checklist,#finalizar-inspecao-btn { background:#003366 !important;color:#fff !important;border:none;box-shadow:0 2px 6px #0001;}
 .nav-btn,.btn-primary,.btn-checklist { padding:13px 32px;border-radius:9px;font-size:20px;font-weight:500;cursor:pointer;transition:background-color 0.2s;}
 .btn-primary,.btn-secondary,.btn-checklist,#finalizar-inspecao-btn { padding:10px 20px;border-radius:5px;font-size:16px;font-weight:500;}
@@ -63,195 +85,293 @@ body { font-family: Arial, sans-serif; background:#fff; color:#333; margin:0;}
     background-image: url('data:image/svg+xml;utf8,<svg fill="white" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 512 512"><path d="M290.74,93.24,218.49,165.49,346.51,293.5,418.76,221.25C437.1,202.91,437.1,175,418.76,156.66Z"/><path d="M223.25,232.6l-20,20L87.27,347.68a16,16,0,0,0,0,22.62l54.57,54.58a16,16,0,0,0,22.62,0l95.88-95.89,20-20Z"/></svg>');
     background-size:20px 20px;background-repeat:no-repeat;
 }
-/* ... (manter o resto do CSS do seu projeto conforme já tinha) ... */
-
+.remove-btn {
+    background: #dc3545 !important;
+    color: #fff !important;
+    border-radius: 8px;
+    width: 44px; height: 44px;
+    padding:0;font-size:0;border:none;margin-left:8px;
+    display:inline-flex;align-items:center;justify-content:center;
+}
+.remove-btn::before {
+    content: '';display:inline-block;width:20px;height:20px;
+    background-image:url('data:image/svg+xml;utf8,<svg fill="white" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 320 320"><path d="M20 20L300 300M20 300L300 20" stroke="white" stroke-width="35"/></svg>');
+    background-size:20px 20px;background-repeat:no-repeat;
+}
+.activity-header,.report-header { background:#003366;color:#fff;padding:11px 18px;font-size:17px;font-weight:700;border-radius:7px 7px 0 0;margin-bottom:14px;letter-spacing:0.5px;}
+.report-header {margin-bottom:24px;}
+.activity-block {background:#f6f8fa;border-radius:7px;box-shadow:0 2px 12px #0001;margin-bottom:28px;padding:20px 18px 15px 18px;}
+.form-group label {font-weight:bold;display:block;margin-bottom:5px;}
+input[type="text"],select,textarea {width:100%;padding:10px;margin:8px 0 16px 0;border:1px solid #ccc;border-radius:4px;box-sizing:border-box;}
+input[type="file"] {margin-bottom:12px;}
 .screen {display:none;padding:20px 0;}
 .screen.active {display:block;}
 .checklist-item{display:flex;align-items:flex-start;background:#f9f9f9;border:1px solid #ddd;border-radius:4px;margin-bottom:10px;padding:10px;transition:background 0.25s;position:relative;}
+.checklist-item.ok{background:#dafdda !important;}
+.checklist-item.not-ok{background:#fedede !important;}
+.checklist-item-info { flex-grow:1; padding-left:10px;}
+.checklist-item-actions{display:flex;gap:0px;align-items:center;height:38px;margin-left:6px;}
+.checklist-item-actions .btn-ok,.checklist-item-actions .btn-nao-ok{width:90px;height:38px;display:inline-flex;align-items:center;justify-content:center;border:none;outline:none;font-size:18px;font-family:Arial,sans-serif;font-weight:700;color:#fff;margin:0;cursor:pointer;border-radius:3px;transition:filter 0.15s;background:#28b649 !important;}
+.checklist-item-actions .btn-nao-ok{background:#e23636 !important;margin-left:-1px;}
+.checklist-item-actions .btn-ok{border-top-right-radius:0;border-bottom-right-radius:0;}
+.checklist-item-actions .btn-nao-ok{border-top-left-radius:0;border-bottom-left-radius:0;}
 .checklist-piece-title{font-size:2.4em;font-weight:700;color:#003366;margin-bottom:15px;}
-/* pequeno ajuste responsivo */
-@media (max-width:700px) {
-  .main-nav { flex-direction:column; align-items:flex-start; gap:10px; }
-  .nav-right { flex-direction:row; gap:8px; align-items:center; }
-  .nav-right .nav-btn { min-width:unset; padding:8px 12px; }
+.checklist-extra-wrapper { width:100%;margin-top:6px;display:flex;flex-direction:row;gap:0;}
+.checklist-extra-block{flex:1;padding:15px;border-radius:6px;border:2px solid #e23636;background:#fff6f7;box-sizing:border-box;display:flex;flex-direction:column;gap:17px;margin-left:0;}
+.checklist-extra-label{color:#e23636;font-weight:600;margin-bottom:7px;font-size:16px;}
+.checklist-radio-group{display:flex;gap:32px;margin-top:2px;}
+.checklist-radio-group label{font-size:17px;font-weight:600;}
+input[type="radio"]{margin-right:7px;transform:scale(1.2);}
+.checklist-terceiro-nome-box{margin-top:8px;}
+.checklist-terceiro-nome-box label{font-size:15px;font-weight:600;margin-bottom:4px;display:block;}
+.checklist-terceiro-nome-box input{padding:8px;border-radius:4px;border:1px solid #bbb;width:99%;}
+input[type="file"]{margin-bottom:4px;}
+textarea{font-size:15px;}
+.hide{display:none !important;}
+.admin-piece-item,.admin-inspector-item {display:flex;justify-content:space-between;align-items:center;padding:5px 10px;border:1px solid #eee;margin-bottom:5px;background:#f9f9f9;border-radius:4px;}
+.admin-piece-list,.admin-inspector-list {margin-top:10px;max-height:200px;overflow-y:auto;}
+.admin-item-line{display:flex;align-items:center;justify-content:flex-end;margin-bottom:5px;gap:6px;}
+.item-label-box{display:flex;align-items:center;gap:6px;flex-grow:1;word-break:break-word;}
+.edit-control{margin-top:8px;display:flex;gap:8px;}
+.report-controls {display:flex;align-items:center;gap:30px;margin-bottom:22px;}
+.report-total-volume,.report-csv-btn{padding:13px 34px;background:#093762;color:#fff;font-weight:700;border-radius:8px;box-shadow:0 3px 11px #0001;font-size:18px;display:inline-flex;align-items:center;border:none;cursor:pointer;}
+.report-csv-btn:hover{background:#16457c;}
+#report-month-select {padding:6px 12px;border-radius:5px;border:1px solid #bbb;font-size:15px;}
+#volume-mensal-box {border:1px solid #ddd;padding:38px 20px;text-align:center;background-color:#f8fafc;border-radius:6px;margin-bottom:18px;font-size:21px;}
+.report-graph-area {background:#f8f8fc;border:1px solid #ddd;border-radius:12px;margin-bottom:30px;padding:10px 0 30px 0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.report-graph-legend {display:flex;gap:30px;justify-content:center;margin-top:8px;}
+.report-graph-legend-item {display:flex;gap:7px;align-items:center;font-weight:500;margin-top:9px;}
+.grafico-bola {width:140px;height:140px;}
+.report-history-table {width:100%;background:#e8f0fa;border-radius:8px;box-shadow:0 1px 6px #0001;border-spacing:0;border-collapse:separate;margin-top:7px;}
+.report-history-table thead tr{background:#dde7f3;}
+.report-history-table th {padding:14px 0;border-bottom:2px solid #093762;font-weight:700;font-size:17px;text-align:center;}
+.report-history-table td {padding:12px 0;border-bottom:1px solid #b8d4f1;font-size:17px;text-align:center;background:#e8f0fa;}
+@media (max-width: 600px) {
+    .container { padding:10px; }
+    .report-controls { flex-direction:column; gap:14px; }
+    .report-total-volume, .report-csv-btn { width:100%; justify-content:center; }
 }
+.checklist-nok-library {
+  background: #f8f0f3;
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-top: 30px;
+  margin-bottom: 10px;
+}
+.checklist-nok-library-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+}
+.checklist-nok-case {
+  background: #f8f4f6;
+  border-radius: 9px;
+  border: 2px solid #e23636;
+  padding: 17px;
+  width: 260px;
+  box-sizing: border-box;
+  word-break:break-word;
+}
+.checklist-nok-case img {
+  width: 100%;
+  max-width: 200px;
+  max-height: 160px;
+  object-fit:cover;
+  margin-top: 8px;
+  cursor: pointer;
+  border-radius:8px;
+  box-shadow:0 2px 16px #0002;
+}
+.checklist-nok-title {
+  font-size:1.12em;
+  color:#e23636;
+  font-weight:700;
+  margin-bottom:17px;
+}
+@media (max-width: 700px) {
+  .checklist-nok-library-list { flex-direction: column; gap: 11px;}
+  .checklist-nok-case { width: 100%; max-width: 99vw; }
+}
+.modal-overlay {position: fixed; top:0; left:0; right:0; bottom:0;background: rgba(0,0,0,0.35);display: flex; align-items:center; justify-content:center;z-index: 9999;}
+.modal-box {background: #fff;border-radius: 15px;box-shadow: 0 6px 24px #0002;padding: 36px 30px 30px 30px;min-width: 320px;max-width: 98vw;max-height: 96vh;position: relative;}
+.modal-close {position: absolute; top: 12px; right: 12px;font-size: 28px; background: none; border: none; color: #093762; cursor: pointer;padding: 8px;border-radius: 7px;font-weight: bold;}
+.modal-title { font-size: 1.5em; font-weight: 700; margin-bottom: 28px; color: #093762;}
+.modal-form-row { margin-bottom:22px; } .modal-form-row label {font-weight:500;margin-right:7px;}
 </style>
 </head>
 <body>
 <div class="container">
-  <!-- HEADER -->
-  <div class="header">
-    <div class="header-left">
-      <div class="header-circles" aria-hidden="true">
-        <span></span><span></span><span></span><span></span>
+    <!-- cabeçalho azul: apenas marca e tagline -->
+    <div class="header">
+      <div class="header-left">
+        <div class="header-circles" aria-hidden="true">
+          <span></span><span></span><span></span><span></span>
+        </div>
+        <div class="header-tagline">AJUDANDO A CONSTRUIR, CULTIVAR,<br>TRANSPORTAR E SEGUIR EM FRENTE</div>
       </div>
-      <div class="header-tagline">AJUDANDO A CONSTRUIR, CULTIVAR,<br>TRANSPORTAR E SEGUIR EM FRENTE</div>
-    </div>
-    <div class="header-brand">
-      <div class="header-logo">MAGIUS</div>
-      <div class="header-sub">METALÚRGICA INDUSTRIAL</div>
-    </div>
-  </div>
 
-  <!-- NAV -->
-  <div class="main-nav">
-    <div class="nav-left">
-      <button class="btn-home" onclick="showScreen('home')">Início</button>
-      <span id="signed-as" class="auth-info" style="display:none;">Logado: <b id="auth-email"></b></span>
-    </div>
-    <div class="nav-right" role="navigation" aria-label="Navegação principal">
-      <button class="nav-btn" onclick="showScreen('reports')">Relatórios</button>
-      <button class="nav-btn admin" id="admin-btn" onclick="requestAdminAccess()">Admin</button>
-      <div style="margin-top:8px;">
-        <button id="signin-btn" class="btn-primary" onclick="openSignInModal()">Entrar</button>
-        <button id="signout-btn" class="btn-secondary" style="display:none;" onclick="signOut()">Sair</button>
+      <div class="header-brand">
+        <div class="header-logo">MAGIUS</div>
+        <div class="header-sub">METALÚRGICA INDUSTRIAL</div>
       </div>
     </div>
-  </div>
 
-  <!-- HOME -->
-  <div id="home" class="screen active">
-    <h2 style="font-size:2em;font-weight:700;margin-bottom:0.2em;">MAGIUS - Sistema de Checklist de Inspeção</h2>
-    <div class="form-group">
-      <label for="inspector">Inspetor:</label>
-      <select id="inspector"><option value="" disabled selected>Selecionar inspetor</option></select>
-    </div>
-    <div class="form-group">
-      <label for="piece">Peça:</label>
-      <select id="piece"><option value="" disabled selected>Selecionar peça</option></select>
-    </div>
-    <button class="btn-checklist" onclick="showChecklist()">Iniciar Checklist</button>
-  </div>
-
-  <!-- CHECKLIST -->
-  <div id="checklist" class="screen">
-    <div class="checklist-piece-title" id="checklist-header"></div>
-    <div id="piece-image-box" style="background-color:#f0f5fa;height:260px;margin-bottom:20px;display:flex;justify-content:center;align-items:center;border-radius:10px;">
-        [Imagem aqui]
-    </div>
-    <div class="checklist-item-list" id="checklist-item-list"></div>
-    <button class="btn-primary" id="finalizar-inspecao-btn" style="margin-top:20px;">Finalizar Inspeção</button>
-    <div class="checklist-nok-library" id="checklist-nok-library"></div>
-  </div>
-
-  <!-- REPORTS -->
-  <div id="reports" class="screen">
-    <div class="report-header">Relatórios</div>
-    <div class="report-controls">
-      <button class="report-csv-btn" onclick="exportCSV()">Exportar CSV</button>
-      <div class="report-total-volume">
-        Total (todas inspeções): <span id="total-inspecoes" style="margin-left:10px;font-size:21px;">0</span>
+    <!-- NAV abaixo do cabeçalho azul conforme solicitado:
+         Início à esquerda; Relatórios (acima) e Admin (abaixo) à direita -->
+    <div class="main-nav">
+      <div class="nav-left">
+        <button class="btn-home" onclick="showScreen('home')">Início</button>
       </div>
-      <div>
-        <label for="report-month-select" style="font-weight:500;margin-right:7px;">Selecionar mês:</label>
-        <select id="report-month-select"></select>
+      <div class="nav-right" role="navigation" aria-label="Navegação principal">
+        <button class="nav-btn" onclick="showScreen('reports')">Relatórios</button>
+        <!-- Admin agora chama requestAdminAccess() para pedir a senha -->
+        <button class="nav-btn admin" onclick="requestAdminAccess()">Admin</button>
       </div>
     </div>
-    <div style="font-weight:600;margin-bottom:7px;">Volume mensal</div>
-    <div id="volume-mensal-box"><span id="volume-mensal-num">0</span> inspeções</div>
-    <div class="report-graph-area">
-      <canvas id="graficoRosca" class="grafico-bola" width="140" height="140"></canvas>
-      <div class="report-graph-legend"></div>
-    </div>
-    <div style="font-weight:600;margin-bottom:6px;">Histórico</div>
-    <div class="report-history">
-      <table class="report-history-table">
-        <thead>
-          <tr><th>Data</th><th>Inspetor</th><th>Peça</th><th>Descrição</th></tr>
-        </thead>
-        <tbody id="reports-history-body"></tbody>
-      </table>
-    </div>
-  </div>
 
-  <!-- ADMIN -->
-  <div id="admin" class="screen">
-    <div class="activity-block">
-      <div class="activity-header">Adicionar Peça</div>
-      <div id="piece-form-fields">
+    <div id="home" class="screen active">
+        <h2 style="font-size:2em;font-weight:700;margin-bottom:0.2em;">MAGIUS - Sistema de Checklist de Inspeção</h2>
         <div class="form-group">
-          <label for="new-code">Código (Ex: 597-2445#01)</label>
-          <input type="text" id="new-code" placeholder="Ex: 597-2445#01">
+            <label for="inspector">Inspetor:</label>
+            <select id="inspector"><option value="" disabled selected>Selecionar inspetor</option></select>
         </div>
         <div class="form-group">
-          <label for="new-description">Descrição</label>
-          <input type="text" id="new-description" placeholder="Longarina">
+            <label for="piece">Peça:</label>
+            <select id="piece"><option value="" disabled selected>Selecionar peça</option></select>
         </div>
-        <div class="form-group">
-          <label for="new-image">Imagem (obrigatória)</label>
-          <input type="file" id="new-image">
-          <p style="font-size:12px;margin-top:5px;" id="image-file-info">Nenhum arquivo escolhido</p>
-        </div>
-      </div>
-      <div class="edit-control hide" id="edit-piece-controls">
-        <button class="btn-primary" id="update-piece-btn">Salvar edição</button>
-      </div>
-      <button class="btn-primary" id="add-piece-btn" style="margin-right:10px;">Adicionar peça</button>
-      <button class="btn-secondary" id="clear-piece-btn">Limpar</button>
-      <h4 style="margin-top:30px;">Peças existentes</h4>
-      <div class="admin-piece-list" id="admin-piece-list"></div>
+        <button class="btn-checklist" onclick="showChecklist()">Iniciar Checklist</button>
     </div>
-
-    <div class="activity-block">
-      <div class="activity-header">Adicionar Item</div>
-      <div class="form-group">
-        <label for="select-piece-item">Selecionar peça</label>
-        <select id="select-piece-item"></select>
-      </div>
-      <h5 style="margin-top:10px;">Itens atuais</h5>
-      <div id="admin-piece-items-list"></div>
-      <div id="item-form-fields">
-        <div class="form-group">
-          <label for="new-item-name">Novo item</label>
-          <input type="text" id="new-item-name" placeholder="Dimensão X">
+    <div id="checklist" class="screen">
+        <div class="checklist-piece-title" id="checklist-header"></div>
+        <div id="piece-image-box" style="background-color:#f0f5fa;height:260px;margin-bottom:20px;display:flex;justify-content:center;align-items:center;border-radius:10px;">
+            [Imagem aqui]
         </div>
-        <div class="form-group">
-          <label for="new-item-description">Descrição do item (obrigatória)</label>
-          <textarea id="new-item-description"></textarea>
-        </div>
-        <div class="form-group">
-          <label for="new-item-image">Imagem do item (obrigatória)</label>
-          <input type="file" id="new-item-image">
-          <p style="font-size:12px;margin-top:5px;" id="item-image-file-info">Nenhum arquivo escolhido</p>
-        </div>
-      </div>
-      <div class="edit-control hide" id="edit-item-controls">
-        <button class="btn-primary" id="update-piece-item-btn">Salvar edição</button>
-      </div>
-      <button class="btn-primary" id="add-piece-item-btn">Adicionar item</button>
+        <div class="checklist-item-list" id="checklist-item-list"></div>
+        <button class="btn-primary" id="finalizar-inspecao-btn" style="margin-top:20px;">Finalizar Inspeção</button>
+        <div class="checklist-nok-library" id="checklist-nok-library"></div>
     </div>
-
-    <div class="activity-block">
-      <div class="activity-header">Adicionar Inspetor</div>
-      <div style="display:flex;">
-        <input type="text" id="inspector-new-name" placeholder="Nome do inspetor" style="margin-right:10px;">
-        <button class="btn-primary" id="add-inspector-btn" style="height:40px;">Adicionar</button>
-        <button class="btn-secondary" id="clear-inspector-btn" style="height:40px;margin-left:5px;">Limpar</button>
+    <div id="reports" class="screen">
+      <div class="report-header">Relatórios</div>
+      <div class="report-controls">
+          <button class="report-csv-btn" onclick="exportCSV()">Exportar CSV</button>
+          <div class="report-total-volume">
+              Total (todas inspeções): <span id="total-inspecoes" style="margin-left:10px;font-size:21px;">0</span>
+          </div>
+          <div>
+              <label for="report-month-select" style="font-weight:500;margin-right:7px;">Selecionar mês:</label>
+              <select id="report-month-select"></select>
+          </div>
       </div>
-      <h4 style="margin-top:30px;">Inspetores</h4>
-      <div class="admin-inspector-list" id="admin-inspector-list"></div>
+      <div style="font-weight:600;margin-bottom:7px;">Volume mensal</div>
+      <div id="volume-mensal-box"><span id="volume-mensal-num">0</span> inspeções</div>
+      <div class="report-graph-area">
+          <canvas id="graficoRosca" class="grafico-bola" width="140" height="140"></canvas>
+          <div class="report-graph-legend">
+              <div class="report-graph-legend-item">
+                  <span style="display:inline-block;width:18px;height:18px;background:#228be6;border-radius:6px;"></span>
+                  <span>Embarcadas</span>
+              </div>
+              <div class="report-graph-legend-item">
+                  <span style="display:inline-block;width:18px;height:18px;background:#e23636;border-radius:6px;"></span>
+                  <span>Retrabalho</span>
+              </div>
+          </div>
+      </div>
+      <div style="font-weight:600;margin-bottom:6px;">Histórico</div>
+      <div class="report-history">
+          <table class="report-history-table">
+              <thead>
+                  <tr>
+                      <th>Data</th>
+                      <th>Inspetor</th>
+                      <th>Peça</th>
+                      <th>Descrição</th>
+                  </tr>
+              </thead>
+              <tbody id="reports-history-body"></tbody>
+          </table>
+      </div>
     </div>
-  </div>
-
-  <div id="modal-overlay" class="modal-overlay" style="display:none;">
-    <div id="modal-box" class="modal-box"></div>
-  </div>
+    <div id="admin" class="screen">
+        <div class="activity-block">
+            <div class="activity-header">Adicionar Peça</div>
+            <div id="piece-form-fields">
+                <div class="form-group">
+                    <label for="new-code">Código (Ex: 597-2445#01)</label>
+                    <input type="text" id="new-code" placeholder="Ex: 597-2445#01">
+                </div>
+                <div class="form-group">
+                    <label for="new-description">Descrição</label>
+                    <input type="text" id="new-description" placeholder="Longarina">
+                </div>
+                <div class="form-group">
+                    <label for="new-image">Imagem (obrigatória)</label>
+                    <input type="file" id="new-image">
+                    <p style="font-size:12px;margin-top:5px;" id="image-file-info">Nenhum arquivo escolhido</p>
+                </div>
+            </div>
+            <div class="edit-control hide" id="edit-piece-controls">
+                <button class="btn-primary" id="update-piece-btn">Salvar edição</button>
+            </div>
+            <button class="btn-primary" id="add-piece-btn" style="margin-right:10px;">Adicionar peça</button>
+            <button class="btn-secondary" id="clear-piece-btn">Limpar</button>
+            <h4 style="margin-top:30px;">Peças existentes</h4>
+            <div class="admin-piece-list" id="admin-piece-list"></div>
+        </div>
+        <div class="activity-block">
+            <div class="activity-header">Adicionar Item</div>
+            <div class="form-group">
+                <label for="select-piece-item">Selecionar peça</label>
+                <select id="select-piece-item"></select>
+            </div>
+            <h5 style="margin-top:10px;">Itens atuais</h5>
+            <div id="admin-piece-items-list"></div>
+            <div id="item-form-fields">
+                <div class="form-group">
+                    <label for="new-item-name">Novo item</label>
+                    <input type="text" id="new-item-name" placeholder="Dimensão X">
+                </div>
+                <div class="form-group">
+                    <label for="new-item-description">Descrição do item (obrigatória)</label>
+                    <textarea id="new-item-description"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="new-item-image">Imagem do item (obrigatória)</label>
+                    <input type="file" id="new-item-image">
+                    <p style="font-size:12px;margin-top:5px;" id="item-image-file-info">Nenhum arquivo escolhido</p>
+                </div>
+            </div>
+            <div class="edit-control hide" id="edit-item-controls">
+                <button class="btn-primary" id="update-piece-item-btn">Salvar edição</button>
+            </div>
+            <button class="btn-primary" id="add-piece-item-btn">Adicionar item</button>
+        </div>
+        <div class="activity-block">
+            <div class="activity-header">Adicionar Inspetor</div>
+            <div style="display:flex;">
+                <input type="text" id="inspector-new-name" placeholder="Nome do inspetor" style="margin-right:10px;">
+                <button class="btn-primary" id="add-inspector-btn" style="height:40px;">Adicionar</button>
+                <button class="btn-secondary" id="clear-inspector-btn" style="height:40px;margin-left:5px;">Limpar</button>
+            </div>
+            <h4 style="margin-top:30px;">Inspetores</h4>
+            <div class="admin-inspector-list" id="admin-inspector-list"></div>
+        </div>
+    </div>
+    <div id="modal-overlay" class="modal-overlay" style="display:none;">
+      <div id="modal-box" class="modal-box"></div>
+    </div>
 </div>
 
-<!-- SCRIPT PRINCIPAL (module: firebase + app logic + auth integration) -->
+<!-- SCRIPT FIREBASE + STORAGE -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
-  import {
-    getFirestore, collection, doc, setDoc, addDoc, getDocs, getDoc, deleteDoc
+  import { 
+    getFirestore, collection, doc, setDoc, addDoc, getDocs, getDoc, deleteDoc 
   } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
-  import {
-    getStorage, ref as sRef, uploadBytes, getDownloadURL
+  import { 
+    getStorage, ref as sRef, uploadBytes, getDownloadURL 
   } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-storage.js";
-  import {
-    getAuth, signInWithEmailAndPassword, signOut as fbSignOut, onAuthStateChanged, getIdTokenResult
-  } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
 
-  // Firebase config
   const firebaseConfig = {
     apiKey: "AIzaSyCAAowsqkoUjIAPhSvq6dUlKMZGdXOO1b0",
     authDomain: "magiuschecklist-9ad0f.firebaseapp.com",
@@ -265,23 +385,21 @@ body { font-family: Arial, sans-serif; background:#fff; color:#333; margin:0;}
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
   const storage = getStorage(app);
-  const auth = getAuth(app);
 
-  // fallback admin email (you provided)
-  const FALLBACK_ADMIN_EMAIL = "debora.cristina@magius.com.br";
-
-  // upload helper
   async function uploadFileAndGetUrl(path, file) {
     if (!file) return null;
-    const ref = sRef(storage, path);
-    const metadata = { contentType: file.type || 'image/jpeg' };
-    await uploadBytes(ref, file, metadata);
-    return await getDownloadURL(ref);
+    try {
+      const ref = sRef(storage, path);
+      const metadata = { contentType: file.type || 'image/jpeg' };
+      await uploadBytes(ref, file, metadata);
+      return await getDownloadURL(ref);
+    } catch (err) {
+      console.error("Falha ao enviar arquivo para o Storage:", err);
+      throw err;
+    }
   }
 
-  // load data from Firestore
   async function loadAll() {
-    // pieces
     const piecesSnap = await getDocs(collection(db, "pieces"));
     const pieces = piecesSnap.docs.map(d => {
       const data = d.data();
@@ -299,17 +417,13 @@ body { font-family: Arial, sans-serif; background:#fff; color:#333; margin:0;}
       };
     });
 
-    // inspectors
     let inspectors = [];
-    try {
-      const inspRef = doc(db, "config", "inspectors");
-      const inspSnap = await getDoc(inspRef);
-      if (inspSnap.exists()) inspectors = inspSnap.data().list || [];
-    } catch (e) {
-      console.warn("config/inspectors not found:", e);
+    const inspRef = doc(db, "config", "inspectors");
+    const inspSnap = await getDoc(inspRef);
+    if (inspSnap.exists()) {
+      inspectors = inspSnap.data().list || [];
     }
 
-    // inspections
     const inspecSnap = await getDocs(collection(db, "inspections"));
     const inspections = inspecSnap.docs.map(d => {
       const data = d.data();
@@ -336,7 +450,6 @@ body { font-family: Arial, sans-serif; background:#fff; color:#333; margin:0;}
   async function savePiece(piece) {
     if (!piece || !piece.code) return;
     let imageUrl = piece.imageUrl || null;
-
     if (piece.image instanceof File) {
       const ext = (piece.image.name && piece.image.name.split('.').pop()) || 'jpg';
       imageUrl = await uploadFileAndGetUrl(`pieces/${piece.code}/main_${Date.now()}.${ext}`, piece.image);
@@ -410,7 +523,6 @@ body { font-family: Arial, sans-serif; background:#fff; color:#333; margin:0;}
     return { id: ref.id, ...docData };
   }
 
-  // expose api for legacy code usage
   window.fbApi = {
     loadAll,
     savePiece,
@@ -418,123 +530,204 @@ body { font-family: Arial, sans-serif; background:#fff; color:#333; margin:0;}
     setInspectors,
     saveInspection
   };
+</script>
 
-  // ----------------- Now integrate UI logic (rendering / handlers) -----------------
-  // copy of your original client-side logic (adapted to use the fbApi above)
-  // initial local state
-  let pieces = [
+<!-- SCRIPT PRINCIPAL -->
+<script>
+/*
+  Implementação de proteção simples para a tela Admin:
+  - Ao clicar em "Admin" a função requestAdminAccess() abre um modal pedindo senha.
+  - Senha definida aqui (client-side): "Magius123".
+  - Após autenticação na sessão atual, o usuário pode acessar Admin sem reentrar a senha.
+  Observação importante: esta proteção é apenas no cliente e não segura para produção.
+*/
+const ADMIN_PASSWORD = "Magius123";
+window.adminAuthenticated = false;
+
+let pieces = [
     {
-      code: "597-2445#01",
-      description: "Longarina",
-      image: null,
-      imageUrl: null,
-      items: [
-        { name: "Dimensão A (Ø)", description: "Verificar diâmetro da furação.", image: null, imageUrl:null },
-        { name: "Furo B posição", description: "Conferir posição do furo de encaixe.", image: null, imageUrl:null },
-        { name: "Solda - qualidade", description: "Avaliar acabamento da solda.", image: null, imageUrl:null }
-      ]
+        code: "597-2445#01",
+        description: "Longarina",
+        image: null,
+        imageUrl: null,
+        items: [
+            { name: "Dimensão A (Ø)", description: "Verificar diâmetro da furação.", image: null, imageUrl:null },
+            { name: "Furo B posição", description: "Conferir posição do furo de encaixe.", image: null, imageUrl:null },
+            { name: "Solda - qualidade", description: "Avaliar acabamento da solda.", image: null, imageUrl:null }
+        ]
     },
     {
-      code: "597-2435#01",
-      description: "Longarina",
-      image: null,
-      imageUrl: null,
-      items: []
+        code: "597-2435#01",
+        description: "Longarina",
+        image: null,
+        imageUrl: null,
+        items: []
     }
-  ];
-  let inspectors = ["João Silva","Maria Santos"];
-  let inspections = [];
-  let checklistItemStates = [];
-  let checklistCurrentPiece = null;
+];
+let inspectors = ["João Silva","Maria Santos"];
+let inspections = [];
+let checklistItemStates = [];
+let checklistCurrentPiece = null;
 
-  const screens = {
+const screens = {
     'home': document.getElementById('home'),
     'checklist': document.getElementById('checklist'),
     'reports': document.getElementById('reports'),
     'admin': document.getElementById('admin')
-  };
+};
 
-  function showModal(html, onclose) {
-    const overlay = document.getElementById('modal-overlay');
-    const box = document.getElementById('modal-box');
-    box.innerHTML = html;
-    overlay.style.display = 'flex';
+function showModal(html, onclose) {
+  const overlay = document.getElementById('modal-overlay');
+  const box = document.getElementById('modal-box');
+  box.innerHTML = html;
+  overlay.style.display = 'flex';
 
-    const closeBtn = box.querySelector('.modal-close');
-    if (closeBtn) {
-      closeBtn.onclick = function() {
-        overlay.style.display = 'none';
-        box.innerHTML = '';
-        if (onclose) onclose();
-      };
-    }
-    overlay.onclick = function(e) {
-      if (e.target === overlay) {
-        overlay.style.display = 'none';
-        box.innerHTML = '';
-        if (onclose) onclose();
-      }
+  const closeBtn = box.querySelector('.modal-close');
+  if (closeBtn) {
+    closeBtn.onclick = function() {
+      overlay.style.display = 'none';
+      box.innerHTML = '';
+      if (onclose) onclose();
     };
   }
+  overlay.onclick = function(e) {
+    if (e.target === overlay) {
+      overlay.style.display = 'none';
+      box.innerHTML = '';
+      if (onclose) onclose();
+    }
+  };
+}
 
-  function closeModal() {
-    document.getElementById('modal-overlay').style.display = 'none';
-    document.getElementById('modal-box').innerHTML = '';
+function showImageModal(src) {
+  if (!src) return;
+  showModal(`
+    <button class="modal-close" title="Fechar">&times;</button>
+    <img src="${src}" style="max-width:80vw;max-height:80vh;display:block;margin:auto;border-radius:10px;box-shadow:0 6px 22px #0002;">
+  `);
+}
+
+/* Nova função: pede senha antes de abrir Admin */
+function requestAdminAccess() {
+  if (window.adminAuthenticated) {
+    showScreen('admin');
+    return;
   }
 
-  function showImageModal(src) {
-    if (!src) return;
-    showModal(`
-      <button class="modal-close" title="Fechar">&times;</button>
-      <img src="${src}" style="max-width:80vw;max-height:80vh;display:block;margin:auto;border-radius:10px;box-shadow:0 6px 22px #0002;">
-    `);
+  // Mostra modal de senha
+  showModal(`
+    <button class="modal-close" title="Fechar">&times;</button>
+    <div class="modal-title">Acesso Admin</div>
+    <div class="modal-form-row">
+      <label for="admin-pass">Digite a senha:</label><br>
+      <input id="admin-pass" type="password" style="width:100%;padding:10px;border:1px solid #ccc;border-radius:6px;">
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:10px;">
+      <button class="btn-secondary" id="modal-admin-cancel">Cancelar</button>
+      <button class="btn-primary" id="modal-admin-login">Entrar</button>
+    </div>
+  `, null);
+
+  // ligar eventos após o modal ser inserido no DOM
+  setTimeout(() => {
+    const box = document.getElementById('modal-box');
+    const overlay = document.getElementById('modal-overlay');
+
+    const loginBtn = document.getElementById('modal-admin-login');
+    const cancelBtn = document.getElementById('modal-admin-cancel');
+    const passInput = document.getElementById('admin-pass');
+
+    if (cancelBtn) {
+      cancelBtn.onclick = () => {
+        overlay.style.display = 'none';
+        box.innerHTML = '';
+      };
+    }
+
+    if (loginBtn) {
+      loginBtn.onclick = () => {
+        const val = passInput.value || "";
+        if (val === ADMIN_PASSWORD) {
+          // autenticação bem-sucedida (apenas na sessão do navegador)
+          window.adminAuthenticated = true;
+          overlay.style.display = 'none';
+          box.innerHTML = '';
+          showScreen('admin');
+        } else {
+          alert("Senha incorreta.");
+          passInput.value = "";
+          passInput.focus();
+        }
+      };
+    }
+
+    // permitir enter para submeter
+    if (passInput) {
+      passInput.addEventListener('keyup', (e) => {
+        if (e.key === 'Enter') {
+          const val = passInput.value || "";
+          if (val === ADMIN_PASSWORD) {
+            window.adminAuthenticated = true;
+            overlay.style.display = 'none';
+            box.innerHTML = '';
+            showScreen('admin');
+          } else {
+            alert("Senha incorreta.");
+            passInput.value = "";
+            passInput.focus();
+          }
+        }
+      });
+      passInput.focus();
+    }
+  }, 0);
+}
+
+document.addEventListener("click", function(event) {
+  if(event.target.closest(".edit-btn")) {
+    const btn = event.target.closest(".edit-btn");
+    const pieceIdx = btn.getAttribute('data-pieceidx');
+    const itemIdx = btn.getAttribute('data-itemidx');
+    if (itemIdx !== null && itemIdx !== undefined && itemIdx !== "") {
+      editPieceItem(parseInt(pieceIdx), parseInt(itemIdx));
+    } else {
+      editPiece(parseInt(pieceIdx));
+    }
   }
-
-  document.addEventListener("click", function(event) {
-    if(event.target.closest(".edit-btn")) {
-      const btn = event.target.closest(".edit-btn");
-      const pieceIdx = btn.getAttribute('data-pieceidx');
-      const itemIdx = btn.getAttribute('data-itemidx');
-      if (itemIdx !== null && itemIdx !== undefined && itemIdx !== "") {
-        editPieceItem(parseInt(pieceIdx), parseInt(itemIdx));
-      } else {
-        editPiece(parseInt(pieceIdx));
-      }
+  if(event.target.closest(".remove-btn")) {
+    const btn = event.target.closest(".remove-btn");
+    const pieceIdx = btn.getAttribute('data-pieceidx');
+    const itemIdx = btn.getAttribute('data-itemidx');
+    const inspIdx = btn.getAttribute('data-inspectoridx');
+    if (inspIdx !== null && inspIdx !== undefined && inspIdx !== "") {
+      removeInspector(parseInt(inspIdx));
+    } else if (itemIdx !== null && itemIdx !== undefined && itemIdx !== "") {
+      removePieceItem(parseInt(pieceIdx), parseInt(itemIdx));
+    } else {
+      removePiece(parseInt(pieceIdx));
     }
-    if(event.target.closest(".remove-btn")) {
-      const btn = event.target.closest(".remove-btn");
-      const pieceIdx = btn.getAttribute('data-pieceidx');
-      const itemIdx = btn.getAttribute('data-itemidx');
-      const inspIdx = btn.getAttribute('data-inspectoridx');
-      if (inspIdx !== null && inspIdx !== undefined && inspIdx !== "") {
-        removeInspector(parseInt(inspIdx));
-      } else if (itemIdx !== null && itemIdx !== undefined && itemIdx !== "") {
-        removePieceItem(parseInt(pieceIdx), parseInt(itemIdx));
-      } else {
-        removePiece(parseInt(pieceIdx));
-      }
-    }
-  });
+  }
+});
 
-  function showScreen(screenId) {
+function showScreen(screenId) {
     for (let key in screens) screens[key].classList.remove('active');
     if (screens[screenId]) screens[screenId].classList.add('active');
     if (screenId === "home") renderHome();
     if (screenId === "admin") renderAdmin();
     if (screenId === "checklist") renderChecklist();
     if (screenId === "reports") renderReports();
-  }
+}
 
-  function renderHome() {
+function renderHome() {
     const inspSel = document.getElementById("inspector");
     inspSel.innerHTML = '<option value="" disabled selected>Selecionar inspetor</option>' +
         inspectors.map(i=>`<option value="${i}">${i}</option>`).join('');
     const pieceSel = document.getElementById("piece");
     pieceSel.innerHTML = '<option value="" disabled selected>Selecionar peça</option>' +
         pieces.map(p=>`<option value="${p.code}">${p.code}</option>`).join('');
-  }
+}
 
-  function showChecklist() {
+function showChecklist() {
     const piece = document.getElementById('piece').value;
     const insp = document.getElementById('inspector').value;
     if(!piece || !insp) { alert("Selecione um inspetor e uma peça!"); return;}
@@ -544,27 +737,27 @@ body { font-family: Arial, sans-serif; background:#fff; color:#333; margin:0;}
     }));
     showScreen('checklist');
     renderChecklist();
-  }
+}
 
-  function getPieceImageSrc(piece) {
-    if (!piece) return null;
-    if (piece.image instanceof File) return URL.createObjectURL(piece.image);
-    if (piece.imageUrl) return piece.imageUrl;
-    return null;
-  }
-  function getItemImageSrc(item) {
-    if (!item) return null;
-    if (item.image instanceof File) return URL.createObjectURL(item.image);
-    if (item.imageUrl) return item.imageUrl;
-    return null;
-  }
-  function getFotoSrc(it) {
-    if (it.foto instanceof File) return URL.createObjectURL(it.foto);
-    if (it.fotoUrl) return it.fotoUrl;
-    return null;
-  }
+function getPieceImageSrc(piece) {
+  if (!piece) return null;
+  if (piece.image instanceof File) return URL.createObjectURL(piece.image);
+  if (piece.imageUrl) return piece.imageUrl;
+  return null;
+}
+function getItemImageSrc(item) {
+  if (!item) return null;
+  if (item.image instanceof File) return URL.createObjectURL(item.image);
+  if (item.imageUrl) return item.imageUrl;
+  return null;
+}
+function getFotoSrc(it) {
+  if (it.foto instanceof File) return URL.createObjectURL(it.foto);
+  if (it.fotoUrl) return it.fotoUrl;
+  return null;
+}
 
-  function renderChecklist() {
+function renderChecklist() {
     const headerEl = document.getElementById('checklist-header');
     const pieceImgBox = document.getElementById("piece-image-box");
     headerEl.textContent = checklistCurrentPiece ? checklistCurrentPiece.code : "";
@@ -747,183 +940,180 @@ body { font-family: Arial, sans-serif; background:#fff; color:#333; margin:0;}
         renderReports();
       }
     };
+}
+
+function renderNokLibrary() {
+  const nokDiv = document.getElementById('checklist-nok-library');
+  const pieceCode = checklistCurrentPiece?.code || "";
+  const nokCases = inspections
+    .filter(i => i.piece === pieceCode)
+    .flatMap(i =>
+      (i.itens || [])
+        .map((it, idx) => ({...it, inspection: i, idx}))
+        .filter(it => it.status === 'NOK')
+    );
+  if (!nokCases.length) {
+    nokDiv.innerHTML = `<div style="color:#888;font-weight:500;padding:13px 0;">Nenhum caso de reprovação para esta peça.</div>`;
+    return;
   }
+  nokDiv.innerHTML = `
+    <div class="checklist-nok-title">Histórico de Casos de Reprovação (${nokCases.length})</div>
+    <div class="checklist-nok-library-list">
+      ${nokCases.map(caso => {
+        const src = getFotoSrc(caso);
+        return `
+        <div class="checklist-nok-case">
+          <strong>${caso.inspection.date}</strong><br/>
+          <span style="font-size:95%;">Inspetor: <span style="color:#093762;">${caso.inspection.inspector}</span></span><br>
+          <span style="font-size:95%;color:#c22;">${caso.motivo}</span><br>
+          <span style="font-size:90%;">Encaminhamento: <b>${caso.encaminhamento}</b>${caso.encaminhamento==="terceiro"?"<br>Terceiro aprovador: <b>"+caso.nome_terceiro+"</b>":""}</span><br>
+          ${src ? `<img src="${src}" onclick="showImageModal('${src}')" alt="foto não conforme">` : ``}
+        </div>`;
+      }).join('')}
+    </div>
+  `;
+}
 
-  function renderNokLibrary() {
-    const nokDiv = document.getElementById('checklist-nok-library');
-    const pieceCode = checklistCurrentPiece?.code || "";
-    const nokCases = inspections
-      .filter(i => i.piece === pieceCode)
-      .flatMap(i =>
-        (i.itens || [])
-          .map((it, idx) => ({...it, inspection: i, idx}))
-          .filter(it => it.status === 'NOK')
-      );
-    if (!nokCases.length) {
-      nokDiv.innerHTML = `<div style="color:#888;font-weight:500;padding:13px 0;">Nenhum caso de reprovação para esta peça.</div>`;
-      return;
-    }
-    nokDiv.innerHTML = `
-      <div class="checklist-nok-title">Histórico de Casos de Reprovação (${nokCases.length})</div>
-      <div class="checklist-nok-library-list">
-        ${nokCases.map(caso => {
-          const src = getFotoSrc(caso);
-          return `
-          <div class="checklist-nok-case">
-            <strong>${caso.inspection.date}</strong><br/>
-            <span style="font-size:95%;">Inspetor: <span style="color:#093762;">${caso.inspection.inspector}</span></span><br>
-            <span style="font-size:95%;color:#c22;">${caso.motivo}</span><br>
-            <span style="font-size:90%;">Encaminhamento: <b>${caso.encaminhamento}</b>${caso.encaminhamento==="terceiro"?"<br>Terceiro aprovador: <b>"+caso.nome_terceiro+"</b>":""}</span><br>
-            ${src ? `<img src="${src}" onclick="showImageModal('${src}')" alt="foto não conforme">` : ``}
-          </div>`;
-        }).join('')}
-      </div>
-    `;
-  }
+function editPiece(idx){
+  const p = pieces[idx];
+  showModal(`
+    <button class="modal-close" title="Fechar">&times;</button>
+    <div class="modal-title">Editar Peça</div>
+    <div class="modal-form-row"><label>Código:</label>
+      <input type="text" id="modal-edit-code" value="${p.code}">
+    </div>
+    <div class="modal-form-row"><label>Descrição:</label>
+      <input type="text" id="modal-edit-desc" value="${p.description}">
+    </div>
+    <div class="modal-form-row"><label>Imagem:</label>
+      <input type="file" id="modal-edit-img">
+      <span>${p.image ? (p.image.name || 'Imagem existente') : (p.imageUrl ? 'Imagem já salva' : "Nenhum arquivo escolhido")}</span>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:15px;">
+      <button class="btn-primary" id="modal-save-edit">Salvar</button>
+    </div>
+  `);
+  setTimeout(function() {
+    document.getElementById('modal-save-edit').onclick = function(){
+      const code = document.getElementById('modal-edit-code').value.trim();
+      const desc = document.getElementById('modal-edit-desc').value.trim();
+      const imgFile = document.getElementById('modal-edit-img').files[0];
+      if (!code || !desc) return alert("Preencha todos os campos!");
+      p.code = code; 
+      p.description = desc;
+      if(imgFile) {
+        p.image = imgFile;
+        p.imageUrl = null;
+      }
+      document.getElementById('modal-overlay').style.display = 'none';
+      renderAdmin(); 
+      renderHome();
 
-  // Admin/edit handlers (same logic as previously)
-  function editPiece(idx){
-    const p = pieces[idx];
-    showModal(`
-      <button class="modal-close" title="Fechar">&times;</button>
-      <div class="modal-title">Editar Peça</div>
-      <div class="modal-form-row"><label>Código:</label>
-        <input type="text" id="modal-edit-code" value="${p.code}">
-      </div>
-      <div class="modal-form-row"><label>Descrição:</label>
-        <input type="text" id="modal-edit-desc" value="${p.description}">
-      </div>
-      <div class="modal-form-row"><label>Imagem:</label>
-        <input type="file" id="modal-edit-img">
-        <span>${p.image ? (p.image.name || 'Imagem existente') : (p.imageUrl ? 'Imagem já salva' : "Nenhum arquivo escolhido")}</span>
-      </div>
-      <div style="display:flex;justify-content:flex-end;gap:15px;">
-        <button class="btn-primary" id="modal-save-edit">Salvar</button>
-      </div>
-    `);
-    setTimeout(function() {
-      document.getElementById('modal-save-edit').onclick = function(){
-        const code = document.getElementById('modal-edit-code').value.trim();
-        const desc = document.getElementById('modal-edit-desc').value.trim();
-        const imgFile = document.getElementById('modal-edit-img').files[0];
-        if (!code || !desc) return alert("Preencha todos os campos!");
-        p.code = code; 
-        p.description = desc;
-        if(imgFile) {
-          p.image = imgFile;
-          p.imageUrl = null;
-        }
-        closeModal();
-        renderAdmin(); 
-        renderHome();
+      if (window.fbApi && window.fbApi.savePiece) {
+        window.fbApi.savePiece(p).catch(e => {
+          console.error("Erro ao salvar peça no Firebase:", e);
+          alert("Erro ao enviar imagem/peça ao Firebase. Verifique console para detalhes.");
+        });
+      }
+    };
+  }, 0);
+};
 
-        if (window.fbApi && window.fbApi.savePiece) {
-          window.fbApi.savePiece(p).catch(e => {
-            console.error("Erro ao salvar peça no Firebase:", e);
-            alert("Erro ao enviar imagem/peça ao Firebase. Verifique console para detalhes.");
-          });
-        }
-      };
-    }, 0);
-  };
+function removePiece(idx){
+  const p = pieces[idx];
+  showModal(`
+    <button class="modal-close" title="Fechar">&times;</button>
+    <div class="modal-title" style="margin-bottom:10px;">Confirma excluir esta Peça?</div>
+    <div style="margin-bottom:25px;">Essa ação não pode ser desfeita.</div>
+    <div style="display:flex;justify-content:flex-end;gap:15px;">
+      <button class="btn-primary" id="modal-confirm-delete">Excluir</button>
+    </div>
+  `);
+  setTimeout(function() {
+    document.getElementById('modal-confirm-delete').onclick = function(){
+      const codeToDelete = p.code;
+      pieces.splice(idx,1);
+      document.getElementById('modal-overlay').style.display = 'none';
+      renderAdmin(); 
+      renderHome();
 
-  function removePiece(idx){
-    const p = pieces[idx];
-    showModal(`
-      <button class="modal-close" title="Fechar">&times;</button>
-      <div class="modal-title" style="margin-bottom:10px;">Confirma excluir esta Peça?</div>
-      <div style="margin-bottom:25px;">Essa ação não pode ser desfeita.</div>
-      <div style="display:flex;justify-content:flex-end;gap:15px;">
-        <button class="btn-primary" id="modal-confirm-delete">Excluir</button>
-      </div>
-    `);
-    setTimeout(function() {
-      document.getElementById('modal-confirm-delete').onclick = function(){
-        const codeToDelete = p.code;
-        pieces.splice(idx,1);
-        closeModal();
-        renderAdmin(); 
-        renderHome();
+      if (window.fbApi && window.fbApi.deletePiece) {
+        window.fbApi.deletePiece(codeToDelete).catch(e => {
+          console.error("Erro ao apagar peça no Firebase:", e);
+        });
+      }
+    };
+  }, 0);
+};
 
-        if (window.fbApi && window.fbApi.deletePiece) {
-          window.fbApi.deletePiece(codeToDelete).catch(e => {
-            console.error("Erro ao apagar peça no Firebase:", e);
-          });
-        }
-      };
-    }, 0);
-  };
+function editPieceItem(pieceIdx,itemIdx){
+  const item = pieces[pieceIdx].items[itemIdx];
+  showModal(`
+    <button class="modal-close" title="Fechar">&times;</button>
+    <div class="modal-title">Editar Item</div>
+    <div class="modal-form-row"><label>Nome:</label>
+      <input type="text" id="modal-edit-name" value="${item.name}">
+    </div>
+    <div class="modal-form-row"><label>Descrição:</label>
+      <input type="text" id="modal-edit-desc" value="${item.description}">
+    </div>
+    <div class="modal-form-row"><label>Imagem:</label>
+      <input type="file" id="modal-edit-img">
+      <span>${item.image ? (item.image.name || 'Imagem existente') : (item.imageUrl ? 'Imagem já salva' : "Nenhum arquivo escolhido")}</span>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:15px;">
+      <button class="btn-primary" id="modal-save-edit">Salvar</button>
+    </div>
+  `);
+  setTimeout(function() {
+    document.getElementById('modal-save-edit').onclick = function(){
+      const name = document.getElementById('modal-edit-name').value.trim();
+      const desc = document.getElementById('modal-edit-desc').value.trim();
+      const imgFile = document.getElementById('modal-edit-img').files[0];
+      if (!name || !desc) return alert("Preencha todos os campos!");
+      item.name = name; 
+      item.description = desc;
+      if(imgFile) {
+        item.image = imgFile;
+        item.imageUrl = null;
+      }
+      document.getElementById('modal-overlay').style.display = 'none';
+      renderAdminPieceItems();
 
-  function editPieceItem(pieceIdx,itemIdx){
-    const item = pieces[pieceIdx].items[itemIdx];
-    showModal(`
-      <button class="modal-close" title="Fechar">&times;</button>
-      <div class="modal-title">Editar Item</div>
-      <div class="modal-form-row"><label>Nome:</label>
-        <input type="text" id="modal-edit-name" value="${item.name}">
-      </div>
-      <div class="modal-form-row"><label>Descrição:</label>
-        <input type="text" id="modal-edit-desc" value="${item.description}">
-      </div>
-      <div class="modal-form-row"><label>Imagem:</label>
-        <input type="file" id="modal-edit-img">
-        <span>${item.image ? (item.image.name || 'Imagem existente') : (item.imageUrl ? 'Imagem já salva' : "Nenhum arquivo escolhido")}</span>
-      </div>
-      <div style="display:flex;justify-content:flex-end;gap:15px;">
-        <button class="btn-primary" id="modal-save-edit">Salvar</button>
-      </div>
-    `);
-    setTimeout(function() {
-      document.getElementById('modal-save-edit').onclick = function(){
-        const name = document.getElementById('modal-edit-name').value.trim();
-        const desc = document.getElementById('modal-edit-desc').value.trim();
-        const imgFile = document.getElementById('modal-edit-img').files[0];
-        if (!name || !desc) return alert("Preencha todos os campos!");
-        item.name = name; 
-        item.description = desc;
-        if(imgFile) {
-          item.image = imgFile;
-          item.imageUrl = null;
-        }
-        closeModal();
-        renderAdminPieceItems();
+      if (window.fbApi && window.fbApi.savePiece) {
+        window.fbApi.savePiece(pieces[pieceIdx]).catch(e => {
+          console.error("Erro ao salvar item no Firebase:", e);
+        });
+      }
+    };
+  }, 0);
+};
 
-        if (window.fbApi && window.fbApi.savePiece) {
-          window.fbApi.savePiece(pieces[pieceIdx]).catch(e => {
-            console.error("Erro ao salvar item no Firebase:", e);
-          });
-        }
-      };
-    }, 0);
-  };
+function removePieceItem(pieceIdx,itemIdx){
+  showModal(`
+    <button class="modal-close" title="Fechar">&times;</button>
+    <div class="modal-title" style="margin-bottom:10px;">Confirma excluir este Item?</div>
+    <div style="margin-bottom:25px;">Esta ação não pode ser desfeita.</div>
+    <div style="display:flex;justify-content:flex-end;gap:15px;">
+      <button class="btn-primary" id="modal-confirm-del-item">Excluir</button>
+    </div>
+  `);
+  setTimeout(function () {
+    document.getElementById('modal-confirm-del-item').onclick = function(){
+      pieces[pieceIdx].items.splice(itemIdx,1);
+      document.getElementById('modal-overlay').style.display = 'none';
+      renderAdminPieceItems();
 
-  function removePieceItem(pieceIdx,itemIdx){
-    showModal(`
-      <button class="modal-close" title="Fechar">&times;</button>
-      <div class="modal-title" style="margin-bottom:10px;">Confirma excluir este Item?</div>
-      <div style="margin-bottom:25px;">Esta ação não pode ser desfeita.</div>
-      <div style="display:flex;justify-content:flex-end;gap:15px;">
-        <button class="btn-primary" id="modal-confirm-del-item">Excluir</button>
-      </div>
-    `);
-    setTimeout(function () {
-      document.getElementById('modal-confirm-del-item').onclick = function(){
-        pieces[pieceIdx].items.splice(itemIdx,1);
-        closeModal();
-        renderAdminPieceItems();
+      if (window.fbApi && window.fbApi.savePiece) {
+        window.fbApi.savePiece(pieces[pieceIdx]).catch(e => {
+          console.error("Erro ao salvar peça no Firebase:", e);
+        });
+      }
+    };
+  }, 0);
+};
 
-        if (window.fbApi && window.fbApi.savePiece) {
-          window.fbApi.savePiece(pieces[pieceIdx]).catch(e => {
-            console.error("Erro ao salvar peça no Firebase:", e);
-          });
-        }
-      };
-    }, 0);
-  };
-
-  // Admin UI actions
-  document.getElementById("add-piece-btn").onclick = function() {
-    if (!window.isAdminUser) return alert('Apenas administradores podem adicionar peças.');
+document.getElementById("add-piece-btn").onclick = function() {
     const code = document.getElementById("new-code").value.trim();
     const desc = document.getElementById("new-description").value.trim();
     const imgInput = document.getElementById("new-image");
@@ -943,22 +1133,21 @@ body { font-family: Arial, sans-serif; background:#fff; color:#333; margin:0;}
         alert("Erro ao enviar imagem/peça ao Firebase. Verifique as regras de Storage e o console.");
       });
     }
-  };
+};
 
-  document.getElementById("clear-piece-btn").onclick = function(){
+document.getElementById("clear-piece-btn").onclick = function(){
     document.getElementById('new-code').value = "";
     document.getElementById('new-description').value = "";
     document.getElementById('new-image').value = "";
     document.getElementById('image-file-info').textContent = "Nenhum arquivo escolhido";
-  };
+};
 
-  document.getElementById("new-image").onchange = function(e){
+document.getElementById("new-image").onchange = function(e){
     let txt = e.target.files[0] ? e.target.files[0].name : "Nenhum arquivo escolhido";
     document.getElementById('image-file-info').textContent = txt;
-  };
+};
 
-  document.getElementById("add-piece-item-btn").onclick = function(){
-    if (!window.isAdminUser) return alert('Apenas administradores podem adicionar itens.');
+document.getElementById("add-piece-item-btn").onclick = function(){
     let idx = document.getElementById("select-piece-item").value;
     let name = document.getElementById("new-item-name").value.trim();
     let desc = document.getElementById("new-item-description").value.trim();
@@ -980,17 +1169,16 @@ body { font-family: Arial, sans-serif; background:#fff; color:#333; margin:0;}
         console.error("Erro ao salvar peça no Firebase:", e);
       });
     }
-  };
+};
 
-  document.getElementById("select-piece-item").onchange = renderAdminPieceItems;
+document.getElementById("select-piece-item").onchange = renderAdminPieceItems;
 
-  document.getElementById("new-item-image").onchange = function(e){
+document.getElementById("new-item-image").onchange = function(e){
     let txt = e.target.files[0] ? e.target.files[0].name : "Nenhum arquivo escolhido";
     document.getElementById('item-image-file-info').textContent = txt;
-  };
+};
 
-  document.getElementById("add-inspector-btn").onclick = function() {
-    if (!window.isAdminUser) return alert('Apenas administradores podem adicionar inspetores.');
+document.getElementById("add-inspector-btn").onclick = function() {
     const name = document.getElementById("inspector-new-name").value.trim();
     if (!name) { alert("Digite o nome do inspetor!"); return; }
     if (inspectors.includes(name)) { alert("Já existe esse inspetor!"); return;}
@@ -1003,14 +1191,13 @@ body { font-family: Arial, sans-serif; background:#fff; color:#333; margin:0;}
         console.error("Erro ao salvar inspetores no Firebase:", e);
       });
     }
-  };
+};
 
-  document.getElementById("clear-inspector-btn").onclick = function(){
+document.getElementById("clear-inspector-btn").onclick = function(){
     document.getElementById("inspector-new-name").value = "";
-  };
+};
 
-  function removeInspector(idx){
-    if (!window.isAdminUser) return alert('Apenas administradores podem remover inspetores.');
+function removeInspector(idx){
     inspectors.splice(idx,1); 
     renderAdmin(); 
     renderHome();
@@ -1020,9 +1207,9 @@ body { font-family: Arial, sans-serif; background:#fff; color:#333; margin:0;}
         console.error("Erro ao salvar inspetores no Firebase:", e);
       });
     }
-  }
+}
 
-  function renderAdmin() {
+function renderAdmin() {
     let pieceListDiv = document.getElementById("admin-piece-list");
     pieceListDiv.innerHTML = pieces.map((p,idx) => {
         const imgSrc = getPieceImageSrc(p);
@@ -1052,9 +1239,9 @@ body { font-family: Arial, sans-serif; background:#fff; color:#333; margin:0;}
         </div>`
     ).join('');
     document.getElementById("inspector-new-name").value = "";
-  }
+}
 
-  function renderAdminPieceItems(){
+function renderAdminPieceItems(){
     let idx = document.getElementById("select-piece-item").value;
     if (idx==undefined || idx === "") return;
     let itemsBox = document.getElementById("admin-piece-items-list");
@@ -1072,9 +1259,9 @@ body { font-family: Arial, sans-serif; background:#fff; color:#333; margin:0;}
             </div>
         </div>`;
     }).join('');
-  }
+}
 
-  function renderReports() {
+function renderReports() {
     let monthsSet = new Set();
     inspections.forEach(i=>{
         if (!i.date) return;
@@ -1100,10 +1287,8 @@ body { font-family: Arial, sans-serif; background:#fff; color:#333; margin:0;}
     });
     document.getElementById("total-inspecoes").textContent = inspections.length;
     document.getElementById("volume-mensal-num").textContent = t;
-    try {
-      graficoRosca.data.datasets[0].data = [embarcadas,retrabalho];
-      graficoRosca.update();
-    } catch(e) {}
+    graficoRosca.data.datasets[0].data = [embarcadas,retrabalho];
+    graficoRosca.update();
     let tbody = document.getElementById("reports-history-body");
     let filtered = inspections.filter(i=>{
       if (!i.date) return false;
@@ -1120,27 +1305,26 @@ body { font-family: Arial, sans-serif; background:#fff; color:#333; margin:0;}
       </tr>
       `).join('')
       : `<tr><td colspan="4" style="text-align:center;">Nenhum histórico encontrado.</td></tr>`;
-  }
+}
 
-  // chart
-  const ctx = document.getElementById('graficoRosca')?.getContext('2d');
-  const graficoRosca = ctx ? new Chart(ctx, {
-      type: 'doughnut',
-      data: {
-          labels: ['Embarcadas', 'Retrabalho'],
-          datasets: [{
-              data: [0, 0],
-              backgroundColor: ['#228be6', '#e23636'],
-              borderColor: '#fff',
-              borderWidth: 2
-          }]
-      },
-      options: {responsive:false,plugins:{legend:{display:false}},cutout:'60%'}
-  }) : null;
+const ctx = document.getElementById('graficoRosca').getContext('2d');
+const graficoRosca = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+        labels: ['Embarcadas', 'Retrabalho'],
+        datasets: [{
+            data: [0, 0],
+            backgroundColor: ['#228be6', '#e23636'],
+            borderColor: '#fff',
+            borderWidth: 2
+        }]
+    },
+    options: {responsive:false,plugins:{legend:{display:false}},cutout:'60%'}
+});
 
-  document.getElementById('report-month-select').onchange = renderReports;
+document.getElementById('report-month-select').onchange = renderReports;
 
-  function exportCSV() {
+function exportCSV() {
     if (!inspections.length) return alert("Sem inspeções!");
     let csv = "Data,Inspetor,Peça,Descrição\n"
         + inspections.map(i=>`${i.date},"${i.inspector}","${i.piece}","${(i.descricao||'').replace(/"/g,'""')}"`).join("\n");
@@ -1151,112 +1335,9 @@ body { font-family: Arial, sans-serif; background:#fff; color:#333; margin:0;}
     a.download = "relatorio.csv";
     a.click();
     URL.revokeObjectURL(url);
-  }
+}
 
-  // ---------------- AUTH UI and protection ----------------
-  window.openSignInModal = function() {
-    showModal(`
-      <button class="modal-close">&times;</button>
-      <h3>Entrar</h3>
-      <div style="margin-top:8px;">
-        <label>Email</label><br/>
-        <input id="login-email" type="email" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:6px;" value=""><br/><br/>
-        <label>Senha</label><br/>
-        <input id="login-pass" type="password" style="width:100%;padding:8px;border:1px solid #ccc;border-radius:6px;" value=""><br/><br/>
-        <div style="display:flex;justify-content:flex-end;gap:8px;">
-          <button class="btn-secondary" id="login-cancel">Cancelar</button>
-          <button class="btn-primary" id="login-submit">Entrar</button>
-        </div>
-      </div>
-    `);
-    setTimeout(() => {
-      document.getElementById('login-cancel').onclick = () => closeModal();
-      document.getElementById('login-submit').onclick = async () => {
-        const email = document.getElementById('login-email').value.trim();
-        const pass = document.getElementById('login-pass').value;
-        if (!email || !pass) { alert('Preencha email e senha'); return; }
-        try {
-          await signInWithEmailAndPassword(auth, email, pass);
-          closeModal();
-        } catch (err) {
-          console.error('Erro ao autenticar:', err);
-          alert('Erro ao autenticar: ' + (err.message || err.code));
-        }
-      };
-    }, 0);
-  };
-
-  window.signOut = async function() {
-    await fbSignOut(auth);
-  };
-
-  // onAuthStateChanged: update UI and check admin
-  onAuthStateChanged(auth, async (user) => {
-    const signedAs = document.getElementById('signed-as');
-    const authEmail = document.getElementById('auth-email');
-    const signinBtn = document.getElementById('signin-btn');
-    const signoutBtn = document.getElementById('signout-btn');
-
-    if (user) {
-      signedAs.style.display = 'inline-block';
-      authEmail.textContent = user.email || user.uid;
-      signinBtn.style.display = 'none';
-      signoutBtn.style.display = 'inline-block';
-
-      // check custom claim
-      try {
-        const idTokenResult = await getIdTokenResult(user);
-        if (idTokenResult && idTokenResult.claims && idTokenResult.claims.admin === true) {
-          window.isAdminUser = true;
-          console.log('User has admin custom claim.');
-          return;
-        }
-      } catch (err) {
-        console.warn('Erro ao ler id token claims:', err);
-      }
-
-      // check firestore doc config/admins
-      try {
-        const admRef = doc(db, 'config', 'admins');
-        const admSnap = await getDoc(admRef);
-        if (admSnap.exists()) {
-          const list = admSnap.data().list || [];
-          window.isAdminUser = list.map(e => (e || '').toLowerCase()).includes((user.email || '').toLowerCase());
-          console.log('Admins (from Firestore):', list, 'isAdminUser=', window.isAdminUser);
-        } else {
-          // fallback to provided email for convenience
-          window.isAdminUser = ((user.email || '').toLowerCase() === (FALLBACK_ADMIN_EMAIL || '').toLowerCase());
-          console.log('Admins doc not found. Using fallback email check => isAdminUser=', window.isAdminUser);
-        }
-      } catch (err) {
-        console.error('Erro ao checar admins no Firestore:', err);
-        window.isAdminUser = ((user.email || '').toLowerCase() === (FALLBACK_ADMIN_EMAIL || '').toLowerCase());
-      }
-    } else {
-      signedAs.style.display = 'none';
-      authEmail.textContent = '';
-      signinBtn.style.display = 'inline-block';
-      signoutBtn.style.display = 'none';
-      window.isAdminUser = false;
-    }
-  });
-
-  // requestAdminAccess called by Admin button
-  window.requestAdminAccess = function() {
-    if (!auth.currentUser) {
-      openSignInModal();
-      return;
-    }
-    if (window.isAdminUser) {
-      showScreen('admin');
-    } else {
-      alert('Usuário autenticado, mas sem permissão de Admin. Peça para um administrador adicionar seu e-mail em firestore: config/admins (coleção config, documento admins -> campo list: ["email@..."]) ou aplique claim admin via Admin SDK.');
-    }
-  };
-
-  // ---------------- Initialization: load data from Firebase on start ----------------
-  document.addEventListener("DOMContentLoaded", async ()=>{
-    // try load real data from Firestore
+document.addEventListener("DOMContentLoaded", async ()=>{
     if (window.fbApi && window.fbApi.loadAll) {
       try {
         const data = await window.fbApi.loadAll();
@@ -1267,15 +1348,10 @@ body { font-family: Arial, sans-serif; background:#fff; color:#333; margin:0;}
         console.error("Erro ao carregar dados do Firebase:", e);
       }
     }
-    // initial render
     showScreen('home');
     renderHome();
     renderReports();
-  });
-
-  // Expose some internals for debugging
-  window._appDebug = { app, db, storage, auth };
-
+});
 </script>
 </body>
 </html>
