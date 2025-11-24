@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
 <style>
-/* (mantive seu CSS original sem alterações para poupar espaço no diff) */
+/* Seu CSS original (mantido) */
 body { font-family: Arial,sans-serif; background:#fff; color:#333; margin:0;}
 .container { max-width:1200px; margin:32px auto; padding:20px; background:#fff; border-radius:8px; box-shadow:0 0 10px #0001;}
 .header { background:#003366; color:#fff; padding:15px 20px; border-radius:8px 8px 0 0; margin:-20px -20px 24px -20px; display:flex;justify-content:space-between;align-items:center;}
@@ -142,6 +142,8 @@ textarea{font-size:15px;}
 .modal-close {position: absolute; top: 12px; right: 12px;font-size: 28px; background: none; border: none; color: #093762; cursor: pointer;padding: 8px;border-radius: 7px;font-weight: bold;}
 .modal-title { font-size: 1.5em; font-weight: 700; margin-bottom: 28px; color: #093762;}
 .modal-form-row { margin-bottom:22px; } .modal-form-row label {font-weight:500;margin-right:7px;}
+.small-muted { font-size:12px;color:#666;margin-top:6px; }
+.uploading-indicator { font-size:13px;color:#444;margin-top:6px; }
 </style>
 </head>
 <body>
@@ -310,11 +312,11 @@ textarea{font-size:15px;}
     getStorage, ref as sRef, uploadBytes, getDownloadURL 
   } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-storage.js";
 
+  // Ajuste: verifique este storageBucket no console do Firebase
   const firebaseConfig = {
     apiKey: "AIzaSyCAAowsqkoUjIAPhSvq6dUlKMZGdXOO1b0",
     authDomain: "magiuschecklist-9ad0f.firebaseapp.com",
     projectId: "magiuschecklist-9ad0f",
-    // Corrigi o storageBucket para o formato appspot.com — ajuste se o seu projeto usar outro bucket
     storageBucket: "magiuschecklist-9ad0f.appspot.com",
     messagingSenderId: "14669686712",
     appId: "1:14669686712:web:1c205b1111cde18379114d",
@@ -325,19 +327,17 @@ textarea{font-size:15px;}
   const db = getFirestore(app);
   const storage = getStorage(app);
 
-  // Faz upload do arquivo e retorna a URL pública
+  // Faz upload do arquivo e retorna a URL pública (expõe para o front-end)
   async function uploadFileAndGetUrl(path, file) {
     if (!file) return null;
     try {
       const ref = sRef(storage, path);
-      // adiciona metadata com contentType para melhor compatibilidade
       const metadata = { contentType: file.type || 'application/octet-stream' };
       await uploadBytes(ref, file, metadata);
       const url = await getDownloadURL(ref);
       return url;
     } catch (err) {
       console.error("Erro ao enviar arquivo para Storage em", path, ":", err);
-      // Re-lança para quem chamou poder tratar / parar o fluxo
       throw err;
     }
   }
@@ -384,8 +384,9 @@ textarea{font-size:15px;}
           motivo: it.motivo,
           encaminhamento: it.encaminhamento,
           nome_terceiro: it.nome_terceiro || "",
+          // aceita vários nomes de campo que podem ter sido gravados
           foto: null,
-          fotoUrl: it.fotoUrl || null
+          fotoUrl: it.fotoUrl || it.photoUrl || it.imageUrl || null
         }))
       };
     });
@@ -397,14 +398,12 @@ textarea{font-size:15px;}
     if (!piece || !piece.code) return;
     let imageUrl = piece.imageUrl || null;
 
-    // Upload da imagem principal (se houver)
     if (piece.image instanceof File) {
       try {
         imageUrl = await uploadFileAndGetUrl(`pieces/${encodeURIComponent(piece.code)}/main_${Date.now()}`, piece.image);
       } catch (e) {
         console.error("Falha no upload da imagem da peça:", e);
-        // lançar erro para que o chamador saiba que não salvou corretamente
-        throw new Error("Falha ao enviar imagem da peça: " + (e.message || e));
+        throw e;
       }
     }
 
@@ -417,7 +416,7 @@ textarea{font-size:15px;}
           itemImageUrl = await uploadFileAndGetUrl(`pieces/${encodeURIComponent(piece.code)}/items/${idx}_${Date.now()}`, it.image);
         } catch (e) {
           console.error("Falha no upload da imagem do item:", e);
-          throw new Error("Falha ao enviar imagem do item: " + (e.message || e));
+          throw e;
         }
       }
       itemsToSave.push({
@@ -453,6 +452,7 @@ textarea{font-size:15px;}
     for (let idx = 0; idx < (inspec.itens || []).length; idx++) {
       const it = inspec.itens[idx];
       let fotoUrl = it.fotoUrl || null;
+      // se for um File, envia; se já existir fotoUrl usa-o
       if (it.foto instanceof File) {
         try {
           fotoUrl = await uploadFileAndGetUrl(
@@ -461,7 +461,7 @@ textarea{font-size:15px;}
           );
         } catch (e) {
           console.error("Falha no upload da foto da inspeção:", e);
-          throw new Error("Falha ao enviar foto da inspeção: " + (e.message || e));
+          throw e;
         }
       }
       itensToSave.push({
@@ -484,18 +484,20 @@ textarea{font-size:15px;}
     return { id: ref.id, ...docData };
   }
 
+  // expõe para o script principal para permitir upload imediato ao selecionar foto no checklist
   window.fbApi = {
     loadAll,
     savePiece,
     deletePiece,
     setInspectors,
-    saveInspection
+    saveInspection,
+    uploadFile: uploadFileAndGetUrl
   };
 </script>
 
-<!-- SCRIPT PRINCIPAL (mantive sem alteração funcional além de usar encodeURIComponent nos caminhos de storage via funções acima) -->
+<!-- SCRIPT PRINCIPAL -->
 <script>
-/* (mantive seu script principal quase intacto; não alterei a lógica do front-end além do que já corrigi no módulo firebase) */
+/* Dados locais iniciais - serão sobrescritos se houver dados no Firebase */
 let pieces = [
     {
         code: "597-2445#01",
@@ -534,11 +536,15 @@ function showModal(html, onclose) {
   box.innerHTML = html;
   overlay.style.display = 'flex';
 
-  box.querySelector('.modal-close').onclick = function() {
-    overlay.style.display = 'none';
-    box.innerHTML = '';
-    if (onclose) onclose();
-  };
+  const closeBtn = box.querySelector('.modal-close');
+  if (closeBtn) {
+    closeBtn.onclick = function() {
+      overlay.style.display = 'none';
+      box.innerHTML = '';
+      if (onclose) onclose();
+    };
+  }
+
   overlay.onclick = function(e) {
     if (e.target === overlay) {
       overlay.style.display = 'none';
@@ -606,7 +612,7 @@ function showChecklist() {
     if(!piece || !insp) { alert("Selecione um inspetor e uma peça!"); return;}
     checklistCurrentPiece = pieces.find(p => p.code === piece);
     checklistItemStates = (checklistCurrentPiece?.items||[]).map(()=>({
-        status:null,motivo:"",foto:null,fotoUrl:null,encaminhamento:"",nome_terceiro:""
+        status:null,motivo:"",foto:null,fotoUrl:null,encaminhamento:"",nome_terceiro:"",uploading:false
     }));
     showScreen('checklist');
     renderChecklist();
@@ -625,8 +631,10 @@ function getItemImageSrc(item) {
   return null;
 }
 function getFotoSrc(it) {
+  if (!it) return null;
   if (it.foto instanceof File) return URL.createObjectURL(it.foto);
   if (it.fotoUrl) return it.fotoUrl;
+  if (it.photoUrl) return it.photoUrl;
   return null;
 }
 
@@ -641,7 +649,7 @@ function renderChecklist() {
         : `[Imagem aqui]`;
 
     document.getElementById("checklist-item-list").innerHTML = (checklistCurrentPiece?.items||[]).map((item, idx) => {
-        const state = checklistItemStates[idx];
+        const state = checklistItemStates[idx] || {};
         let divClass = "checklist-item";
         if(state.status==='OK') divClass += " ok";
         if(state.status==='NOK') divClass += " not-ok";
@@ -654,6 +662,7 @@ function renderChecklist() {
         let extra = "";
         if(state.status==='NOK') {
             const fotoExistingSrc = getFotoSrc(state);
+            const uploadingHtml = state.uploading ? `<div class="uploading-indicator">Enviando imagem...</div>` : '';
             extra = `
             <div class="checklist-extra-wrapper">
                 <div class="checklist-extra-block" id="extra_box_${idx}">
@@ -661,6 +670,7 @@ function renderChecklist() {
                     <textarea id="motivo_${idx}" placeholder="Descreva o motivo">${state.motivo||''}</textarea>
                     <div class="checklist-extra-label" style="margin-bottom:2px;">Foto <span style="color:#e23636">(obrigatório)</span>:</div>
                     <input type="file" id="foto_${idx}" accept="image/*">
+                    ${uploadingHtml}
                     <div class="checklist-radio-group" style="margin-top:10px;">
                         <label><input type="radio" name="encaminhar_${idx}" value="retrabalho" ${state.encaminhamento==="retrabalho"?"checked":""}> Encaminhar para retrabalho</label>
                         <label><input type="radio" name="encaminhar_${idx}" value="terceiro" ${state.encaminhamento==="terceiro"?"checked":""}> Aprovado por terceiro</label>
@@ -693,11 +703,12 @@ function renderChecklist() {
         </div>`;
     }).join('');
 
+    // handlers OK / NÃO OK
     document.querySelectorAll(".checklist-item-actions .btn-ok").forEach(btn=>{
         btn.onclick = function(){
             let idx = parseInt(btn.dataset.idx);
             checklistItemStates[idx] = {
-              status:"OK",motivo:"",foto:null,fotoUrl:null,encaminhamento:"",nome_terceiro:""
+              status:"OK",motivo:"",foto:null,fotoUrl:null,encaminhamento:"",nome_terceiro:"",uploading:false
             };
             renderChecklist();
         };
@@ -707,23 +718,54 @@ function renderChecklist() {
             let idx = parseInt(btn.dataset.idx);
             if (!checklistItemStates[idx]) checklistItemStates[idx] = {};
             checklistItemStates[idx].status = "NOK";
+            checklistItemStates[idx].uploading = false;
             renderChecklist();
         };
     });
 
+    // attach inputs' handlers (motivo, foto onchange, radios, nome terceiro)
     checklistItemStates.forEach((st, idx) => {
+        if(!st) return;
         if(st.status==='NOK') {
             let motivoEl = document.getElementById('motivo_'+idx);
             let fotoEl = document.getElementById('foto_'+idx);
             let nomeTerceiroEl = document.getElementById("nome_terceiro_"+idx);
             let retrabalhoRadio = document.querySelector('input[name="encaminhar_'+idx+'"][value="retrabalho"]');
             let terceiroRadio = document.querySelector('input[name="encaminhar_'+idx+'"][value="terceiro"]');
-            motivoEl.oninput = ()=>{ checklistItemStates[idx].motivo = motivoEl.value; }
-            fotoEl.onchange = ()=>{ 
-              checklistItemStates[idx].foto = fotoEl.files[0]||null; 
-              checklistItemStates[idx].fotoUrl = null;
-              renderChecklist(); 
-            };
+            if (motivoEl) motivoEl.oninput = ()=>{ checklistItemStates[idx].motivo = motivoEl.value; }
+            if (fotoEl) {
+                fotoEl.onchange = async ()=>{ 
+                  const file = fotoEl.files[0]||null;
+                  checklistItemStates[idx].foto = file;
+                  // remove fotoUrl in case user replaced file
+                  checklistItemStates[idx].fotoUrl = null;
+                  // show uploading indicator
+                  checklistItemStates[idx].uploading = true;
+                  renderChecklist();
+                  // se API de upload estiver disponível, subir imediatamente para preservar imagem ao atualizar a página
+                  if (file && window.fbApi && window.fbApi.uploadFile) {
+                    try {
+                      // caminho inclui código da peça para organização e usa timestamp
+                      const path = `inspections/${encodeURIComponent(checklistCurrentPiece.code)}/${Date.now()}_${idx}`;
+                      const url = await window.fbApi.uploadFile(path, file);
+                      // quando upload completar, armazenar a URL em fotoUrl e remover o File para evitar re-upload no saveInspection
+                      checklistItemStates[idx].fotoUrl = url;
+                      checklistItemStates[idx].foto = null;
+                      checklistItemStates[idx].uploading = false;
+                      renderChecklist();
+                    } catch (err) {
+                      console.error("Erro ao enviar foto imediatamente:", err);
+                      checklistItemStates[idx].uploading = false;
+                      renderChecklist();
+                      alert("Falha ao enviar foto. Tente novamente.");
+                    }
+                  } else {
+                    // sem upload imediato (ex.: offline), apenas renderiza a pré-visualização local
+                    checklistItemStates[idx].uploading = false;
+                    renderChecklist();
+                  }
+                };
+            }
             if(retrabalhoRadio){
                 retrabalhoRadio.onchange = ()=>{
                     checklistItemStates[idx].encaminhamento = "retrabalho";
@@ -741,12 +783,14 @@ function renderChecklist() {
             }
         }
     });
+
     renderNokLibrary();
 
-    document.getElementById("finalizar-inspecao-btn").onclick = function() {
+    // finalizar inspeção
+    document.getElementById("finalizar-inspecao-btn").onclick = async function() {
       for (let i = 0; i < checklistItemStates.length; i++) {
         const state = checklistItemStates[i];
-        if (!state.status) {
+        if (!state || !state.status) {
           alert("Responda todos os itens do checklist.");
           return;
         }
@@ -780,33 +824,34 @@ function renderChecklist() {
           motivo: s.motivo,
           encaminhamento: s.encaminhamento,
           nome_terceiro: s.nome_terceiro,
+          // se já foi enviado (fotoUrl), não precisa reenviar; caso contrário, pode manter File em foto para upload no backend
           foto: s.foto || null,
           fotoUrl: s.fotoUrl || null
         }))
       };
 
       if (window.fbApi && window.fbApi.saveInspection) {
-        window.fbApi.saveInspection(inspectionToSave)
-          .then(saved => {
-            inspections.push(saved);
-            alert("Inspeção finalizada e salva no Firebase!");
-            showScreen('home');
-            renderReports();
-          })
-          .catch(e => {
-            console.error("Erro ao salvar inspeção no Firebase:", e);
-            inspections.push({
-              ...inspectionToSave,
-              itens: inspectionToSave.itens.map(it => ({ ...it, foto:null, fotoUrl:null }))
-            });
-            alert("Erro ao salvar no servidor. Inspeção salva só localmente neste navegador.");
-            showScreen('home');
-            renderReports();
+        try {
+          const saved = await window.fbApi.saveInspection(inspectionToSave);
+          inspections.push(saved);
+          alert("Inspeção finalizada e salva no Firebase!");
+          showScreen('home');
+          renderReports();
+        } catch (e) {
+          console.error("Erro ao salvar inspeção no Firebase:", e);
+          // fallback local (sem fotos)
+          inspections.push({
+            ...inspectionToSave,
+            itens: inspectionToSave.itens.map(it => ({ ...it, foto:null, fotoUrl: it.fotoUrl || null }))
           });
+          alert("Erro ao salvar no servidor. Inspeção salva só localmente neste navegador.");
+          showScreen('home');
+          renderReports();
+        }
       } else {
         inspections.push({
           ...inspectionToSave,
-          itens: inspectionToSave.itens.map(it => ({ ...it, foto:null, fotoUrl:null }))
+          itens: inspectionToSave.itens.map(it => ({ ...it, foto:null, fotoUrl: it.fotoUrl || null }))
         });
         alert("Inspeção finalizada (somente local).");
         showScreen('home');
@@ -818,33 +863,81 @@ function renderChecklist() {
 function renderNokLibrary() {
   const nokDiv = document.getElementById('checklist-nok-library');
   const pieceCode = checklistCurrentPiece?.code || "";
+
   const nokCases = inspections
     .filter(i => i.piece === pieceCode)
     .flatMap(i =>
       (i.itens || [])
-        .map((it, idx) => ({...it, inspection: i, idx}))
+        .map((it, idx) => ({ ...it, inspection: i, idx }))
         .filter(it => it.status === 'NOK')
     );
+
+  nokDiv.innerHTML = '';
+
   if (!nokCases.length) {
     nokDiv.innerHTML = `<div style="color:#888;font-weight:500;padding:13px 0;">Nenhum caso de reprovação para esta peça.</div>`;
     return;
   }
-  nokDiv.innerHTML = `
-    <div class="checklist-nok-title">Histórico de Casos de Reprovação (${nokCases.length})</div>
-    <div class="checklist-nok-library-list">
-      ${nokCases.map(caso => {
-        const src = getFotoSrc(caso);
-        return `
-        <div class="checklist-nok-case">
-          <strong>${caso.inspection.date}</strong><br/>
-          <span style="font-size:95%;">Inspetor: <span style="color:#093762;">${caso.inspection.inspector}</span></span><br>
-          <span style="font-size:95%;color:#c22;">${caso.motivo}</span><br>
-          <span style="font-size:90%;">Encaminhamento: <b>${caso.encaminhamento}</b>${caso.encaminhamento==="terceiro"?"<br>Terceiro aprovador: <b>"+caso.nome_terceiro+"</b>":""}</span><br>
-          ${src ? `<img src="${src}" onclick="showImageModal('${src}')" alt="foto não conforme">` : ``}
-        </div>`;
-      }).join('')}
-    </div>
-  `;
+
+  const title = document.createElement('div');
+  title.className = 'checklist-nok-title';
+  title.textContent = `Histórico de Casos de Reprovação (${nokCases.length})`;
+  nokDiv.appendChild(title);
+
+  const list = document.createElement('div');
+  list.className = 'checklist-nok-library-list';
+
+  nokCases.forEach(caso => {
+    const card = document.createElement('div');
+    card.className = 'checklist-nok-case';
+
+    const dateEl = document.createElement('strong');
+    dateEl.textContent = caso.inspection.date || '';
+    card.appendChild(dateEl);
+    card.appendChild(document.createElement('br'));
+
+    const inspEl = document.createElement('span');
+    inspEl.style.fontSize = '95%';
+    inspEl.innerHTML = `Inspetor: <span style="color:#093762;">${caso.inspection.inspector || ''}</span>`;
+    card.appendChild(inspEl);
+    card.appendChild(document.createElement('br'));
+
+    const motivoEl = document.createElement('span');
+    motivoEl.style.cssText = 'font-size:95%;color:#c22;';
+    motivoEl.textContent = caso.motivo || '';
+    card.appendChild(motivoEl);
+    card.appendChild(document.createElement('br'));
+
+    const encaminEl = document.createElement('span');
+    encaminEl.style.fontSize = '90%';
+    let encaminHtml = `Encaminhamento: <b>${caso.encaminhamento || ''}</b>`;
+    if (caso.encaminhamento === 'terceiro') {
+      encaminHtml += `<br>Terceiro aprovador: <b>${caso.nome_terceiro || ''}</b>`;
+    }
+    encaminEl.innerHTML = encaminHtml;
+    card.appendChild(encaminEl);
+    card.appendChild(document.createElement('br'));
+
+    // tenta obter URL da foto em múltiplos campos possíveis
+    const src = caso.fotoUrl || caso.foto || caso.imageUrl || caso.photoUrl || caso.foto_url || null;
+    if (src) {
+      const img = document.createElement('img');
+      img.src = src;
+      img.alt = 'foto não conforme';
+      img.style.width = '100%';
+      img.style.maxWidth = '200px';
+      img.style.maxHeight = '160px';
+      img.style.objectFit = 'cover';
+      img.style.marginTop = '9px';
+      img.style.cursor = 'pointer';
+      img.onclick = () => showImageModal(src);
+      card.appendChild(img);
+    }
+
+    list.appendChild(card);
+  });
+
+  nokDiv.appendChild(list);
 }
 
 function editPiece(idx){
@@ -867,7 +960,9 @@ function editPiece(idx){
     </div>
   `);
   setTimeout(function() {
-    document.getElementById('modal-save-edit').onclick = function(){
+    const btn = document.getElementById('modal-save-edit');
+    if (!btn) return;
+    btn.onclick = function(){
       const code = document.getElementById('modal-edit-code').value.trim();
       const desc = document.getElementById('modal-edit-desc').value.trim();
       const imgFile = document.getElementById('modal-edit-img').files[0];
@@ -902,7 +997,9 @@ function removePiece(idx){
     </div>
   `);
   setTimeout(function() {
-    document.getElementById('modal-confirm-delete').onclick = function(){
+    const btn = document.getElementById('modal-confirm-delete');
+    if (!btn) return;
+    btn.onclick = function(){
       const codeToDelete = p.code;
       pieces.splice(idx,1);
       document.getElementById('modal-overlay').style.display = 'none';
@@ -938,7 +1035,9 @@ function editPieceItem(pieceIdx,itemIdx){
     </div>
   `);
   setTimeout(function() {
-    document.getElementById('modal-save-edit').onclick = function(){
+    const btn = document.getElementById('modal-save-edit');
+    if (!btn) return;
+    btn.onclick = function(){
       const name = document.getElementById('modal-edit-name').value.trim();
       const desc = document.getElementById('modal-edit-desc').value.trim();
       const imgFile = document.getElementById('modal-edit-img').files[0];
@@ -971,7 +1070,9 @@ function removePieceItem(pieceIdx,itemIdx){
     </div>
   `);
   setTimeout(function () {
-    document.getElementById('modal-confirm-del-item').onclick = function(){
+    const btn = document.getElementById('modal-confirm-del-item');
+    if (!btn) return;
+    btn.onclick = function(){
       pieces[pieceIdx].items.splice(itemIdx,1);
       document.getElementById('modal-overlay').style.display = 'none';
       renderAdminPieceItems();
@@ -1226,4 +1327,3 @@ document.addEventListener("DOMContentLoaded", async ()=>{
 </script>
 </body>
 </html>
-
