@@ -312,7 +312,7 @@ textarea{font-size:15px;}
     getStorage, ref as sRef, uploadBytes, getDownloadURL 
   } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-storage.js";
 
-  // CONFIG - verifique este storageBucket no seu console Firebase
+  // Ajuste: verifique este storageBucket no console do Firebase
   const firebaseConfig = {
     apiKey: "AIzaSyCAAowsqkoUjIAPhSvq6dUlKMZGdXOO1b0",
     authDomain: "magiuschecklist-9ad0f.firebaseapp.com",
@@ -327,7 +327,7 @@ textarea{font-size:15px;}
   const db = getFirestore(app);
   const storage = getStorage(app);
 
-  // Faz upload do arquivo e retorna a URL pública
+  // Faz upload do arquivo e retorna a URL pública (expõe para o front-end)
   async function uploadFileAndGetUrl(path, file) {
     if (!file) return null;
     try {
@@ -384,6 +384,7 @@ textarea{font-size:15px;}
           motivo: it.motivo,
           encaminhamento: it.encaminhamento,
           nome_terceiro: it.nome_terceiro || "",
+          // aceita vários nomes de campo que podem ter sido gravados
           foto: null,
           fotoUrl: it.fotoUrl || it.photoUrl || it.imageUrl || null
         }))
@@ -451,6 +452,7 @@ textarea{font-size:15px;}
     for (let idx = 0; idx < (inspec.itens || []).length; idx++) {
       const it = inspec.itens[idx];
       let fotoUrl = it.fotoUrl || null;
+      // se for um File, envia; se já existir fotoUrl usa-o
       if (it.foto instanceof File) {
         try {
           fotoUrl = await uploadFileAndGetUrl(
@@ -482,7 +484,7 @@ textarea{font-size:15px;}
     return { id: ref.id, ...docData };
   }
 
-  // Expor para script principal
+  // expõe para o script principal para permitir upload imediato ao selecionar foto no checklist
   window.fbApi = {
     loadAll,
     savePiece,
@@ -495,7 +497,7 @@ textarea{font-size:15px;}
 
 <!-- SCRIPT PRINCIPAL -->
 <script>
-/* Dados locais iniciais - serão sobrescritos por loadAll se houver dados no Firebase */
+/* Dados locais iniciais - serão sobrescritos se houver dados no Firebase */
 let pieces = [
     {
         code: "597-2445#01",
@@ -520,7 +522,6 @@ let inspectors = ["João Silva","Maria Santos"];
 let inspections = [];
 let checklistItemStates = [];
 let checklistCurrentPiece = null;
-let checklistCurrentInspector = null;
 
 const screens = {
     'home': document.getElementById('home'),
@@ -605,81 +606,14 @@ function renderHome() {
         pieces.map(p=>`<option value="${p.code}">${p.code}</option>`).join('');
 }
 
-function draftKey(piece, inspector) {
-  if (!piece || !inspector) return null;
-  return `magius_draft_${piece}__${inspector}`;
-}
-function saveDraft() {
-  try {
-    const key = draftKey(checklistCurrentPiece?.code, checklistCurrentInspector);
-    if (!key) return;
-    const draft = {
-      date: new Date().toLocaleDateString('pt-BR'),
-      inspector: checklistCurrentInspector,
-      piece: checklistCurrentPiece.code,
-      itens: checklistItemStates.map(s => ({
-        status: s.status,
-        motivo: s.motivo,
-        encaminhamento: s.encaminhamento,
-        nome_terceiro: s.nome_terceiro,
-        fotoUrl: s.fotoUrl || null
-      }))
-    };
-    localStorage.setItem(key, JSON.stringify(draft));
-  } catch (e) {
-    console.warn("Erro ao salvar rascunho:", e);
-  }
-}
-function loadDraft(pieceCode, inspector) {
-  try {
-    const key = draftKey(pieceCode, inspector);
-    if (!key) return null;
-    const raw = localStorage.getItem(key);
-    if (!raw) return null;
-    return JSON.parse(raw);
-  } catch (e) {
-    console.warn("Erro ao carregar rascunho:", e);
-    return null;
-  }
-}
-function clearDraft() {
-  try {
-    const key = draftKey(checklistCurrentPiece?.code, checklistCurrentInspector);
-    if (!key) return;
-    localStorage.removeItem(key);
-  } catch (e) {
-    console.warn("Erro ao limpar rascunho:", e);
-  }
-}
-
 function showChecklist() {
     const piece = document.getElementById('piece').value;
     const insp = document.getElementById('inspector').value;
     if(!piece || !insp) { alert("Selecione um inspetor e uma peça!"); return;}
     checklistCurrentPiece = pieces.find(p => p.code === piece);
-    checklistCurrentInspector = insp;
-
-    // Inicializa estados a partir dos items da peça
     checklistItemStates = (checklistCurrentPiece?.items||[]).map(()=>({
         status:null,motivo:"",foto:null,fotoUrl:null,encaminhamento:"",nome_terceiro:"",uploading:false
     }));
-
-    // tenta carregar rascunho salvo localmente e mesclar
-    const draft = loadDraft(piece, insp);
-    if (draft && Array.isArray(draft.itens)) {
-      draft.itens.forEach((it, idx) => {
-        if (!checklistItemStates[idx]) return;
-        checklistItemStates[idx].status = it.status || checklistItemStates[idx].status;
-        checklistItemStates[idx].motivo = it.motivo || checklistItemStates[idx].motivo;
-        checklistItemStates[idx].encaminhamento = it.encaminhamento || checklistItemStates[idx].encaminhamento;
-        checklistItemStates[idx].nome_terceiro = it.nome_terceiro || checklistItemStates[idx].nome_terceiro;
-        if (it.fotoUrl) {
-          checklistItemStates[idx].fotoUrl = it.fotoUrl;
-          checklistItemStates[idx].foto = null;
-        }
-      });
-    }
-
     showScreen('checklist');
     renderChecklist();
 }
@@ -769,14 +703,13 @@ function renderChecklist() {
         </div>`;
     }).join('');
 
-    // OK / NÃO OK
+    // handlers OK / NÃO OK
     document.querySelectorAll(".checklist-item-actions .btn-ok").forEach(btn=>{
         btn.onclick = function(){
             let idx = parseInt(btn.dataset.idx);
             checklistItemStates[idx] = {
               status:"OK",motivo:"",foto:null,fotoUrl:null,encaminhamento:"",nome_terceiro:"",uploading:false
             };
-            saveDraft();
             renderChecklist();
         };
     });
@@ -786,12 +719,11 @@ function renderChecklist() {
             if (!checklistItemStates[idx]) checklistItemStates[idx] = {};
             checklistItemStates[idx].status = "NOK";
             checklistItemStates[idx].uploading = false;
-            saveDraft();
             renderChecklist();
         };
     });
 
-    // attach inputs' handlers
+    // attach inputs' handlers (motivo, foto onchange, radios, nome terceiro)
     checklistItemStates.forEach((st, idx) => {
         if(!st) return;
         if(st.status==='NOK') {
@@ -800,23 +732,26 @@ function renderChecklist() {
             let nomeTerceiroEl = document.getElementById("nome_terceiro_"+idx);
             let retrabalhoRadio = document.querySelector('input[name="encaminhar_'+idx+'"][value="retrabalho"]');
             let terceiroRadio = document.querySelector('input[name="encaminhar_'+idx+'"][value="terceiro"]');
-            if (motivoEl) motivoEl.oninput = ()=>{ checklistItemStates[idx].motivo = motivoEl.value; saveDraft(); }
+            if (motivoEl) motivoEl.oninput = ()=>{ checklistItemStates[idx].motivo = motivoEl.value; }
             if (fotoEl) {
                 fotoEl.onchange = async ()=>{ 
                   const file = fotoEl.files[0]||null;
                   checklistItemStates[idx].foto = file;
+                  // remove fotoUrl in case user replaced file
                   checklistItemStates[idx].fotoUrl = null;
+                  // show uploading indicator
                   checklistItemStates[idx].uploading = true;
                   renderChecklist();
-                  // upload imediato se disponível
+                  // se API de upload estiver disponível, subir imediatamente para preservar imagem ao atualizar a página
                   if (file && window.fbApi && window.fbApi.uploadFile) {
                     try {
+                      // caminho inclui código da peça para organização e usa timestamp
                       const path = `inspections/${encodeURIComponent(checklistCurrentPiece.code)}/${Date.now()}_${idx}`;
                       const url = await window.fbApi.uploadFile(path, file);
+                      // quando upload completar, armazenar a URL em fotoUrl e remover o File para evitar re-upload no saveInspection
                       checklistItemStates[idx].fotoUrl = url;
                       checklistItemStates[idx].foto = null;
                       checklistItemStates[idx].uploading = false;
-                      saveDraft();
                       renderChecklist();
                     } catch (err) {
                       console.error("Erro ao enviar foto imediatamente:", err);
@@ -825,8 +760,8 @@ function renderChecklist() {
                       alert("Falha ao enviar foto. Tente novamente.");
                     }
                   } else {
+                    // sem upload imediato (ex.: offline), apenas renderiza a pré-visualização local
                     checklistItemStates[idx].uploading = false;
-                    saveDraft();
                     renderChecklist();
                   }
                 };
@@ -834,91 +769,95 @@ function renderChecklist() {
             if(retrabalhoRadio){
                 retrabalhoRadio.onchange = ()=>{
                     checklistItemStates[idx].encaminhamento = "retrabalho";
-                    saveDraft();
                     renderChecklist();
                 };
             }
             if(terceiroRadio){
                 terceiroRadio.onchange = ()=>{
                     checklistItemStates[idx].encaminhamento = "terceiro";
-                    saveDraft();
                     renderChecklist();
                 };
             }
             if(nomeTerceiroEl){
-                nomeTerceiroEl.oninput = ()=>{ checklistItemStates[idx].nome_terceiro = nomeTerceiroEl.value; saveDraft(); }
+                nomeTerceiroEl.oninput = ()=>{ checklistItemStates[idx].nome_terceiro = nomeTerceiroEl.value; }
             }
         }
     });
+
     renderNokLibrary();
-}
 
-// Função única para finalizar inspeção (anexada uma vez)
-async function handleFinalizarInspecaoClick() {
-  try {
-    for (let i = 0; i < checklistItemStates.length; i++) {
-      const state = checklistItemStates[i];
-      if (!state || !state.status) {
-        alert("Responda todos os itens do checklist.");
-        return;
+    // finalizar inspeção
+    document.getElementById("finalizar-inspecao-btn").onclick = async function() {
+      for (let i = 0; i < checklistItemStates.length; i++) {
+        const state = checklistItemStates[i];
+        if (!state || !state.status) {
+          alert("Responda todos os itens do checklist.");
+          return;
+        }
+        if (state.status === "NOK") {
+          if (!state.motivo || !state.motivo.trim()) {
+            alert("Preencha o motivo para todos itens NÃO OK.");
+            return;
+          }
+          if (!state.foto && !state.fotoUrl) {
+            alert("Insira uma foto evidência para todos itens NÃO OK.");
+            return;
+          }
+          if (!state.encaminhamento) {
+            alert("Escolha um encaminhamento para todos itens NÃO OK.");
+            return;
+          }
+          if (state.encaminhamento === "terceiro" && (!state.nome_terceiro || !state.nome_terceiro.trim())) {
+            alert("Informe o nome ou matrícula do aprovador terceiro.");
+            return;
+          }
+        }
       }
-      if (state.status === "NOK") {
-        if (!state.motivo || !state.motivo.trim()) {
-          alert("Preencha o motivo para todos itens NÃO OK.");
-          return;
-        }
-        if (!state.foto && !state.fotoUrl) {
-          alert("Insira uma foto evidência para todos itens NÃO OK.");
-          return;
-        }
-        if (!state.encaminhamento) {
-          alert("Escolha um encaminhamento para todos itens NÃO OK.");
-          return;
-        }
-        if (state.encaminhamento === "terceiro" && (!state.nome_terceiro || !state.nome_terceiro.trim())) {
-          alert("Informe o nome ou matrícula do aprovador terceiro.");
-          return;
-        }
-      }
-    }
+      const now = new Date();
+      const inspectionToSave = {
+        date: now.toLocaleDateString('pt-BR'),
+        inspector: document.getElementById('inspector').value,
+        piece: checklistCurrentPiece.code,
+        descricao: 'Inspeção realizada com sucesso',
+        itens: checklistItemStates.map(s => ({
+          status: s.status,
+          motivo: s.motivo,
+          encaminhamento: s.encaminhamento,
+          nome_terceiro: s.nome_terceiro,
+          // se já foi enviado (fotoUrl), não precisa reenviar; caso contrário, pode manter File em foto para upload no backend
+          foto: s.foto || null,
+          fotoUrl: s.fotoUrl || null
+        }))
+      };
 
-    const now = new Date();
-    const inspectionToSave = {
-      date: now.toLocaleDateString('pt-BR'),
-      inspector: checklistCurrentInspector,
-      piece: checklistCurrentPiece.code,
-      descricao: 'Inspeção realizada com sucesso',
-      itens: checklistItemStates.map((s, idx) => ({
-        status: s.status,
-        motivo: s.motivo,
-        encaminhamento: s.encaminhamento,
-        nome_terceiro: s.nome_terceiro,
-        // se já foi enviado (fotoUrl) usa-a; caso contrário pode enviar o File no backend
-        foto: s.foto || null,
-        fotoUrl: s.fotoUrl || null
-      }))
+      if (window.fbApi && window.fbApi.saveInspection) {
+        try {
+          const saved = await window.fbApi.saveInspection(inspectionToSave);
+          inspections.push(saved);
+          alert("Inspeção finalizada e salva no Firebase!");
+          showScreen('home');
+          renderReports();
+        } catch (e) {
+          console.error("Erro ao salvar inspeção no Firebase:", e);
+          // fallback local (sem fotos)
+          inspections.push({
+            ...inspectionToSave,
+            itens: inspectionToSave.itens.map(it => ({ ...it, foto:null, fotoUrl: it.fotoUrl || null }))
+          });
+          alert("Erro ao salvar no servidor. Inspeção salva só localmente neste navegador.");
+          showScreen('home');
+          renderReports();
+        }
+      } else {
+        inspections.push({
+          ...inspectionToSave,
+          itens: inspectionToSave.itens.map(it => ({ ...it, foto:null, fotoUrl: it.fotoUrl || null }))
+        });
+        alert("Inspeção finalizada (somente local).");
+        showScreen('home');
+        renderReports();
+      }
     };
-
-    if (window.fbApi && window.fbApi.saveInspection) {
-      const saved = await window.fbApi.saveInspection(inspectionToSave);
-      inspections.push(saved);
-      clearDraft();
-      alert("Inspeção finalizada e salva no Firebase!");
-    } else {
-      inspections.push({
-        ...inspectionToSave,
-        itens: inspectionToSave.itens.map(it => ({ ...it, foto: null }))
-      });
-      clearDraft();
-      alert("Inspeção finalizada (somente local).");
-    }
-
-    showScreen('home');
-    renderReports();
-  } catch (err) {
-    console.error("Erro ao finalizar inspeção:", err);
-    alert("Ocorreu um erro ao salvar a inspeção. Veja o console para detalhes.");
-  }
 }
 
 function renderNokLibrary() {
@@ -979,7 +918,7 @@ function renderNokLibrary() {
     card.appendChild(encaminEl);
     card.appendChild(document.createElement('br'));
 
-    // tenta obter URL da foto em vários campos
+    // tenta obter URL da foto em múltiplos campos possíveis
     const src = caso.fotoUrl || caso.foto || caso.imageUrl || caso.photoUrl || caso.foto_url || null;
     if (src) {
       const img = document.createElement('img');
@@ -1001,7 +940,6 @@ function renderNokLibrary() {
   nokDiv.appendChild(list);
 }
 
-/* Funções administrativas e de UI (mantidas, sem grandes alterações) */
 function editPiece(idx){
   const p = pieces[idx];
   showModal(`
@@ -1371,9 +1309,7 @@ function exportCSV() {
     URL.revokeObjectURL(url);
 }
 
-/* Inicialização: carrega dados do Firebase, anexa listener do botão de finalizar e renderiza */
 document.addEventListener("DOMContentLoaded", async ()=>{
-    // carregar dados do Firebase (se disponível)
     if (window.fbApi && window.fbApi.loadAll) {
       try {
         const data = await window.fbApi.loadAll();
@@ -1384,15 +1320,6 @@ document.addEventListener("DOMContentLoaded", async ()=>{
         console.error("Erro ao carregar dados do Firebase:", e);
       }
     }
-
-    // anexar listener do botão "Finalizar Inspeção" apenas 1 vez
-    const btn = document.getElementById("finalizar-inspecao-btn");
-    if (btn) {
-      btn.addEventListener('click', handleFinalizarInspecaoClick);
-    } else {
-      console.warn("Botão finalizar não encontrado");
-    }
-
     showScreen('home');
     renderHome();
     renderReports();
