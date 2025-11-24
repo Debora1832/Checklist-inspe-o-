@@ -224,7 +224,8 @@ textarea{font-size:15px;}
       </div>
       <div class="nav-right" role="navigation" aria-label="Navegação principal">
         <button class="nav-btn" onclick="showScreen('reports')">Relatórios</button>
-        <button class="nav-btn admin" onclick="showScreen('admin')">Admin</button>
+        <!-- Admin agora chama requestAdminAccess() para pedir a senha -->
+        <button class="nav-btn admin" onclick="requestAdminAccess()">Admin</button>
       </div>
     </div>
 
@@ -533,6 +534,16 @@ textarea{font-size:15px;}
 
 <!-- SCRIPT PRINCIPAL -->
 <script>
+/*
+  Implementação de proteção simples para a tela Admin:
+  - Ao clicar em "Admin" a função requestAdminAccess() abre um modal pedindo senha.
+  - Senha definida aqui (client-side): "Magius123".
+  - Após autenticação na sessão atual, o usuário pode acessar Admin sem reentrar a senha.
+  Observação importante: esta proteção é apenas no cliente e não segura para produção.
+*/
+const ADMIN_PASSWORD = "Magius123";
+window.adminAuthenticated = false;
+
 let pieces = [
     {
         code: "597-2445#01",
@@ -571,11 +582,14 @@ function showModal(html, onclose) {
   box.innerHTML = html;
   overlay.style.display = 'flex';
 
-  box.querySelector('.modal-close').onclick = function() {
-    overlay.style.display = 'none';
-    box.innerHTML = '';
-    if (onclose) onclose();
-  };
+  const closeBtn = box.querySelector('.modal-close');
+  if (closeBtn) {
+    closeBtn.onclick = function() {
+      overlay.style.display = 'none';
+      box.innerHTML = '';
+      if (onclose) onclose();
+    };
+  }
   overlay.onclick = function(e) {
     if (e.target === overlay) {
       overlay.style.display = 'none';
@@ -591,6 +605,82 @@ function showImageModal(src) {
     <button class="modal-close" title="Fechar">&times;</button>
     <img src="${src}" style="max-width:80vw;max-height:80vh;display:block;margin:auto;border-radius:10px;box-shadow:0 6px 22px #0002;">
   `);
+}
+
+/* Nova função: pede senha antes de abrir Admin */
+function requestAdminAccess() {
+  if (window.adminAuthenticated) {
+    showScreen('admin');
+    return;
+  }
+
+  // Mostra modal de senha
+  showModal(`
+    <button class="modal-close" title="Fechar">&times;</button>
+    <div class="modal-title">Acesso Admin</div>
+    <div class="modal-form-row">
+      <label for="admin-pass">Digite a senha:</label><br>
+      <input id="admin-pass" type="password" style="width:100%;padding:10px;border:1px solid #ccc;border-radius:6px;">
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:10px;">
+      <button class="btn-secondary" id="modal-admin-cancel">Cancelar</button>
+      <button class="btn-primary" id="modal-admin-login">Entrar</button>
+    </div>
+  `, null);
+
+  // ligar eventos após o modal ser inserido no DOM
+  setTimeout(() => {
+    const box = document.getElementById('modal-box');
+    const overlay = document.getElementById('modal-overlay');
+
+    const loginBtn = document.getElementById('modal-admin-login');
+    const cancelBtn = document.getElementById('modal-admin-cancel');
+    const passInput = document.getElementById('admin-pass');
+
+    if (cancelBtn) {
+      cancelBtn.onclick = () => {
+        overlay.style.display = 'none';
+        box.innerHTML = '';
+      };
+    }
+
+    if (loginBtn) {
+      loginBtn.onclick = () => {
+        const val = passInput.value || "";
+        if (val === ADMIN_PASSWORD) {
+          // autenticação bem-sucedida (apenas na sessão do navegador)
+          window.adminAuthenticated = true;
+          overlay.style.display = 'none';
+          box.innerHTML = '';
+          showScreen('admin');
+        } else {
+          alert("Senha incorreta.");
+          passInput.value = "";
+          passInput.focus();
+        }
+      };
+    }
+
+    // permitir enter para submeter
+    if (passInput) {
+      passInput.addEventListener('keyup', (e) => {
+        if (e.key === 'Enter') {
+          const val = passInput.value || "";
+          if (val === ADMIN_PASSWORD) {
+            window.adminAuthenticated = true;
+            overlay.style.display = 'none';
+            box.innerHTML = '';
+            showScreen('admin');
+          } else {
+            alert("Senha incorreta.");
+            passInput.value = "";
+            passInput.focus();
+          }
+        }
+      });
+      passInput.focus();
+    }
+  }, 0);
 }
 
 document.addEventListener("click", function(event) {
