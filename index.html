@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
 <style>
-/* CSS mantido/organizado (mesmo visual do seu app) */
+/* Mantive seu CSS original */
 body { font-family: Arial,sans-serif; background:#fff; color:#333; margin:0;}
 .container { max-width:1200px; margin:32px auto; padding:20px; background:#fff; border-radius:8px; box-shadow:0 0 10px #0001;}
 .header { background:#003366; color:#fff; padding:15px 20px; border-radius:8px 8px 0 0; margin:-20px -20px 24px -20px; display:flex;justify-content:space-between;align-items:center;}
@@ -17,10 +17,32 @@ body { font-family: Arial,sans-serif; background:#fff; color:#333; margin:0;}
 .btn-primary,.btn-secondary,.btn-checklist,#finalizar-inspecao-btn { padding:10px 20px;border-radius:5px;font-size:16px;font-weight:500;}
 .btn-secondary {margin-left:10px;}
 .nav-btn:hover,.btn-primary:hover,.btn-secondary:hover,.btn-checklist:hover,#finalizar-inspecao-btn:hover{background:#005bb5 !important; color:#fff;}
-.edit-btn { background: #093762 !important; color: #fff !important; border-radius: 8px; cursor: pointer; width: 56px; height: 44px;padding:0;font-size:0;border:none; display:inline-flex;align-items:center;justify-content:center;}
-.edit-btn::before { content: '';display:inline-block;width:20px;height:20px; background-image: url('data:image/svg+xml;utf8,<svg fill="white" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 512 512"><path d="M290.74,93.24,218.49,165.49,346.51,293.5,418.76,221.25C437.1,202.91,437.1,175,418.76,156.66Z"/><path d="M223.25,232.6l-20,20L87.27,347.68a16,16,0,0,0,0,22.62l54.57,54.58a16,16,0,0,0,22.62,0l95.88-95.89,20-20Z"/></svg>'); background-size:20px 20px;background-repeat:no-repeat;}
-.remove-btn { background: #dc3545 !important; color: #fff !important; border-radius: 8px; width: 44px; height: 44px; padding:0;font-size:0;border:none;margin-left:8px; display:inline-flex;align-items:center;justify-content:center;}
-.remove-btn::before { content: '';display:inline-block;width:20px;height:20px; background-image:url('data:image/svg+xml;utf8,<svg fill="white" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 320 320"><path d="M20 20L300 300M20 300L300 20" stroke="white" stroke-width="35"/></svg>'); background-size:20px 20px;background-repeat:no-repeat;}
+.edit-btn {
+    background: #093762 !important;
+    color: #fff !important;
+    border-radius: 8px;
+    cursor: pointer;
+    width: 56px; height: 44px;padding:0;font-size:0;border:none;
+    display:inline-flex;align-items:center;justify-content:center;
+}
+.edit-btn::before {
+    content: '';display:inline-block;width:20px;height:20px;
+    background-image: url('data:image/svg+xml;utf8,<svg fill="white" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 512 512"><path d="M290.74,93.24,218.49,165.49,346.51,293.5,418.76,221.25C437.1,202.91,437.1,175,418.76,156.66Z"/><path d="M223.25,232.6l-20,20L87.27,347.68a16,16,0,0,0,0,22.62l54.57,54.58a16,16,0,0,0,22.62,0l95.88-95.89,20-20Z"/></svg>');
+    background-size:20px 20px;background-repeat:no-repeat;
+}
+.remove-btn {
+    background: #dc3545 !important;
+    color: #fff !important;
+    border-radius: 8px;
+    width: 44px; height: 44px;
+    padding:0;font-size:0;border:none;margin-left:8px;
+    display:inline-flex;align-items:center;justify-content:center;
+}
+.remove-btn::before {
+    content: '';display:inline-block;width:20px;height:20px;
+    background-image:url('data:image/svg+xml;utf8,<svg fill="white" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 320 320"><path d="M20 20L300 300M20 300L300 20" stroke="white" stroke-width="35"/></svg>');
+    background-size:20px 20px;background-repeat:no-repeat;
+}
 .activity-header,.report-header { background:#003366;color:#fff;padding:11px 18px;font-size:17px;font-weight:700;border-radius:7px 7px 0 0;margin-bottom:14px;letter-spacing:0.5px;}
 .report-header {margin-bottom:24px;}
 .activity-block {background:#f6f8fa;border-radius:7px;box-shadow:0 2px 12px #0001;margin-bottom:28px;padding:20px 18px 15px 18px;}
@@ -36,6 +58,8 @@ input[type="file"] {margin-bottom:12px;}
 .checklist-item-actions{display:flex;gap:0px;align-items:center;height:38px;margin-left:6px;}
 .checklist-item-actions .btn-ok,.checklist-item-actions .btn-nao-ok{width:90px;height:38px;display:inline-flex;align-items:center;justify-content:center;border:none;outline:none;font-size:18px;font-family:Arial,sans-serif;font-weight:700;color:#fff;margin:0;cursor:pointer;border-radius:3px;transition:filter 0.15s;background:#28b649 !important;}
 .checklist-item-actions .btn-nao-ok{background:#e23636 !important;margin-left:-1px;}
+.checklist-item-actions .btn-ok{border-top-right-radius:0;border-bottom-right-radius:0;}
+.checklist-item-actions .btn-nao-ok{border-top-left-radius:0;border-bottom-left-radius:0;}
 .checklist-piece-title{font-size:2.4em;font-weight:700;color:#003366;margin-bottom:15px;}
 .checklist-extra-wrapper { width:100%;margin-top:6px;display:flex;flex-direction:row;gap:0;}
 .checklist-extra-block{flex:1;padding:15px;border-radius:6px;border:2px solid #e23636;background:#fff6f7;box-sizing:border-box;display:flex;flex-direction:column;gap:17px;margin-left:0;}
@@ -46,6 +70,7 @@ input[type="radio"]{margin-right:7px;transform:scale(1.2);}
 .checklist-terceiro-nome-box{margin-top:8px;}
 .checklist-terceiro-nome-box label{font-size:15px;font-weight:600;margin-bottom:4px;display:block;}
 .checklist-terceiro-nome-box input{padding:8px;border-radius:4px;border:1px solid #bbb;width:99%;}
+input[type="file"]{margin-bottom:4px;}
 textarea{font-size:15px;}
 .hide{display:none !important;}
 .admin-piece-item,.admin-inspector-item {display:flex;justify-content:space-between;align-items:center;padding:5px 10px;border:1px solid #eee;margin-bottom:5px;background:#f9f9f9;border-radius:4px;}
@@ -71,145 +96,221 @@ textarea{font-size:15px;}
     .report-controls { flex-direction:column; gap:14px; }
     .report-total-volume, .report-csv-btn { width:100%; justify-content:center; }
 }
-.checklist-nok-library { background: #f8f0f3; border-radius: 10px; padding: 12px 16px; margin-top: 30px; margin-bottom: 10px;}
-.checklist-nok-library-list { display: flex; flex-wrap: wrap; gap: 18px;}
-.checklist-nok-case { background: #f8f4f6; border-radius: 9px; border: 2px solid #e23636; padding: 17px; width: 260px; box-sizing: border-box; word-break:break-word;}
-.checklist-nok-case img { width: 100%; max-width: 200px; max-height: 160px; object-fit:cover; margin-top: 8px; cursor: pointer; border-radius:8px; box-shadow:0 2px 16px #0002;}
-.checklist-nok-title { font-size:1.12em; color:#e23636; font-weight:700; margin-bottom:17px;}
+.checklist-nok-library {
+  background: #f8f0f3;
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-top: 30px;
+  margin-bottom: 10px;
+}
+.checklist-nok-library-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+}
+.checklist-nok-case {
+  background: #f8f4f6;
+  border-radius: 9px;
+  border: 2px solid #e23636;
+  padding: 17px;
+  width: 260px;
+  box-sizing: border-box;
+  word-break:break-word;
+}
+.checklist-nok-case img {
+  width: 100%;
+  max-width: 200px;
+  max-height: 160px;
+  object-fit:cover;
+  margin-top: 8px;
+  cursor: pointer;
+  border-radius:8px;
+  box-shadow:0 2px 16px #0002;
+}
+.checklist-nok-title {
+  font-size:1.12em;
+  color:#e23636;
+  font-weight:700;
+  margin-bottom:17px;
+}
+@media (max-width: 700px) {
+  .checklist-nok-library-list { flex-direction: column; gap: 11px;}
+  .checklist-nok-case { width: 100%; max-width: 99vw; }
+}
 .modal-overlay {position: fixed; top:0; left:0; right:0; bottom:0;background: rgba(0,0,0,0.35);display: flex; align-items:center; justify-content:center;z-index: 9999;}
 .modal-box {background: #fff;border-radius: 15px;box-shadow: 0 6px 24px #0002;padding: 36px 30px 30px 30px;min-width: 320px;max-width: 98vw;max-height: 96vh;position: relative;}
 .modal-close {position: absolute; top: 12px; right: 12px;font-size: 28px; background: none; border: none; color: #093762; cursor: pointer;padding: 8px;border-radius: 7px;font-weight: bold;}
 .modal-title { font-size: 1.5em; font-weight: 700; margin-bottom: 28px; color: #093762;}
-.uploading-indicator { font-size:13px;color:#444;margin-top:6px; }
-.small-muted { font-size:12px;color:#666;margin-top:6px; }
+.modal-form-row { margin-bottom:22px; } .modal-form-row label {font-weight:500;margin-right:7px;}
 </style>
 </head>
 <body>
 <div class="container">
-  <div class="header">
-    <div class="header-left">
-      <div class="header-circles"><span></span><span></span><span></span><span></span></div>
-      <div class="header-tagline">AJUDANDO A CONSTRUIR, CULTIVAR,<br>TRANSPORTAR E SEGUIR EM FRENTE</div>
+    <div class="header">
+        <div class="header-left">
+            <div class="header-circles">
+                <span></span><span></span><span></span><span></span>
+            </div>
+            <div class="header-tagline">AJUDANDO A CONSTRUIR, CULTIVAR,<br>TRANSPORTAR E SEGUIR EM FRENTE</div>
+        </div>
+        <div class="header-right">
+            <div class="header-logo">MAGIUS</div>
+            <div class="header-tagline">METALÚRGICA INDUSTRIAL</div>
+        </div>
     </div>
-    <div class="header-right">
-      <div class="header-logo">MAGIUS</div>
-      <div class="header-tagline">METALÚRGICA INDUSTRIAL</div>
-    </div>
-  </div>
-
-  <div style="display:flex;justify-content:flex-end;align-items:flex-start;margin-bottom:20px;">
-    <div style="display:flex;flex-direction:column;gap:10px;">
-      <button class="nav-btn" onclick="showScreen('reports')">Relatórios</button>
-      <div style="display:flex;gap:10px;">
-        <button class="nav-btn" onclick="showScreen('admin')">Admin</button>
-        <button class="nav-btn" onclick="showScreen('home')">Início</button>
+    <div style="display:flex;justify-content:flex-end;align-items:flex-start;margin-bottom:20px;">
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <button class="nav-btn" onclick="showScreen('reports')">Relatórios</button>
+        <div style="display:flex;gap:10px;">
+          <button class="nav-btn" onclick="showScreen('admin')">Admin</button>
+          <button class="nav-btn" onclick="showScreen('home')">Início</button>
+        </div>
       </div>
     </div>
-  </div>
-
-  <div id="home" class="screen active">
-    <h2 style="font-size:2em;font-weight:700;margin-bottom:0.2em;">MAGIUS - Sistema de Checklist de Inspeção</h2>
-    <div class="form-group">
-      <label for="inspector">Inspetor:</label>
-      <select id="inspector"><option value="" disabled selected>Selecionar inspetor</option></select>
+    <div id="home" class="screen active">
+        <h2 style="font-size:2em;font-weight:700;margin-bottom:0.2em;">MAGIUS - Sistema de Checklist de Inspeção</h2>
+        <div class="form-group">
+            <label for="inspector">Inspetor:</label>
+            <select id="inspector"><option value="" disabled selected>Selecionar inspetor</option></select>
+        </div>
+        <div class="form-group">
+            <label for="piece">Peça:</label>
+            <select id="piece"><option value="" disabled selected>Selecionar peça</option></select>
+        </div>
+        <button class="btn-checklist" onclick="showChecklist()">Iniciar Checklist</button>
     </div>
-    <div class="form-group">
-      <label for="piece">Peça:</label>
-      <select id="piece"><option value="" disabled selected>Selecionar peça</option></select>
+    <div id="checklist" class="screen">
+        <div class="checklist-piece-title" id="checklist-header"></div>
+        <div id="piece-image-box" style="background-color:#f0f5fa;height:260px;margin-bottom:20px;display:flex;justify-content:center;align-items:center;border-radius:10px;">
+            [Imagem aqui]
+        </div>
+        <div class="checklist-item-list" id="checklist-item-list"></div>
+        <button class="btn-primary" id="finalizar-inspecao-btn" style="margin-top:20px;">Finalizar Inspeção</button>
+        <div class="checklist-nok-library" id="checklist-nok-library"></div>
     </div>
-    <button class="btn-checklist" onclick="showChecklist()">Iniciar Checklist</button>
-  </div>
-
-  <div id="checklist" class="screen">
-    <div class="checklist-piece-title" id="checklist-header"></div>
-    <div id="piece-image-box" style="background-color:#f0f5fa;height:260px;margin-bottom:20px;display:flex;justify-content:center;align-items:center;border-radius:10px;">
-      [Imagem aqui]
-    </div>
-    <div class="checklist-item-list" id="checklist-item-list"></div>
-    <button class="btn-primary" id="finalizar-inspecao-btn" style="margin-top:20px;">Finalizar Inspeção</button>
-    <div class="checklist-nok-library" id="checklist-nok-library"></div>
-  </div>
-
-  <div id="reports" class="screen">
-    <div class="report-header">Relatórios</div>
-    <div class="report-controls">
-      <button class="report-csv-btn" onclick="exportCSV()">Exportar CSV</button>
-      <div class="report-total-volume">Total (todas inspeções): <span id="total-inspecoes" style="margin-left:10px;font-size:21px;">0</span></div>
-      <div>
-        <label for="report-month-select" style="font-weight:500;margin-right:7px;">Selecionar mês:</label>
-        <select id="report-month-select"></select>
+    <div id="reports" class="screen">
+      <div class="report-header">Relatórios</div>
+      <div class="report-controls">
+          <button class="report-csv-btn" onclick="exportCSV()">Exportar CSV</button>
+          <div class="report-total-volume">
+              Total (todas inspeções): <span id="total-inspecoes" style="margin-left:10px;font-size:21px;">0</span>
+          </div>
+          <div>
+              <label for="report-month-select" style="font-weight:500;margin-right:7px;">Selecionar mês:</label>
+              <select id="report-month-select"></select>
+          </div>
+      </div>
+      <div style="font-weight:600;margin-bottom:7px;">Volume mensal</div>
+      <div id="volume-mensal-box"><span id="volume-mensal-num">0</span> inspeções</div>
+      <div class="report-graph-area">
+          <canvas id="graficoRosca" class="grafico-bola" width="140" height="140"></canvas>
+          <div class="report-graph-legend">
+              <div class="report-graph-legend-item">
+                  <span style="display:inline-block;width:18px;height:18px;background:#228be6;border-radius:6px;"></span>
+                  <span>Embarcadas</span>
+              </div>
+              <div class="report-graph-legend-item">
+                  <span style="display:inline-block;width:18px;height:18px;background:#e23636;border-radius:6px;"></span>
+                  <span>Retrabalho</span>
+              </div>
+          </div>
+      </div>
+      <div style="font-weight:600;margin-bottom:6px;">Histórico</div>
+      <div class="report-history">
+          <table class="report-history-table">
+              <thead>
+                  <tr>
+                      <th>Data</th>
+                      <th>Inspetor</th>
+                      <th>Peça</th>
+                      <th>Descrição</th>
+                  </tr>
+              </thead>
+              <tbody id="reports-history-body"></tbody>
+          </table>
       </div>
     </div>
-    <div style="font-weight:600;margin-bottom:7px;">Volume mensal</div>
-    <div id="volume-mensal-box"><span id="volume-mensal-num">0</span> inspeções</div>
-    <div class="report-graph-area">
-      <canvas id="graficoRosca" class="grafico-bola" width="140" height="140"></canvas>
-      <div class="report-graph-legend">
-        <div class="report-graph-legend-item"><span style="display:inline-block;width:18px;height:18px;background:#228be6;border-radius:6px;"></span><span>Embarcadas</span></div>
-        <div class="report-graph-legend-item"><span style="display:inline-block;width:18px;height:18px;background:#e23636;border-radius:6px;"></span><span>Retrabalho</span></div>
-      </div>
+    <div id="admin" class="screen">
+        <div class="activity-block">
+            <div class="activity-header">Adicionar Peça</div>
+            <div id="piece-form-fields">
+                <div class="form-group">
+                    <label for="new-code">Código (Ex: 597-2445#01)</label>
+                    <input type="text" id="new-code" placeholder="Ex: 597-2445#01">
+                </div>
+                <div class="form-group">
+                    <label for="new-description">Descrição</label>
+                    <input type="text" id="new-description" placeholder="Longarina">
+                </div>
+                <div class="form-group">
+                    <label for="new-image">Imagem (obrigatória)</label>
+                    <input type="file" id="new-image">
+                    <p style="font-size:12px;margin-top:5px;" id="image-file-info">Nenhum arquivo escolhido</p>
+                </div>
+            </div>
+            <div class="edit-control hide" id="edit-piece-controls">
+                <button class="btn-primary" id="update-piece-btn">Salvar edição</button>
+            </div>
+            <button class="btn-primary" id="add-piece-btn" style="margin-right:10px;">Adicionar peça</button>
+            <button class="btn-secondary" id="clear-piece-btn">Limpar</button>
+            <h4 style="margin-top:30px;">Peças existentes</h4>
+            <div class="admin-piece-list" id="admin-piece-list"></div>
+        </div>
+        <div class="activity-block">
+            <div class="activity-header">Adicionar Item</div>
+            <div class="form-group">
+                <label for="select-piece-item">Selecionar peça</label>
+                <select id="select-piece-item"></select>
+            </div>
+            <h5 style="margin-top:10px;">Itens atuais</h5>
+            <div id="admin-piece-items-list"></div>
+            <div id="item-form-fields">
+                <div class="form-group">
+                    <label for="new-item-name">Novo item</label>
+                    <input type="text" id="new-item-name" placeholder="Dimensão X">
+                </div>
+                <div class="form-group">
+                    <label for="new-item-description">Descrição do item (obrigatória)</label>
+                    <textarea id="new-item-description"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="new-item-image">Imagem do item (obrigatória)</label>
+                    <input type="file" id="new-item-image">
+                    <p style="font-size:12px;margin-top:5px;" id="item-image-file-info">Nenhum arquivo escolhido</p>
+                </div>
+            </div>
+            <div class="edit-control hide" id="edit-item-controls">
+                <button class="btn-primary" id="update-piece-item-btn">Salvar edição</button>
+            </div>
+            <button class="btn-primary" id="add-piece-item-btn">Adicionar item</button>
+        </div>
+        <div class="activity-block">
+            <div class="activity-header">Adicionar Inspetor</div>
+            <div style="display:flex;">
+                <input type="text" id="inspector-new-name" placeholder="Nome do inspetor" style="margin-right:10px;">
+                <button class="btn-primary" id="add-inspector-btn" style="height:40px;">Adicionar</button>
+                <button class="btn-secondary" id="clear-inspector-btn" style="height:40px;margin-left:5px;">Limpar</button>
+            </div>
+            <h4 style="margin-top:30px;">Inspetores</h4>
+            <div class="admin-inspector-list" id="admin-inspector-list"></div>
+        </div>
     </div>
-    <div style="font-weight:600;margin-bottom:6px;">Histórico</div>
-    <div class="report-history">
-      <table class="report-history-table">
-        <thead>
-          <tr><th>Data</th><th>Inspetor</th><th>Peça</th><th>Descrição</th></tr>
-        </thead>
-        <tbody id="reports-history-body"></tbody>
-      </table>
+    <div id="modal-overlay" class="modal-overlay" style="display:none;">
+      <div id="modal-box" class="modal-box"></div>
     </div>
-  </div>
-
-  <div id="admin" class="screen">
-    <div class="activity-block">
-      <div class="activity-header">Adicionar Peça</div>
-      <div id="piece-form-fields">
-        <div class="form-group"><label for="new-code">Código (Ex: 597-2445#01)</label><input type="text" id="new-code" placeholder="Ex: 597-2445#01"></div>
-        <div class="form-group"><label for="new-description">Descrição</label><input type="text" id="new-description" placeholder="Longarina"></div>
-        <div class="form-group"><label for="new-image">Imagem (obrigatória)</label><input type="file" id="new-image"><p style="font-size:12px;margin-top:5px;" id="image-file-info">Nenhum arquivo escolhido</p></div>
-      </div>
-      <div class="edit-control hide" id="edit-piece-controls"><button class="btn-primary" id="update-piece-btn">Salvar edição</button></div>
-      <button class="btn-primary" id="add-piece-btn" style="margin-right:10px;">Adicionar peça</button>
-      <button class="btn-secondary" id="clear-piece-btn">Limpar</button>
-      <h4 style="margin-top:30px;">Peças existentes</h4>
-      <div class="admin-piece-list" id="admin-piece-list"></div>
-    </div>
-
-    <div class="activity-block">
-      <div class="activity-header">Adicionar Item</div>
-      <div class="form-group"><label for="select-piece-item">Selecionar peça</label><select id="select-piece-item"></select></div>
-      <h5 style="margin-top:10px;">Itens atuais</h5>
-      <div id="admin-piece-items-list"></div>
-      <div id="item-form-fields">
-        <div class="form-group"><label for="new-item-name">Novo item</label><input type="text" id="new-item-name" placeholder="Dimensão X"></div>
-        <div class="form-group"><label for="new-item-description">Descrição do item (obrigatória)</label><textarea id="new-item-description"></textarea></div>
-        <div class="form-group"><label for="new-item-image">Imagem do item (obrigatória)</label><input type="file" id="new-item-image"><p style="font-size:12px;margin-top:5px;" id="item-image-file-info">Nenhum arquivo escolhido</p></div>
-      </div>
-      <div class="edit-control hide" id="edit-item-controls"><button class="btn-primary" id="update-piece-item-btn">Salvar edição</button></div>
-      <button class="btn-primary" id="add-piece-item-btn">Adicionar item</button>
-    </div>
-
-    <div class="activity-block">
-      <div class="activity-header">Adicionar Inspetor</div>
-      <div style="display:flex;">
-        <input type="text" id="inspector-new-name" placeholder="Nome do inspetor" style="margin-right:10px;">
-        <button class="btn-primary" id="add-inspector-btn" style="height:40px;">Adicionar</button>
-        <button class="btn-secondary" id="clear-inspector-btn" style="height:40px;margin-left:5px;">Limpar</button>
-      </div>
-      <h4 style="margin-top:30px;">Inspetores</h4>
-      <div class="admin-inspector-list" id="admin-inspector-list"></div>
-    </div>
-  </div>
-
-  <div id="modal-overlay" class="modal-overlay" style="display:none;"><div id="modal-box" class="modal-box"></div></div>
 </div>
 
-<!-- FIREBASE MODULE -->
+<!-- SCRIPT FIREBASE + STORAGE -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
-  import { getFirestore, collection, doc, setDoc, addDoc, getDocs, getDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
-  import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-storage.js";
+  import { 
+    getFirestore, collection, doc, setDoc, addDoc, getDocs, getDoc, deleteDoc 
+  } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
+  import { 
+    getStorage, ref as sRef, uploadBytes, getDownloadURL 
+  } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-storage.js";
 
+  // CONFIG - verifique se este storageBucket está correto no seu console Firebase
   const firebaseConfig = {
     apiKey: "AIzaSyCAAowsqkoUjIAPhSvq6dUlKMZGdXOO1b0",
     authDomain: "magiuschecklist-9ad0f.firebaseapp.com",
@@ -224,13 +325,15 @@ textarea{font-size:15px;}
   const db = getFirestore(app);
   const storage = getStorage(app);
 
+  // Faz upload do arquivo e retorna a URL pública
   async function uploadFileAndGetUrl(path, file) {
     if (!file) return null;
     try {
       const ref = sRef(storage, path);
       const metadata = { contentType: file.type || 'application/octet-stream' };
       await uploadBytes(ref, file, metadata);
-      return await getDownloadURL(ref);
+      const url = await getDownloadURL(ref);
+      return url;
     } catch (err) {
       console.error("Erro ao enviar arquivo para Storage em", path, ":", err);
       throw err;
@@ -238,6 +341,7 @@ textarea{font-size:15px;}
   }
 
   async function loadAll() {
+    // PEÇAS
     const piecesSnap = await getDocs(collection(db, "pieces"));
     const pieces = piecesSnap.docs.map(d => {
       const data = d.data();
@@ -255,11 +359,15 @@ textarea{font-size:15px;}
       };
     });
 
+    // INSPETORES
     let inspectors = [];
     const inspRef = doc(db, "config", "inspectors");
     const inspSnap = await getDoc(inspRef);
-    if (inspSnap.exists()) inspectors = inspSnap.data().list || [];
+    if (inspSnap.exists()) {
+      inspectors = inspSnap.data().list || [];
+    }
 
+    // INSPEÇÕES
     const inspecSnap = await getDocs(collection(db, "inspections"));
     const inspections = inspecSnap.docs.map(d => {
       const data = d.data();
@@ -286,121 +394,224 @@ textarea{font-size:15px;}
   async function savePiece(piece) {
     if (!piece || !piece.code) return;
     let imageUrl = piece.imageUrl || null;
+
     if (piece.image instanceof File) {
-      imageUrl = await uploadFileAndGetUrl(`pieces/${encodeURIComponent(piece.code)}/main_${Date.now()}`, piece.image);
+      try {
+        imageUrl = await uploadFileAndGetUrl(`pieces/${encodeURIComponent(piece.code)}/main_${Date.now()}`, piece.image);
+      } catch (e) {
+        console.error("Falha no upload da imagem da peça:", e);
+        throw e;
+      }
     }
+
     const itemsToSave = [];
     for (let idx = 0; idx < (piece.items || []).length; idx++) {
       const it = piece.items[idx];
       let itemImageUrl = it.imageUrl || null;
       if (it.image instanceof File) {
-        itemImageUrl = await uploadFileAndGetUrl(`pieces/${encodeURIComponent(piece.code)}/items/${idx}_${Date.now()}`, it.image);
+        try {
+          itemImageUrl = await uploadFileAndGetUrl(`pieces/${encodeURIComponent(piece.code)}/items/${idx}_${Date.now()}`, it.image);
+        } catch (e) {
+          console.error("Falha no upload da imagem do item:", e);
+          throw e;
+        }
       }
-      itemsToSave.push({ name: it.name, description: it.description, imageUrl: itemImageUrl });
+      itemsToSave.push({
+        name: it.name,
+        description: it.description,
+        imageUrl: itemImageUrl
+      });
     }
-    await setDoc(doc(db, "pieces", piece.code), { code: piece.code, description: piece.description, imageUrl, items: itemsToSave });
+
+    const ref = doc(db, "pieces", piece.code);
+    await setDoc(ref, {
+      code: piece.code,
+      description: piece.description,
+      imageUrl,
+      items: itemsToSave
+    });
   }
 
-  async function deletePiece(code) { if (!code) return; await deleteDoc(doc(db, "pieces", code)); }
-  async function setInspectors(list) { await setDoc(doc(db, "config", "inspectors"), { list: list || [] }); }
+  async function deletePiece(code) {
+    if (!code) return;
+    await deleteDoc(doc(db, "pieces", code));
+  }
+
+  async function setInspectors(list) {
+    const ref = doc(db, "config", "inspectors");
+    await setDoc(ref, { list: list || [] });
+  }
 
   async function saveInspection(inspec) {
     const timeStamp = Date.now();
     const itensToSave = [];
+
     for (let idx = 0; idx < (inspec.itens || []).length; idx++) {
       const it = inspec.itens[idx];
       let fotoUrl = it.fotoUrl || null;
       if (it.foto instanceof File) {
-        fotoUrl = await uploadFileAndGetUrl(`inspections/${encodeURIComponent(inspec.piece)}/${timeStamp}_${idx}`, it.foto);
+        try {
+          fotoUrl = await uploadFileAndGetUrl(
+            `inspections/${encodeURIComponent(inspec.piece)}/${timeStamp}_${idx}`,
+            it.foto
+          );
+        } catch (e) {
+          console.error("Falha no upload da foto da inspeção:", e);
+          throw e;
+        }
       }
-      itensToSave.push({ status: it.status, motivo: it.motivo, encaminhamento: it.encaminhamento, nome_terceiro: it.nome_terceiro || "", fotoUrl });
+      itensToSave.push({
+        status: it.status,
+        motivo: it.motivo,
+        encaminhamento: it.encaminhamento,
+        nome_terceiro: it.nome_terceiro || "",
+        fotoUrl
+      });
     }
-    const docData = { date: inspec.date, inspector: inspec.inspector, piece: inspec.piece, descricao: inspec.descricao || "", itens: itensToSave };
+
+    const docData = {
+      date: inspec.date,
+      inspector: inspec.inspector,
+      piece: inspec.piece,
+      descricao: inspec.descricao || "",
+      itens: itensToSave
+    };
     const ref = await addDoc(collection(db, "inspections"), docData);
     return { id: ref.id, ...docData };
   }
 
-  // expõe funções para script principal
-  window.fbApi = { loadAll, savePiece, deletePiece, setInspectors, saveInspection, uploadFile: uploadFileAndGetUrl };
+  window.fbApi = {
+    loadAll,
+    savePiece,
+    deletePiece,
+    setInspectors,
+    saveInspection
+  };
 </script>
 
-<!-- APP SCRIPT -->
+<!-- SCRIPT PRINCIPAL -->
 <script>
-/* --- Dados locais iniciais (serão sobrescritos por loadAll) --- */
-let pieces = [];
-let inspectors = [];
+/* Dados iniciais locais - serão sobrescritos por loadAll se houver dados no Firebase */
+let pieces = [
+    {
+        code: "597-2445#01",
+        description: "Longarina",
+        image: null,
+        imageUrl: null,
+        items: [
+            { name: "Dimensão A (Ø)", description: "Verificar diâmetro da furação.", image: null, imageUrl:null },
+            { name: "Furo B posição", description: "Conferir posição do furo de encaixe.", image: null, imageUrl:null },
+            { name: "Solda - qualidade", description: "Avaliar acabamento da solda.", image: null, imageUrl:null }
+        ]
+    },
+    {
+        code: "597-2435#01",
+        description: "Longarina",
+        image: null,
+        imageUrl: null,
+        items: []
+    }
+];
+let inspectors = ["João Silva","Maria Santos"];
 let inspections = [];
 let checklistItemStates = [];
 let checklistCurrentPiece = null;
-let checklistCurrentInspector = null;
 
-/* Utilitários para persistir rascunho (mantém imagens já enviadas com fotoUrl) */
-const DRAFT_PREFIX = 'magius_draft_';
-const LAST_DRAFT_KEY = 'magius_last_draft';
+const screens = {
+    'home': document.getElementById('home'),
+    'checklist': document.getElementById('checklist'),
+    'reports': document.getElementById('reports'),
+    'admin': document.getElementById('admin')
+};
 
-function draftKey(piece, inspector) {
-  if (!piece || !inspector) return null;
-  return `${DRAFT_PREFIX}${piece}__${inspector}`;
-}
-
-function saveDraft() {
-  try {
-    const key = draftKey(checklistCurrentPiece?.code, checklistCurrentInspector);
-    if (!key) return;
-    const draft = {
-      date: new Date().toLocaleDateString('pt-BR'),
-      inspector: checklistCurrentInspector,
-      piece: checklistCurrentPiece.code,
-      itens: checklistItemStates.map(s => ({
-        status: s.status,
-        motivo: s.motivo,
-        encaminhamento: s.encaminhamento,
-        nome_terceiro: s.nome_terceiro,
-        fotoUrl: s.fotoUrl || null // guardamos URL (quando já enviadas)
-      }))
-    };
-    localStorage.setItem(key, JSON.stringify(draft));
-    localStorage.setItem(LAST_DRAFT_KEY, key);
-  } catch (e) {
-    console.warn("Erro ao salvar rascunho:", e);
-  }
-}
-
-function loadDraftForKey(key) {
-  try {
-    if (!key) return null;
-    const raw = localStorage.getItem(key);
-    if (!raw) return null;
-    return JSON.parse(raw);
-  } catch (e) {
-    console.warn("Erro ao carregar rascunho:", e);
-    return null;
-  }
-}
-function clearDraft() {
-  try {
-    const key = localStorage.getItem(LAST_DRAFT_KEY);
-    if (key) localStorage.removeItem(key);
-    localStorage.removeItem(LAST_DRAFT_KEY);
-  } catch (e) { console.warn("Erro ao limpar rascunho:", e); }
-}
-
-/* --- UI helpers --- */
 function showModal(html, onclose) {
   const overlay = document.getElementById('modal-overlay');
   const box = document.getElementById('modal-box');
   box.innerHTML = html;
   overlay.style.display = 'flex';
+
   const closeBtn = box.querySelector('.modal-close');
-  if (closeBtn) closeBtn.onclick = () => { overlay.style.display = 'none'; box.innerHTML = ''; if (onclose) onclose(); };
-  overlay.onclick = (e) => { if (e.target === overlay) { overlay.style.display = 'none'; box.innerHTML = ''; if (onclose) onclose(); } };
-}
-function showImageModal(src) {
-  if (!src) return;
-  showModal(`<button class="modal-close" title="Fechar">&times;</button><img src="${src}" style="max-width:80vw;max-height:80vh;display:block;margin:auto;border-radius:10px;box-shadow:0 6px 22px #0002;">`);
+  if (closeBtn) {
+    closeBtn.onclick = function() {
+      overlay.style.display = 'none';
+      box.innerHTML = '';
+      if (onclose) onclose();
+    };
+  }
+
+  overlay.onclick = function(e) {
+    if (e.target === overlay) {
+      overlay.style.display = 'none';
+      box.innerHTML = '';
+      if (onclose) onclose();
+    }
+  };
 }
 
-/* --- get src functions (aceita File ou URL) --- */
+function showImageModal(src) {
+  if (!src) return;
+  showModal(`
+    <button class="modal-close" title="Fechar">&times;</button>
+    <img src="${src}" style="max-width:80vw;max-height:80vh;display:block;margin:auto;border-radius:10px;box-shadow:0 6px 22px #0002;">
+  `);
+}
+
+document.addEventListener("click", function(event) {
+  if(event.target.closest(".edit-btn")) {
+    const btn = event.target.closest(".edit-btn");
+    const pieceIdx = btn.getAttribute('data-pieceidx');
+    const itemIdx = btn.getAttribute('data-itemidx');
+    if (itemIdx !== null && itemIdx !== undefined && itemIdx !== "") {
+      editPieceItem(parseInt(pieceIdx), parseInt(itemIdx));
+    } else {
+      editPiece(parseInt(pieceIdx));
+    }
+  }
+  if(event.target.closest(".remove-btn")) {
+    const btn = event.target.closest(".remove-btn");
+    const pieceIdx = btn.getAttribute('data-pieceidx');
+    const itemIdx = btn.getAttribute('data-itemidx');
+    const inspIdx = btn.getAttribute('data-inspectoridx');
+    if (inspIdx !== null && inspIdx !== undefined && inspIdx !== "") {
+      removeInspector(parseInt(inspIdx));
+    } else if (itemIdx !== null && itemIdx !== undefined && itemIdx !== "") {
+      removePieceItem(parseInt(pieceIdx), parseInt(itemIdx));
+    } else {
+      removePiece(parseInt(pieceIdx));
+    }
+  }
+});
+
+function showScreen(screenId) {
+    for (let key in screens) screens[key].classList.remove('active');
+    if (screens[screenId]) screens[screenId].classList.add('active');
+    if (screenId === "home") renderHome();
+    if (screenId === "admin") renderAdmin();
+    if (screenId === "checklist") renderChecklist();
+    if (screenId === "reports") renderReports();
+}
+
+function renderHome() {
+    const inspSel = document.getElementById("inspector");
+    inspSel.innerHTML = '<option value="" disabled selected>Selecionar inspetor</option>' +
+        inspectors.map(i=>`<option value="${i}">${i}</option>`).join('');
+    const pieceSel = document.getElementById("piece");
+    pieceSel.innerHTML = '<option value="" disabled selected>Selecionar peça</option>' +
+        pieces.map(p=>`<option value="${p.code}">${p.code}</option>`).join('');
+}
+
+function showChecklist() {
+    const piece = document.getElementById('piece').value;
+    const insp = document.getElementById('inspector').value;
+    if(!piece || !insp) { alert("Selecione um inspetor e uma peça!"); return;}
+    checklistCurrentPiece = pieces.find(p => p.code === piece);
+    checklistItemStates = (checklistCurrentPiece?.items||[]).map(()=>({
+        status:null,motivo:"",foto:null,fotoUrl:null,encaminhamento:"",nome_terceiro:""
+    }));
+    showScreen('checklist');
+    renderChecklist();
+}
+
 function getPieceImageSrc(piece) {
   if (!piece) return null;
   if (piece.image instanceof File) return URL.createObjectURL(piece.image);
@@ -421,387 +632,658 @@ function getFotoSrc(it) {
   return null;
 }
 
-/* --- Render functions --- */
-const screens = { home: document.getElementById('home'), checklist: document.getElementById('checklist'), reports: document.getElementById('reports'), admin: document.getElementById('admin') };
-
-function showScreen(screenId) {
-  for (let k in screens) screens[k].classList.remove('active');
-  if (screens[screenId]) screens[screenId].classList.add('active');
-  if (screenId === 'home') renderHome();
-  if (screenId === 'admin') renderAdmin();
-  if (screenId === 'checklist') renderChecklist();
-  if (screenId === 'reports') renderReports();
-}
-
-function renderHome() {
-  const inspSel = document.getElementById('inspector');
-  inspSel.innerHTML = '<option value="" disabled selected>Selecionar inspetor</option>' + inspectors.map(i => `<option value="${i}">${i}</option>`).join('');
-  const pieceSel = document.getElementById('piece');
-  pieceSel.innerHTML = '<option value="" disabled selected>Selecionar peça</option>' + pieces.map(p => `<option value="${p.code}">${p.code}</option>`).join('');
-}
-
-function renderAdmin() {
-  document.getElementById('admin-piece-list').innerHTML = pieces.map((p,idx) => {
-    const imgSrc = getPieceImageSrc(p);
-    const thumb = imgSrc ? `<img src="${imgSrc}" style="width:50px;height:40px;border-radius:4px;object-fit:cover;">` : `<div style="width:50px;height:40px;background-color:#eee;margin-right:10px;border-radius:4px;display:flex;align-items:center;justify-content:center;">Sem imagem</div>`;
-    return `<div class="admin-piece-item">${thumb}<span>${p.code} — ${p.description}</span><div><button class="edit-btn" data-pieceidx="${idx}"></button><button class="remove-btn" data-pieceidx="${idx}"></button></div></div>`;
-  }).join('');
-  document.getElementById('select-piece-item').innerHTML = pieces.map((p,idx)=>`<option value="${idx}">${p.code} — ${p.description}</option>`).join('');
-  renderAdminPieceItems();
-  document.getElementById('admin-inspector-list').innerHTML = inspectors.map((i,idx)=>`<div class="admin-inspector-item"><span>${i}</span><button class="remove-btn" data-inspectoridx="${idx}"></button></div>`).join('');
-  document.getElementById('inspector-new-name').value = "";
-}
-function renderAdminPieceItems(){
-  const idx = document.getElementById('select-piece-item').value;
-  if (idx==undefined || idx==='') return;
-  const items = pieces[idx].items || [];
-  document.getElementById('admin-piece-items-list').innerHTML = items.map((item,i) => {
-    const imgSrc = getItemImageSrc(item);
-    const icon = imgSrc ? `<img src="${imgSrc}" style="width:22px;height:22px;border-radius:3px;margin-right:4px;object-fit:cover;">` : '';
-    return `<div class="admin-item-line"><div class="item-label-box">${icon}<span>${item.name}</span></div><div><button class="edit-btn" data-pieceidx="${idx}" data-itemidx="${i}"></button><button class="remove-btn" data-pieceidx="${idx}" data-itemidx="${i}"></button></div></div>`;
-  }).join('');
-}
-
-/* Render reports */
-let graficoRosca;
-function renderReports() {
-  const monthsSet = new Set();
-  inspections.forEach(i => { if (!i.date) return; const [d,m,y] = i.date.split('/'); if (m && y) monthsSet.add(`${m}/${y}`); });
-  const months = Array.from(monthsSet).sort().reverse();
-  const selectMonth = document.getElementById('report-month-select');
-  selectMonth.innerHTML = months.map(m=>`<option value="${m}">${m}</option>`).join('') || `<option value="">---</option>`;
-  const currentMonth = selectMonth.value || months[0] || '';
-  let embarcadas = 0, retrabalho = 0, t = 0;
-  inspections.forEach(i=>{
-    if (!i.date) return;
-    const [d,m,y] = i.date.split('/');
-    const mes = `${m}/${y}`;
-    if (mes !== currentMonth) return;
-    t++;
-    (i.itens||[]).forEach(it=>{
-      if (it.status === 'OK') embarcadas++; else if (it.encaminhamento === 'retrabalho') retrabalho++; else embarcadas++;
-    });
-  });
-  document.getElementById('total-inspecoes').textContent = inspections.length;
-  document.getElementById('volume-mensal-num').textContent = t;
-  if (graficoRosca) { graficoRosca.data.datasets[0].data = [embarcadas, retrabalho]; graficoRosca.update(); }
-  const tbody = document.getElementById('reports-history-body');
-  const filtered = inspections.filter(i => { if (!i.date) return false; const [d,m,y] = i.date.split('/'); return `${m}/${y}` === currentMonth; });
-  tbody.innerHTML = filtered.length ? filtered.map(i=>`<tr><td>${i.date}</td><td>${i.inspector}</td><td>${i.piece}</td><td>${i.descricao||'-'}</td></tr>`).join('') : `<tr><td colspan="4" style="text-align:center;">Nenhum histórico encontrado.</td></tr>`;
-}
-
-/* --- Checklist --- */
-function showChecklist() {
-  const pieceCode = document.getElementById('piece').value;
-  const inspector = document.getElementById('inspector').value;
-  if (!pieceCode || !inspector) { alert('Selecione um inspetor e uma peça!'); return; }
-
-  checklistCurrentPiece = pieces.find(p => p.code === pieceCode);
-  checklistCurrentInspector = inspector;
-
-  // iniciar estados
-  checklistItemStates = (checklistCurrentPiece.items || []).map(()=>({
-    status: null, motivo:'', foto: null, fotoUrl: null, encaminhamento:'', nome_terceiro:'', uploading:false
-  }));
-
-  // tenta carregar rascunho (localStorage) e mesclar
-  const key = draftKey(pieceCode, inspector);
-  const draft = loadDraftForKey(key);
-  if (draft && Array.isArray(draft.itens)) {
-    draft.itens.forEach((it, idx) => {
-      if (!checklistItemStates[idx]) return;
-      checklistItemStates[idx].status = it.status || checklistItemStates[idx].status;
-      checklistItemStates[idx].motivo = it.motivo || checklistItemStates[idx].motivo;
-      checklistItemStates[idx].encaminhamento = it.encaminhamento || checklistItemStates[idx].encaminhamento;
-      checklistItemStates[idx].nome_terceiro = it.nome_terceiro || checklistItemStates[idx].nome_terceiro;
-      if (it.fotoUrl) { checklistItemStates[idx].fotoUrl = it.fotoUrl; checklistItemStates[idx].foto = null; }
-    });
-  }
-
-  showScreen('checklist');
-  renderChecklist();
-}
-
 function renderChecklist() {
-  document.getElementById('checklist-header').textContent = checklistCurrentPiece ? checklistCurrentPiece.code : '';
-  const mainImgSrc = getPieceImageSrc(checklistCurrentPiece);
-  document.getElementById('piece-image-box').innerHTML = mainImgSrc ? `<img src="${mainImgSrc}" style="max-width:100%; max-height:240px; cursor:pointer; border-radius:10px;" onclick="showImageModal('${mainImgSrc}')">` : '[Imagem aqui]';
+    const headerEl = document.getElementById('checklist-header');
+    const pieceImgBox = document.getElementById("piece-image-box");
+    headerEl.textContent = checklistCurrentPiece ? checklistCurrentPiece.code : "";
 
-  const listHtml = (checklistCurrentPiece.items || []).map((item, idx) => {
-    const state = checklistItemStates[idx] || {};
-    let cls = 'checklist-item'; if (state.status === 'OK') cls += ' ok'; if (state.status === 'NOK') cls += ' not-ok';
-    const itemImgSrc = getItemImageSrc(item);
-    const fileThumb = itemImgSrc ? `<img src="${itemImgSrc}" style="width:120px;height:120px;object-fit:cover;border-radius:10px;cursor:pointer;" onclick="showImageModal('${itemImgSrc}')">` : `<div style="background-color:#e9ecef; width:120px; height:120px; border-radius:10px;"></div>`;
-    let extra = '';
-    if (state.status === 'NOK') {
-      const fotoExistingSrc = getFotoSrc(state);
-      const uploadingHtml = state.uploading ? `<div class="uploading-indicator">Enviando imagem...</div>` : '';
-      extra = `<div class="checklist-extra-wrapper"><div class="checklist-extra-block" id="extra_box_${idx}">
-        <div class="checklist-extra-label">Descrição da não conformidade <span style="color:#e23636">(obrigatório)</span>:</div>
-        <textarea id="motivo_${idx}" placeholder="Descreva o motivo">${state.motivo||''}</textarea>
-        <div class="checklist-extra-label" style="margin-bottom:2px;">Foto <span style="color:#e23636">(obrigatório)</span>:</div>
-        <input type="file" id="foto_${idx}" accept="image/*">
-        ${uploadingHtml}
-        <div class="checklist-radio-group" style="margin-top:10px;">
-          <label><input type="radio" name="encaminhar_${idx}" value="retrabalho" ${state.encaminhamento==="retrabalho"?"checked":""}> Encaminhar para retrabalho</label>
-          <label><input type="radio" name="encaminhar_${idx}" value="terceiro" ${state.encaminhamento==="terceiro"?"checked":""}> Aprovado por terceiro</label>
-        </div>
-        ${state.encaminhamento==="terceiro"?`<div class="checklist-terceiro-nome-box"><label for="nome_terceiro_${idx}">Nome ou matrícula do aprovador:</label><input type="text" id="nome_terceiro_${idx}" value="${state.nome_terceiro||''}"></div>`:""}
-        ${fotoExistingSrc ? `<img src="${fotoExistingSrc}" style="width:120px;height:120px;object-fit:cover;border-radius:10px;margin-top:9px;cursor:pointer;" onclick="showImageModal('${fotoExistingSrc}')">` : ''}
-      </div></div>`;
-    }
-    return `<div class="${cls}"><div style="display:flex;flex-direction:column;flex-grow:1;"><div style="display:flex;align-items:center;">${fileThumb}<div class="checklist-item-info"><strong>${item.name}</strong><br><small>${item.description||''}</small></div><div class="checklist-item-actions"><button class="btn-ok" data-idx="${idx}">OK</button><button class="btn-nao-ok" data-idx="${idx}">NÃO OK</button></div></div>${extra}</div></div>`;
-  }).join('');
-  document.getElementById('checklist-item-list').innerHTML = listHtml;
+    const mainImgSrc = getPieceImageSrc(checklistCurrentPiece);
+    pieceImgBox.innerHTML = mainImgSrc
+        ? `<img src="${mainImgSrc}" style="max-width:100%; max-height:240px; cursor:pointer; border-radius:10px;" onclick="showImageModal('${mainImgSrc}')">`
+        : `[Imagem aqui]`;
 
-  // events OK / NÃO OK
-  document.querySelectorAll('.checklist-item-actions .btn-ok').forEach(btn => btn.onclick = () => {
-    const idx = parseInt(btn.dataset.idx);
-    checklistItemStates[idx] = { status:'OK', motivo:'', foto:null, fotoUrl:null, encaminhamento:'', nome_terceiro:'', uploading:false };
-    saveDraft(); renderChecklist();
-  });
-  document.querySelectorAll('.checklist-item-actions .btn-nao-ok').forEach(btn => btn.onclick = () => {
-    const idx = parseInt(btn.dataset.idx);
-    if (!checklistItemStates[idx]) checklistItemStates[idx] = {};
-    checklistItemStates[idx].status = 'NOK';
-    checklistItemStates[idx].uploading = false;
-    saveDraft(); renderChecklist();
-  });
+    document.getElementById("checklist-item-list").innerHTML = (checklistCurrentPiece?.items||[]).map((item, idx) => {
+        const state = checklistItemStates[idx];
+        let divClass = "checklist-item";
+        if(state && state.status==='OK') divClass += " ok";
+        if(state && state.status==='NOK') divClass += " not-ok";
 
-  // attach inputs (motivo, foto onchange, radios, nome terceiro)
-  (checklistItemStates || []).forEach((st, idx) => {
-    if (!st) return;
-    if (st.status === 'NOK') {
-      const motivoEl = document.getElementById('motivo_'+idx);
-      const fotoEl = document.getElementById('foto_'+idx);
-      const nomeTerceiroEl = document.getElementById('nome_terceiro_'+idx);
-      const retrabalhoRadio = document.querySelector('input[name="encaminhar_'+idx+'"][value="retrabalho"]');
-      const terceiroRadio = document.querySelector('input[name="encaminhar_'+idx+'"][value="terceiro"]');
-      if (motivoEl) motivoEl.oninput = () => { checklistItemStates[idx].motivo = motivoEl.value; saveDraft(); }
-      if (fotoEl) {
-        fotoEl.onchange = async () => {
-          const file = fotoEl.files[0]||null;
-          checklistItemStates[idx].foto = file;
-          checklistItemStates[idx].fotoUrl = null;
-          checklistItemStates[idx].uploading = true;
-          renderChecklist();
-          // upload imediato para persistir antes do refresh
-          if (file && window.fbApi && window.fbApi.uploadFile) {
-            try {
-              const path = `inspections/${encodeURIComponent(checklistCurrentPiece.code)}/${Date.now()}_${idx}`;
-              const url = await window.fbApi.uploadFile(path, file);
-              checklistItemStates[idx].fotoUrl = url;
-              checklistItemStates[idx].foto = null; // já está no storage
-              checklistItemStates[idx].uploading = false;
-              saveDraft();
-              renderChecklist();
-            } catch (err) {
-              console.error('Erro ao enviar foto:', err);
-              checklistItemStates[idx].uploading = false;
-              renderChecklist();
-              alert('Falha ao enviar foto. Tente novamente.');
-            }
-          } else {
-            checklistItemStates[idx].uploading = false;
-            saveDraft(); renderChecklist();
-          }
+        const itemImgSrc = getItemImageSrc(item);
+        let fileThumb = itemImgSrc
+            ? `<img src="${itemImgSrc}" style="width:120px;height:120px;object-fit:cover;border-radius:10px;cursor:pointer;" onclick="showImageModal('${itemImgSrc}')">`
+            : `<div style="background-color:#e9ecef; width:120px; height:120px; border-radius:10px;"></div>`;
+
+        let extra = "";
+        if(state && state.status==='NOK') {
+            const fotoExistingSrc = getFotoSrc(state);
+            extra = `
+            <div class="checklist-extra-wrapper">
+                <div class="checklist-extra-block" id="extra_box_${idx}">
+                    <div class="checklist-extra-label">Descrição da não conformidade <span style="color:#e23636">(obrigatório)</span>:</div>
+                    <textarea id="motivo_${idx}" placeholder="Descreva o motivo">${state.motivo||''}</textarea>
+                    <div class="checklist-extra-label" style="margin-bottom:2px;">Foto <span style="color:#e23636">(obrigatório)</span>:</div>
+                    <input type="file" id="foto_${idx}" accept="image/*">
+                    <div class="checklist-radio-group" style="margin-top:10px;">
+                        <label><input type="radio" name="encaminhar_${idx}" value="retrabalho" ${state.encaminhamento==="retrabalho"?"checked":""}> Encaminhar para retrabalho</label>
+                        <label><input type="radio" name="encaminhar_${idx}" value="terceiro" ${state.encaminhamento==="terceiro"?"checked":""}> Aprovado por terceiro</label>
+                    </div>
+                    ${state.encaminhamento=="terceiro"?`
+                    <div class="checklist-terceiro-nome-box">
+                        <label for="nome_terceiro_${idx}">Nome ou matrícula do aprovador:</label>
+                        <input type="text" id="nome_terceiro_${idx}" value="${state.nome_terceiro||''}">
+                    </div>`:""}
+                    ${fotoExistingSrc ? `<img src="${fotoExistingSrc}" style="width:120px;height:120px;object-fit:cover;border-radius:10px;margin-top:9px;cursor:pointer;" onclick="showImageModal('${fotoExistingSrc}')">` : ""}
+                </div>
+            </div>
+            `;
+        }
+        return `<div class="${divClass}">
+            <div style="display:flex;flex-direction:column;flex-grow:1;">
+              <div style="display:flex;align-items:center;">
+                ${fileThumb}
+                <div class="checklist-item-info">
+                  <strong>${item.name}</strong><br>
+                  <small>${item.description||''}</small>
+                </div>
+                <div class="checklist-item-actions">
+                  <button class="btn-ok" data-idx="${idx}">OK</button>
+                  <button class="btn-nao-ok" data-idx="${idx}">NÃO OK</button>
+                </div>
+              </div>
+              ${extra}
+            </div>
+        </div>`;
+    }).join('');
+
+    document.querySelectorAll(".checklist-item-actions .btn-ok").forEach(btn=>{
+        btn.onclick = function(){
+            let idx = parseInt(btn.dataset.idx);
+            checklistItemStates[idx] = {
+              status:"OK",motivo:"",foto:null,fotoUrl:null,encaminhamento:"",nome_terceiro:""
+            };
+            renderChecklist();
         };
-      }
-      if (retrabalhoRadio) retrabalhoRadio.onchange = () => { checklistItemStates[idx].encaminhamento = 'retrabalho'; saveDraft(); renderChecklist(); }
-      if (terceiroRadio) terceiroRadio.onchange = () => { checklistItemStates[idx].encaminhamento = 'terceiro'; saveDraft(); renderChecklist(); }
-      if (nomeTerceiroEl) nomeTerceiroEl.oninput = () => { checklistItemStates[idx].nome_terceiro = nomeTerceiroEl.value; saveDraft(); }
-    }
-  });
+    });
+    document.querySelectorAll(".checklist-item-actions .btn-nao-ok").forEach(btn=>{
+        btn.onclick = function(){
+            let idx = parseInt(btn.dataset.idx);
+            if (!checklistItemStates[idx]) checklistItemStates[idx] = {};
+            checklistItemStates[idx].status = "NOK";
+            renderChecklist();
+        };
+    });
 
-  // atualizar biblioteca
-  renderNokLibrary();
+    checklistItemStates.forEach((st, idx) => {
+        if(st && st.status==='NOK') {
+            let motivoEl = document.getElementById('motivo_'+idx);
+            let fotoEl = document.getElementById('foto_'+idx);
+            let nomeTerceiroEl = document.getElementById("nome_terceiro_"+idx);
+            let retrabalhoRadio = document.querySelector('input[name="encaminhar_'+idx+'"][value="retrabalho"]');
+            let terceiroRadio = document.querySelector('input[name="encaminhar_'+idx+'"][value="terceiro"]');
+            if (motivoEl) motivoEl.oninput = ()=>{ checklistItemStates[idx].motivo = motivoEl.value; }
+            if (fotoEl) fotoEl.onchange = ()=>{ 
+              checklistItemStates[idx].foto = fotoEl.files[0]||null; 
+              checklistItemStates[idx].fotoUrl = null;
+              renderChecklist(); 
+            };
+            if(retrabalhoRadio){
+                retrabalhoRadio.onchange = ()=>{
+                    checklistItemStates[idx].encaminhamento = "retrabalho";
+                    renderChecklist();
+                };
+            }
+            if(terceiroRadio){
+                terceiroRadio.onchange = ()=>{
+                    checklistItemStates[idx].encaminhamento = "terceiro";
+                    renderChecklist();
+                };
+            }
+            if(nomeTerceiroEl){
+                nomeTerceiroEl.oninput = ()=>{ checklistItemStates[idx].nome_terceiro = nomeTerceiroEl.value; }
+            }
+        }
+    });
+    renderNokLibrary();
+
+    document.getElementById("finalizar-inspecao-btn").onclick = function() {
+      for (let i = 0; i < checklistItemStates.length; i++) {
+        const state = checklistItemStates[i];
+        if (!state || !state.status) {
+          alert("Responda todos os itens do checklist.");
+          return;
+        }
+        if (state.status === "NOK") {
+          if (!state.motivo || !state.motivo.trim()) {
+            alert("Preencha o motivo para todos itens NÃO OK.");
+            return;
+          }
+          if (!state.foto && !state.fotoUrl) {
+            alert("Insira uma foto evidência para todos itens NÃO OK.");
+            return;
+          }
+          if (!state.encaminhamento) {
+            alert("Escolha um encaminhamento para todos itens NÃO OK.");
+            return;
+          }
+          if (state.encaminhamento === "terceiro" && (!state.nome_terceiro || !state.nome_terceiro.trim())) {
+            alert("Informe o nome ou matrícula do aprovador terceiro.");
+            return;
+          }
+        }
+      }
+      const now = new Date();
+      const inspectionToSave = {
+        date: now.toLocaleDateString('pt-BR'),
+        inspector: document.getElementById('inspector').value,
+        piece: checklistCurrentPiece.code,
+        descricao: 'Inspeção realizada com sucesso',
+        itens: checklistItemStates.map(s => ({
+          status: s.status,
+          motivo: s.motivo,
+          encaminhamento: s.encaminhamento,
+          nome_terceiro: s.nome_terceiro,
+          foto: s.foto || null,
+          fotoUrl: s.fotoUrl || null
+        }))
+      };
+
+      if (window.fbApi && window.fbApi.saveInspection) {
+        window.fbApi.saveInspection(inspectionToSave)
+          .then(saved => {
+            inspections.push(saved);
+            alert("Inspeção finalizada e salva no Firebase!");
+            showScreen('home');
+            renderReports();
+          })
+          .catch(e => {
+            console.error("Erro ao salvar inspeção no Firebase:", e);
+            inspections.push({
+              ...inspectionToSave,
+              itens: inspectionToSave.itens.map(it => ({ ...it, foto:null, fotoUrl:null }))
+            });
+            alert("Erro ao salvar no servidor. Inspeção salva só localmente neste navegador.");
+            showScreen('home');
+            renderReports();
+          });
+      } else {
+        inspections.push({
+          ...inspectionToSave,
+          itens: inspectionToSave.itens.map(it => ({ ...it, foto:null, fotoUrl:null }))
+        });
+        alert("Inspeção finalizada (somente local).");
+        showScreen('home');
+        renderReports();
+      }
+    };
 }
 
-/* Render biblioteca de casos não conformes (usa fotoUrl existente dos inspections + drafts) */
+/* NOVA renderNokLibrary (constrói DOM e exibe imagem anexada dos casos NÃO OK) */
 function renderNokLibrary() {
   const nokDiv = document.getElementById('checklist-nok-library');
-  const pieceCode = checklistCurrentPiece?.code || '';
-  // cases from saved inspections (Firestore) + current draft's NOK items (to show preview)
-  const fromInspections = inspections.filter(i => i.piece === pieceCode).flatMap(i => (i.itens || []).map(it => ({...it, inspection: i})).filter(it => it.status === 'NOK'));
-  const fromDraft = (checklistItemStates || []).map((it, idx) => ({...it, inspection: { date: new Date().toLocaleDateString('pt-BR'), inspector: checklistCurrentInspector, id: 'draft' }})).filter(it => it.status === 'NOK');
+  const pieceCode = checklistCurrentPiece?.code || "";
 
-  const nokCases = fromInspections.concat(fromDraft);
+  const nokCases = inspections
+    .filter(i => i.piece === pieceCode)
+    .flatMap(i =>
+      (i.itens || [])
+        .map((it, idx) => ({ ...it, inspection: i, idx }))
+        .filter(it => it.status === 'NOK')
+    );
 
   nokDiv.innerHTML = '';
-  if (!nokCases.length) { nokDiv.innerHTML = `<div style="color:#888;font-weight:500;padding:13px 0;">Nenhum caso de reprovação para esta peça.</div>`; return; }
 
-  const title = document.createElement('div'); title.className = 'checklist-nok-title'; title.textContent = `Histórico de Casos de Reprovação (${nokCases.length})`; nokDiv.appendChild(title);
-  const list = document.createElement('div'); list.className = 'checklist-nok-library-list';
+  if (!nokCases.length) {
+    nokDiv.innerHTML = `<div style="color:#888;font-weight:500;padding:13px 0;">Nenhum caso de reprovação para esta peça.</div>`;
+    return;
+  }
+
+  // título
+  const title = document.createElement('div');
+  title.className = 'checklist-nok-title';
+  title.textContent = `Histórico de Casos de Reprovação (${nokCases.length})`;
+  nokDiv.appendChild(title);
+
+  const list = document.createElement('div');
+  list.className = 'checklist-nok-library-list';
+
   nokCases.forEach(caso => {
-    const card = document.createElement('div'); card.className = 'checklist-nok-case';
-    const dateEl = document.createElement('strong'); dateEl.textContent = caso.inspection.date || ''; card.appendChild(dateEl); card.appendChild(document.createElement('br'));
-    const inspEl = document.createElement('span'); inspEl.style.fontSize = '95%'; inspEl.innerHTML = `Inspetor: <span style="color:#093762;">${caso.inspection.inspector || ''}</span>`; card.appendChild(inspEl); card.appendChild(document.createElement('br'));
-    const motivoEl = document.createElement('span'); motivoEl.style.cssText = 'font-size:95%;color:#c22;'; motivoEl.textContent = caso.motivo || ''; card.appendChild(motivoEl); card.appendChild(document.createElement('br'));
-    const encaminEl = document.createElement('span'); encaminEl.style.fontSize = '90%'; let encaminHtml = `Encaminhamento: <b>${caso.encaminhamento || ''}</b>`; if (caso.encaminhamento === 'terceiro') encaminHtml += `<br>Terceiro aprovador: <b>${caso.nome_terceiro || ''}</b>`; encaminEl.innerHTML = encaminHtml; card.appendChild(encaminEl); card.appendChild(document.createElement('br'));
-    const src = caso.fotoUrl || caso.foto || caso.imageUrl || caso.photoUrl || null;
-    if (src) {
-      const img = document.createElement('img'); img.src = src; img.alt = 'foto não conforme'; img.style.width = '100%'; img.style.maxWidth = '200px'; img.style.maxHeight = '160px'; img.style.objectFit = 'cover'; img.style.marginTop = '9px'; img.style.cursor = 'pointer'; img.onclick = () => showImageModal(src); card.appendChild(img);
+    const card = document.createElement('div');
+    card.className = 'checklist-nok-case';
+
+    const dateEl = document.createElement('strong');
+    dateEl.textContent = caso.inspection.date || '';
+    card.appendChild(dateEl);
+    card.appendChild(document.createElement('br'));
+
+    const inspEl = document.createElement('span');
+    inspEl.style.fontSize = '95%';
+    inspEl.innerHTML = `Inspetor: <span style="color:#093762;">${caso.inspection.inspector || ''}</span>`;
+    card.appendChild(inspEl);
+    card.appendChild(document.createElement('br'));
+
+    const motivoEl = document.createElement('span');
+    motivoEl.style.cssText = 'font-size:95%;color:#c22;';
+    motivoEl.textContent = caso.motivo || '';
+    card.appendChild(motivoEl);
+    card.appendChild(document.createElement('br'));
+
+    const encaminEl = document.createElement('span');
+    encaminEl.style.fontSize = '90%';
+    let encaminHtml = `Encaminhamento: <b>${caso.encaminhamento || ''}</b>`;
+    if (caso.encaminhamento === 'terceiro') {
+      encaminHtml += `<br>Terceiro aprovador: <b>${caso.nome_terceiro || ''}</b>`;
     }
+    encaminEl.innerHTML = encaminHtml;
+    card.appendChild(encaminEl);
+    card.appendChild(document.createElement('br'));
+
+    // tenta obter URL da foto no conjunto de possíveis campos
+    const src = caso.fotoUrl || caso.foto || caso.imageUrl || caso.photoUrl || caso.foto_url || null;
+    if (src) {
+      const img = document.createElement('img');
+      img.src = src;
+      img.alt = 'foto não conforme';
+      img.style.width = '100%';
+      img.style.maxWidth = '200px';
+      img.style.maxHeight = '160px';
+      img.style.objectFit = 'cover';
+      img.style.marginTop = '9px';
+      img.style.cursor = 'pointer';
+      img.onclick = () => showImageModal(src);
+      card.appendChild(img);
+    }
+
     list.appendChild(card);
   });
+
   nokDiv.appendChild(list);
 }
 
-/* Finalizar inspeção - uma única função anexada no load */
-async function handleFinalizarInspecaoClick() {
-  try {
-    // validações
-    if (!checklistCurrentPiece || !checklistCurrentInspector) { alert('Nenhuma inspeção iniciada.'); return; }
-    for (let i = 0; i < checklistItemStates.length; i++) {
-      const state = checklistItemStates[i];
-      if (!state || !state.status) { alert('Responda todos os itens do checklist.'); return; }
-      if (state.status === 'NOK') {
-        if (!state.motivo || !state.motivo.trim()) { alert('Preencha o motivo para todos itens NÃO OK.'); return; }
-        if (!state.foto && !state.fotoUrl) { alert('Insira uma foto evidência para todos itens NÃO OK.'); return; }
-        if (!state.encaminhamento) { alert('Escolha um encaminhamento para todos itens NÃO OK.'); return; }
-        if (state.encaminhamento === 'terceiro' && (!state.nome_terceiro || !state.nome_terceiro.trim())) { alert('Informe o nome ou matrícula do aprovador terceiro.'); return; }
+/* Funções de edição/remover peã e itens (mantidas) */
+function editPiece(idx){
+  const p = pieces[idx];
+  showModal(`
+    <button class="modal-close" title="Fechar">&times;</button>
+    <div class="modal-title">Editar Peça</div>
+    <div class="modal-form-row"><label>Código:</label>
+      <input type="text" id="modal-edit-code" value="${p.code}">
+    </div>
+    <div class="modal-form-row"><label>Descrição:</label>
+      <input type="text" id="modal-edit-desc" value="${p.description}">
+    </div>
+    <div class="modal-form-row"><label>Imagem:</label>
+      <input type="file" id="modal-edit-img">
+      <span>${p.image ? (p.image.name || 'Imagem existente') : (p.imageUrl ? 'Imagem já salva' : "Nenhum arquivo escolhido")}</span>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:15px;">
+      <button class="btn-primary" id="modal-save-edit">Salvar</button>
+    </div>
+  `);
+  setTimeout(function() {
+    const btn = document.getElementById('modal-save-edit');
+    if (!btn) return;
+    btn.onclick = function(){
+      const code = document.getElementById('modal-edit-code').value.trim();
+      const desc = document.getElementById('modal-edit-desc').value.trim();
+      const imgFile = document.getElementById('modal-edit-img').files[0];
+      if (!code || !desc) return alert("Preencha todos os campos!");
+      p.code = code; 
+      p.description = desc;
+      if(imgFile) {
+        p.image = imgFile;
+        p.imageUrl = null;
+      }
+      document.getElementById('modal-overlay').style.display = 'none';
+      renderAdmin(); 
+      renderHome();
+
+      if (window.fbApi && window.fbApi.savePiece) {
+        window.fbApi.savePiece(p).catch(e => {
+          console.error("Erro ao salvar peça no Firebase:", e);
+        });
+      }
+    };
+  }, 0);
+};
+
+function removePiece(idx){
+  const p = pieces[idx];
+  showModal(`
+    <button class="modal-close" title="Fechar">&times;</button>
+    <div class="modal-title" style="margin-bottom:10px;">Confirma excluir esta Peça?</div>
+    <div style="margin-bottom:25px;">Essa ação não pode ser desfeita.</div>
+    <div style="display:flex;justify-content:flex-end;gap:15px;">
+      <button class="btn-primary" id="modal-confirm-delete">Excluir</button>
+    </div>
+  `);
+  setTimeout(function() {
+    const btn = document.getElementById('modal-confirm-delete');
+    if (!btn) return;
+    btn.onclick = function(){
+      const codeToDelete = p.code;
+      pieces.splice(idx,1);
+      document.getElementById('modal-overlay').style.display = 'none';
+      renderAdmin(); 
+      renderHome();
+
+      if (window.fbApi && window.fbApi.deletePiece) {
+        window.fbApi.deletePiece(codeToDelete).catch(e => {
+          console.error("Erro ao apagar peça no Firebase:", e);
+        });
+      }
+    };
+  }, 0);
+};
+
+function editPieceItem(pieceIdx,itemIdx){
+  const item = pieces[pieceIdx].items[itemIdx];
+  showModal(`
+    <button class="modal-close" title="Fechar">&times;</button>
+    <div class="modal-title">Editar Item</div>
+    <div class="modal-form-row"><label>Nome:</label>
+      <input type="text" id="modal-edit-name" value="${item.name}">
+    </div>
+    <div class="modal-form-row"><label>Descrição:</label>
+      <input type="text" id="modal-edit-desc" value="${item.description}">
+    </div>
+    <div class="modal-form-row"><label>Imagem:</label>
+      <input type="file" id="modal-edit-img">
+      <span>${item.image ? (item.image.name || 'Imagem existente') : (item.imageUrl ? 'Imagem já salva' : "Nenhum arquivo escolhido")}</span>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:15px;">
+      <button class="btn-primary" id="modal-save-edit">Salvar</button>
+    </div>
+  `);
+  setTimeout(function() {
+    const btn = document.getElementById('modal-save-edit');
+    if (!btn) return;
+    btn.onclick = function(){
+      const name = document.getElementById('modal-edit-name').value.trim();
+      const desc = document.getElementById('modal-edit-desc').value.trim();
+      const imgFile = document.getElementById('modal-edit-img').files[0];
+      if (!name || !desc) return alert("Preencha todos os campos!");
+      item.name = name; 
+      item.description = desc;
+      if(imgFile) {
+        item.image = imgFile;
+        item.imageUrl = null;
+      }
+      document.getElementById('modal-overlay').style.display = 'none';
+      renderAdminPieceItems();
+
+      if (window.fbApi && window.fbApi.savePiece) {
+        window.fbApi.savePiece(pieces[pieceIdx]).catch(e => {
+          console.error("Erro ao salvar item no Firebase:", e);
+        });
+      }
+    };
+  }, 0);
+};
+
+function removePieceItem(pieceIdx,itemIdx){
+  showModal(`
+    <button class="modal-close" title="Fechar">&times;</button>
+    <div class="modal-title" style="margin-bottom:10px;">Confirma excluir este Item?</div>
+    <div style="margin-bottom:25px;">Esta ação não pode ser desfeita.</div>
+    <div style="display:flex;justify-content:flex-end;gap:15px;">
+      <button class="btn-primary" id="modal-confirm-del-item">Excluir</button>
+    </div>
+  `);
+  setTimeout(function () {
+    const btn = document.getElementById('modal-confirm-del-item');
+    if (!btn) return;
+    btn.onclick = function(){
+      pieces[pieceIdx].items.splice(itemIdx,1);
+      document.getElementById('modal-overlay').style.display = 'none';
+      renderAdminPieceItems();
+
+      if (window.fbApi && window.fbApi.savePiece) {
+        window.fbApi.savePiece(pieces[pieceIdx]).catch(e => {
+          console.error("Erro ao salvar peça no Firebase:", e);
+        });
+      }
+    };
+  }, 0);
+};
+
+document.getElementById("add-piece-btn").onclick = function() {
+    const code = document.getElementById("new-code").value.trim();
+    const desc = document.getElementById("new-description").value.trim();
+    const imgInput = document.getElementById("new-image");
+    const imgFile = imgInput.files[0];
+    if (!code || !desc || !imgFile) {
+        alert("Preencha todos os campos de peça!");
+        return;
+    }
+    const newPiece = {code, description:desc, image:imgFile, imageUrl:null, items:[]};
+    pieces.push(newPiece);
+    renderAdmin(); 
+    renderHome();
+
+    if (window.fbApi && window.fbApi.savePiece) {
+      window.fbApi.savePiece(newPiece).catch(e => {
+        console.error("Erro ao salvar peça no Firebase:", e);
+      });
+    }
+};
+
+document.getElementById("clear-piece-btn").onclick = function(){
+    document.getElementById('new-code').value = "";
+    document.getElementById('new-description').value = "";
+    document.getElementById('new-image').value = "";
+    document.getElementById('image-file-info').textContent = "Nenhum arquivo escolhido";
+};
+
+document.getElementById("new-image").onchange = function(e){
+    let txt = e.target.files[0] ? e.target.files[0].name : "Nenhum arquivo escolhido";
+    document.getElementById('image-file-info').textContent = txt;
+};
+
+document.getElementById("add-piece-item-btn").onclick = function(){
+    let idx = document.getElementById("select-piece-item").value;
+    let name = document.getElementById("new-item-name").value.trim();
+    let desc = document.getElementById("new-item-description").value.trim();
+    let imgFile = document.getElementById("new-item-image").files[0];
+    if (!idx && idx !== 0) { alert("Selecione uma peça!"); return; }
+    if (!name || !desc || !imgFile) {
+        alert("Preencha todos os campos, incluindo imagem!");
+        return;
+    }
+    pieces[idx].items.push({name, description:desc, image:imgFile, imageUrl:null});
+    renderAdminPieceItems();
+    document.getElementById("new-item-name").value = "";
+    document.getElementById("new-item-description").value = "";
+    document.getElementById("new-item-image").value = "";
+    document.getElementById("item-image-file-info").textContent = "Nenhum arquivo escolhido";
+
+    if (window.fbApi && window.fbApi.savePiece) {
+      window.fbApi.savePiece(pieces[idx]).catch(e => {
+        console.error("Erro ao salvar peça no Firebase:", e);
+      });
+    }
+};
+
+document.getElementById("select-piece-item").onchange = renderAdminPieceItems;
+
+document.getElementById("new-item-image").onchange = function(e){
+    let txt = e.target.files[0] ? e.target.files[0].name : "Nenhum arquivo escolhido";
+    document.getElementById('item-image-file-info').textContent = txt;
+};
+
+document.getElementById("add-inspector-btn").onclick = function() {
+    const name = document.getElementById("inspector-new-name").value.trim();
+    if (!name) { alert("Digite o nome do inspetor!"); return; }
+    if (inspectors.includes(name)) { alert("Já existe esse inspetor!"); return;}
+    inspectors.push(name); 
+    renderAdmin(); 
+    renderHome();
+
+    if (window.fbApi && window.fbApi.setInspectors) {
+      window.fbApi.setInspectors(inspectors).catch(e => {
+        console.error("Erro ao salvar inspetores no Firebase:", e);
+      });
+    }
+};
+
+document.getElementById("clear-inspector-btn").onclick = function(){
+    document.getElementById("inspector-new-name").value = "";
+};
+
+function removeInspector(idx){
+    inspectors.splice(idx,1); 
+    renderAdmin(); 
+    renderHome();
+
+    if (window.fbApi && window.fbApi.setInspectors) {
+      window.fbApi.setInspectors(inspectors).catch(e => {
+        console.error("Erro ao salvar inspetores no Firebase:", e);
+      });
+    }
+}
+
+function renderAdmin() {
+    let pieceListDiv = document.getElementById("admin-piece-list");
+    pieceListDiv.innerHTML = pieces.map((p,idx) => {
+        const imgSrc = getPieceImageSrc(p);
+        const thumb = imgSrc
+          ? `<img src="${imgSrc}" style="width:50px;height:40px;border-radius:4px;object-fit:cover;">`
+          : `<div style="width:50px;height:40px;background-color:#eee;margin-right:10px;border-radius:4px;display:flex;align-items:center;justify-content:center;">Sem imagem</div>`;
+        return `
+        <div class="admin-piece-item">
+            ${thumb}
+            <span>${p.code} — ${p.description}</span>
+            <div>
+                <button class="edit-btn" data-pieceidx="${idx}"></button>
+                <button class="remove-btn" data-pieceidx="${idx}"></button>
+            </div>
+        </div>`;
+    }).join('');
+
+    let selectPieceItem = document.getElementById("select-piece-item");
+    selectPieceItem.innerHTML = pieces.map((p,idx)=>`<option value="${idx}">${p.code} — ${p.description}</option>`).join('');
+    renderAdminPieceItems();
+
+    let inspList = document.getElementById("admin-inspector-list");
+    inspList.innerHTML = inspectors.map((i,idx)=>
+        `<div class="admin-inspector-item">
+            <span>${i}</span>
+            <button class="remove-btn" data-inspectoridx="${idx}"></button>
+        </div>`
+    ).join('');
+    document.getElementById("inspector-new-name").value = "";
+}
+
+function renderAdminPieceItems(){
+    let idx = document.getElementById("select-piece-item").value;
+    if (idx==undefined || idx === "") return;
+    let itemsBox = document.getElementById("admin-piece-items-list");
+    let items = pieces[idx].items||[];
+    itemsBox.innerHTML = items.map((item,i)=>{
+        const imgSrc = getItemImageSrc(item);
+        const icon = imgSrc ? `<img src="${imgSrc}" style="width:22px;height:22px;border-radius:3px;margin-right:4px;object-fit:cover;">` : "";
+        return `
+        <div class="admin-item-line"><div class="item-label-box">
+            ${icon}
+            <span>${item.name}</span></div>
+            <div>
+                <button class="edit-btn" data-pieceidx="${idx}" data-itemidx="${i}"></button>
+                <button class="remove-btn" data-pieceidx="${idx}" data-itemidx="${i}"></button>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function renderReports() {
+    let monthsSet = new Set();
+    inspections.forEach(i=>{
+        if (!i.date) return;
+        let [day, month, year] = i.date.split("/");
+        if (month && year) monthsSet.add(`${month}/${year}`);
+    });
+    let selectMonth = document.getElementById("report-month-select");
+    let months = Array.from(monthsSet).sort().reverse();
+    selectMonth.innerHTML = months.map(m=>`<option value="${m}">${m}</option>`).join('') || `<option value="">---</option>`;
+    let currentMonth = selectMonth.value || months[0] || "";
+    let embarcadas=0, retrabalho=0;
+    let t = 0;
+    inspections.forEach(i=>{
+        if (!i.date) return;
+        let [d,m,y]=i.date.split("/");
+        let mes = `${m}/${y}`;
+        if(mes!==currentMonth) return;
+        t++;
+        (i.itens || []).forEach(it=>
+            (it.status==='OK')? embarcadas++ :
+              (it.encaminhamento==='retrabalho')? retrabalho++ : embarcadas++
+        );
+    });
+    document.getElementById("total-inspecoes").textContent = inspections.length;
+    document.getElementById("volume-mensal-num").textContent = t;
+    graficoRosca.data.datasets[0].data = [embarcadas,retrabalho];
+    graficoRosca.update();
+    let tbody = document.getElementById("reports-history-body");
+    let filtered = inspections.filter(i=>{
+      if (!i.date) return false;
+      let [day, month, year] = i.date.split("/");
+      return `${month}/${year}` === currentMonth;
+    });
+    tbody.innerHTML = filtered.length ?
+      filtered.map(i=>`
+      <tr>
+        <td>${i.date}</td>
+        <td>${i.inspector}</td>
+        <td>${i.piece}</td>
+        <td>${i.descricao||'-'}</td>
+      </tr>
+      `).join('')
+      : `<tr><td colspan="4" style="text-align:center;">Nenhum histórico encontrado.</td></tr>`;
+}
+
+const ctx = document.getElementById('graficoRosca').getContext('2d');
+const graficoRosca = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+        labels: ['Embarcadas', 'Retrabalho'],
+        datasets: [{
+            data: [0, 0],
+            backgroundColor: ['#228be6', '#e23636'],
+            borderColor: '#fff',
+            borderWidth: 2
+        }]
+    },
+    options: {responsive:false,plugins:{legend:{display:false}},cutout:'60%'}
+});
+
+document.getElementById('report-month-select').onchange = renderReports;
+
+function exportCSV() {
+    if (!inspections.length) return alert("Sem inspeções!");
+    let csv = "Data,Inspetor,Peça,Descrição\n"
+        + inspections.map(i=>`${i.date},"${i.inspector}","${i.piece}","${(i.descricao||'').replace(/"/g,'""')}"`).join("\n");
+    let blob = new Blob([csv],{type:'text/csv'});
+    let url = URL.createObjectURL(blob);
+    let a = document.createElement("a");
+    a.href = url;
+    a.download = "relatorio.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+document.addEventListener("DOMContentLoaded", async ()=>{
+    if (window.fbApi && window.fbApi.loadAll) {
+      try {
+        const data = await window.fbApi.loadAll();
+        if (data.pieces && data.pieces.length) pieces = data.pieces;
+        if (data.inspectors && data.inspectors.length) inspectors = data.inspectors;
+        if (data.inspections && data.inspections.length) inspections = data.inspections;
+      } catch (e) {
+        console.error("Erro ao carregar dados do Firebase:", e);
       }
     }
-
-    // prepara objeto a salvar; se houver File não enviado (por algum motivo), saveInspection fará upload
-    const now = new Date();
-    const inspectionToSave = {
-      date: now.toLocaleDateString('pt-BR'),
-      inspector: checklistCurrentInspector,
-      piece: checklistCurrentPiece.code,
-      descricao: 'Inspeção realizada com sucesso',
-      itens: checklistItemStates.map(s => ({
-        status: s.status,
-        motivo: s.motivo,
-        encaminhamento: s.encaminhamento,
-        nome_terceiro: s.nome_terceiro,
-        foto: s.foto || null,
-        fotoUrl: s.fotoUrl || null
-      }))
-    };
-
-    if (window.fbApi && window.fbApi.saveInspection) {
-      const saved = await window.fbApi.saveInspection(inspectionToSave);
-      inspections.push(saved);
-      clearDraft();
-      alert('Inspeção finalizada e salva no Firebase!');
-    } else {
-      inspections.push({ id: 'local_' + Date.now(), ...inspectionToSave });
-      clearDraft();
-      alert('Inspeção finalizada (somente local).');
-    }
-    showScreen('home'); renderReports();
-  } catch (err) {
-    console.error('Erro ao finalizar inspeção:', err);
-    alert('Ocorreu um erro ao salvar a inspeção. Veja o console para detalhes.');
-  }
-}
-
-/* --- Admin interactions (manter funcionalidades) --- */
-document.addEventListener('click', function(event) {
-  if (event.target.closest('.edit-btn')) {
-    const btn = event.target.closest('.edit-btn');
-    const pieceIdx = btn.getAttribute('data-pieceidx');
-    const itemIdx = btn.getAttribute('data-itemidx');
-    if (itemIdx !== null && itemIdx !== undefined && itemIdx !== '') editPieceItem(parseInt(pieceIdx), parseInt(itemIdx)); else editPiece(parseInt(pieceIdx));
-  }
-  if (event.target.closest('.remove-btn')) {
-    const btn = event.target.closest('.remove-btn');
-    const pieceIdx = btn.getAttribute('data-pieceidx'); const itemIdx = btn.getAttribute('data-itemidx'); const inspIdx = btn.getAttribute('data-inspectoridx');
-    if (inspIdx !== null && inspIdx !== undefined && inspIdx !== '') removeInspector(parseInt(inspIdx));
-    else if (itemIdx !== null && itemIdx !== undefined && itemIdx !== '') removePieceItem(parseInt(pieceIdx), parseInt(itemIdx));
-    else removePiece(parseInt(pieceIdx));
-  }
+    showScreen('home');
+    renderHome();
+    renderReports();
 });
-
-/* Funções administrativas reduzidas para ficar compacto - mesmo comportamento das versões anteriores */
-function editPiece(idx){ const p = pieces[idx]; showModal(`<button class="modal-close" title="Fechar">&times;</button><div class="modal-title">Editar Peça</div><div class="modal-form-row"><label>Código:</label><input type="text" id="modal-edit-code" value="${p.code}"></div><div class="modal-form-row"><label>Descrição:</label><input type="text" id="modal-edit-desc" value="${p.description}"></div><div class="modal-form-row"><label>Imagem:</label><input type="file" id="modal-edit-img"><span>${p.image? (p.image.name||'Imagem existente'): (p.imageUrl? 'Imagem já salva': 'Nenhum arquivo escolhido')}</span></div><div style="display:flex;justify-content:flex-end;gap:15px;"><button class="btn-primary" id="modal-save-edit">Salvar</button></div>`); setTimeout(()=>{ const btn=document.getElementById('modal-save-edit'); if(!btn) return; btn.onclick=async ()=>{ const code=document.getElementById('modal-edit-code').value.trim(); const desc=document.getElementById('modal-edit-desc').value.trim(); const imgFile=document.getElementById('modal-edit-img').files[0]; if(!code||!desc) return alert('Preencha todos os campos!'); p.code=code; p.description=desc; if(imgFile){p.image=imgFile; p.imageUrl=null;} document.getElementById('modal-overlay').style.display='none'; renderAdmin(); renderHome(); if(window.fbApi && window.fbApi.savePiece) window.fbApi.savePiece(p).catch(e=>console.error('Erro ao salvar peça no Firebase:',e)); }; },0); }
-function removePiece(idx){ const p=pieces[idx]; showModal(`<button class="modal-close" title="Fechar">&times;</button><div class="modal-title" style="margin-bottom:10px;">Confirma excluir esta Peça?</div><div style="margin-bottom:25px;">Essa ação não pode ser desfeita.</div><div style="display:flex;justify-content:flex-end;gap:15px;"><button class="btn-primary" id="modal-confirm-delete">Excluir</button></div>`); setTimeout(()=>{ const btn=document.getElementById('modal-confirm-delete'); if(!btn) return; btn.onclick=()=>{ const codeToDelete=p.code; pieces.splice(idx,1); document.getElementById('modal-overlay').style.display='none'; renderAdmin(); renderHome(); if(window.fbApi && window.fbApi.deletePiece) window.fbApi.deletePiece(codeToDelete).catch(e=>console.error('Erro ao apagar peça no Firebase:',e)); }; },0); }
-function editPieceItem(pieceIdx,itemIdx){ const item=pieces[pieceIdx].items[itemIdx]; showModal(`<button class="modal-close" title="Fechar">&times;</button><div class="modal-title">Editar Item</div><div class="modal-form-row"><label>Nome:</label><input type="text" id="modal-edit-name" value="${item.name}"></div><div class="modal-form-row"><label>Descrição:</label><input type="text" id="modal-edit-desc" value="${item.description}"></div><div class="modal-form-row"><label>Imagem:</label><input type="file" id="modal-edit-img"><span>${item.image? (item.image.name||'Imagem existente'): (item.imageUrl? 'Imagem já salva': 'Nenhum arquivo escolhido')}</span></div><div style="display:flex;justify-content:flex-end;gap:15px;"><button class="btn-primary" id="modal-save-edit">Salvar</button></div>`); setTimeout(()=>{ const btn=document.getElementById('modal-save-edit'); if(!btn) return; btn.onclick=()=>{ const name=document.getElementById('modal-edit-name').value.trim(); const desc=document.getElementById('modal-edit-desc').value.trim(); const imgFile=document.getElementById('modal-edit-img').files[0]; if(!name||!desc) return alert('Preencha todos os campos!'); item.name=name; item.description=desc; if(imgFile){ item.image=imgFile; item.imageUrl=null; } document.getElementById('modal-overlay').style.display='none'; renderAdminPieceItems(); if(window.fbApi && window.fbApi.savePiece) window.fbApi.savePiece(pieces[pieceIdx]).catch(e=>console.error('Erro ao salvar item no Firebase:',e)); }; },0); }
-function removePieceItem(pieceIdx,itemIdx){ showModal(`<button class="modal-close" title="Fechar">&times;</button><div class="modal-title" style="margin-bottom:10px;">Confirma excluir este Item?</div><div style="margin-bottom:25px;">Esta ação não pode ser desfeita.</div><div style="display:flex;justify-content:flex-end;gap:15px;"><button class="btn-primary" id="modal-confirm-del-item">Excluir</button></div>`); setTimeout(()=>{ const btn=document.getElementById('modal-confirm-del-item'); if(!btn) return; btn.onclick=()=>{ pieces[pieceIdx].items.splice(itemIdx,1); document.getElementById('modal-overlay').style.display='none'; renderAdminPieceItems(); if(window.fbApi && window.fbApi.savePiece) window.fbApi.savePiece(pieces[pieceIdx]).catch(e=>console.error('Erro ao salvar peça no Firebase:',e)); }; },0); }
-document.getElementById('add-piece-btn').onclick = () => { const code=document.getElementById('new-code').value.trim(); const desc=document.getElementById('new-description').value.trim(); const imgFile=document.getElementById('new-image').files[0]; if(!code||!desc||!imgFile) { alert('Preencha todos os campos de peça!'); return; } const newPiece={code,description:desc,image:imgFile,imageUrl:null,items:[]}; pieces.push(newPiece); renderAdmin(); renderHome(); if(window.fbApi && window.fbApi.savePiece) window.fbApi.savePiece(newPiece).catch(e=>console.error('Erro ao salvar peça no Firebase:',e)); };
-document.getElementById('clear-piece-btn').onclick = ()=>{ document.getElementById('new-code').value=''; document.getElementById('new-description').value=''; document.getElementById('new-image').value=''; document.getElementById('image-file-info').textContent='Nenhum arquivo escolhido'; };
-document.getElementById('new-image').onchange = (e)=> document.getElementById('image-file-info').textContent = e.target.files[0] ? e.target.files[0].name : 'Nenhum arquivo escolhido';
-
-document.getElementById('add-piece-item-btn').onclick = ()=> {
-  const idx = document.getElementById('select-piece-item').value;
-  const name = document.getElementById('new-item-name').value.trim();
-  const desc = document.getElementById('new-item-description').value.trim();
-  const imgFile = document.getElementById('new-item-image').files[0];
-  if ((!idx && idx !== 0) || !name || !desc || !imgFile) { alert('Preencha todos os campos, incluindo imagem!'); return; }
-  pieces[idx].items.push({ name, description: desc, image: imgFile, imageUrl: null });
-  renderAdminPieceItems();
-  document.getElementById('new-item-name').value=''; document.getElementById('new-item-description').value=''; document.getElementById('new-item-image').value=''; document.getElementById('item-image-file-info').textContent='Nenhum arquivo escolhido';
-  if (window.fbApi && window.fbApi.savePiece) window.fbApi.savePiece(pieces[idx]).catch(e=>console.error('Erro ao salvar peça no Firebase:', e));
-};
-document.getElementById('select-piece-item').onchange = renderAdminPieceItems;
-document.getElementById('new-item-image').onchange = (e)=> document.getElementById('item-image-file-info').textContent = e.target.files[0] ? e.target.files[0].name : 'Nenhum arquivo escolhido';
-
-document.getElementById('add-inspector-btn').onclick = () => { const name=document.getElementById('inspector-new-name').value.trim(); if(!name){ alert('Digite o nome do inspetor!'); return; } if (inspectors.includes(name)) { alert('Já existe esse inspetor!'); return; } inspectors.push(name); renderAdmin(); renderHome(); if(window.fbApi && window.fbApi.setInspectors) window.fbApi.setInspectors(inspectors).catch(e=>console.error('Erro ao salvar inspetores no Firebase:', e)); };
-document.getElementById('clear-inspector-btn').onclick = ()=>{ document.getElementById('inspector-new-name').value=''; };
-function removeInspector(idx){ inspectors.splice(idx,1); renderAdmin(); renderHome(); if(window.fbApi && window.fbApi.setInspectors) window.fbApi.setInspectors(inspectors).catch(e=>console.error('Erro ao salvar inspetores no Firebase:', e)); }
-
-/* EXPORT CSV */
-function exportCSV() {
-  if (!inspections.length) return alert('Sem inspeções!');
-  let csv = 'Data,Inspetor,Peça,Descrição\n' + inspections.map(i=>`${i.date},"${i.inspector}","${i.piece}","${(i.descricao||'').replace(/"/g,'""')}"`).join('\n');
-  const blob = new Blob([csv], { type: 'text/csv' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href = url; a.download = 'relatorio.csv'; a.click(); URL.revokeObjectURL(url);
-}
-
-/* Inicialização: carrega dados do Firebase, restaura rascunho se houver, anexa listener de finalizar */
-document.addEventListener('DOMContentLoaded', async () => {
-  // load remote data if possible
-  if (window.fbApi && window.fbApi.loadAll) {
-    try {
-      const data = await window.fbApi.loadAll();
-      if (data.pieces && data.pieces.length) pieces = data.pieces;
-      if (data.inspectors && data.inspectors.length) inspectors = data.inspectors;
-      if (data.inspections && data.inspections.length) inspections = data.inspections;
-    } catch (e) {
-      console.error('Erro ao carregar dados do Firebase:', e);
-    }
-  } else {
-    // fallback: keep local sample data if needed
-    if (!pieces.length) pieces = [{ code: '597-2445#01', description: 'Longarina', image: null, imageUrl: null, items: [{ name: 'Dimensão A (Ø)', description: 'Verificar diâmetro da furação.' }, { name: 'Furo B posição', description: 'Conferir posição do furo de encaixe.' }] }];
-    if (!inspectors.length) inspectors = ['João Silva', 'Maria Santos'];
-  }
-
-  // attach finalize button listener ONCE
-  const btn = document.getElementById('finalizar-inspecao-btn');
-  if (btn) btn.addEventListener('click', handleFinalizarInspecaoClick);
-
-  // render UI
-  showScreen('home');
-  renderHome();
-  renderAdmin();
-  renderReports();
-
-  // If there is a last draft saved, auto-open checklist for that draft (restore after refresh)
-  const lastKey = localStorage.getItem(LAST_DRAFT_KEY);
-  if (lastKey) {
-    const draft = loadDraftForKey(lastKey);
-    if (draft && draft.piece && draft.inspector) {
-      // set selects and open checklist to restore states
-      const pieceSel = document.getElementById('piece');
-      const inspSel = document.getElementById('inspector');
-      // wait until DOM selects filled
-      setTimeout(() => {
-        // set values if still present in lists
-        if ([...pieceSel.options].some(o => o.value === draft.piece)) pieceSel.value = draft.piece;
-        if ([...inspSel.options].some(o => o.value === draft.inspector)) inspSel.value = draft.inspector;
-        // open checklist (this will merge draft)
-        if (pieceSel.value && inspSel.value) showChecklist();
-      }, 50);
-    }
-  }
-});
-
-/* Inicializa gráfico (fora do load) */
-const ctx = document.getElementById('graficoRosca').getContext('2d');
-graficoRosca = new Chart(ctx, { type: 'doughnut', data: { labels: ['Embarcadas', 'Retrabalho'], datasets: [{ data: [0,0], backgroundColor: ['#228be6','#e23636'], borderColor: '#fff', borderWidth: 2 }] }, options: { responsive:false, plugins:{ legend:{ display:false } }, cutout:'60%' } });
-
 </script>
 </body>
 </html>
