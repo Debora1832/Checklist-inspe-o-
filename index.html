@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
 <style>
-/* Mantive seu CSS original */
+/* Seu CSS original (mantido) */
 body { font-family: Arial,sans-serif; background:#fff; color:#333; margin:0;}
 .container { max-width:1200px; margin:32px auto; padding:20px; background:#fff; border-radius:8px; box-shadow:0 0 10px #0001;}
 .header { background:#003366; color:#fff; padding:15px 20px; border-radius:8px 8px 0 0; margin:-20px -20px 24px -20px; display:flex;justify-content:space-between;align-items:center;}
@@ -142,6 +142,8 @@ textarea{font-size:15px;}
 .modal-close {position: absolute; top: 12px; right: 12px;font-size: 28px; background: none; border: none; color: #093762; cursor: pointer;padding: 8px;border-radius: 7px;font-weight: bold;}
 .modal-title { font-size: 1.5em; font-weight: 700; margin-bottom: 28px; color: #093762;}
 .modal-form-row { margin-bottom:22px; } .modal-form-row label {font-weight:500;margin-right:7px;}
+.small-muted { font-size:12px;color:#666;margin-top:6px; }
+.uploading-indicator { font-size:13px;color:#444;margin-top:6px; }
 </style>
 </head>
 <body>
@@ -310,7 +312,7 @@ textarea{font-size:15px;}
     getStorage, ref as sRef, uploadBytes, getDownloadURL 
   } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-storage.js";
 
-  // CONFIG - verifique se este storageBucket está correto no seu console Firebase
+  // Ajuste: verifique este storageBucket no console do Firebase
   const firebaseConfig = {
     apiKey: "AIzaSyCAAowsqkoUjIAPhSvq6dUlKMZGdXOO1b0",
     authDomain: "magiuschecklist-9ad0f.firebaseapp.com",
@@ -325,7 +327,7 @@ textarea{font-size:15px;}
   const db = getFirestore(app);
   const storage = getStorage(app);
 
-  // Faz upload do arquivo e retorna a URL pública
+  // Faz upload do arquivo e retorna a URL pública (expõe para o front-end)
   async function uploadFileAndGetUrl(path, file) {
     if (!file) return null;
     try {
@@ -382,6 +384,7 @@ textarea{font-size:15px;}
           motivo: it.motivo,
           encaminhamento: it.encaminhamento,
           nome_terceiro: it.nome_terceiro || "",
+          // aceita vários nomes de campo que podem ter sido gravados
           foto: null,
           fotoUrl: it.fotoUrl || it.photoUrl || it.imageUrl || null
         }))
@@ -449,6 +452,7 @@ textarea{font-size:15px;}
     for (let idx = 0; idx < (inspec.itens || []).length; idx++) {
       const it = inspec.itens[idx];
       let fotoUrl = it.fotoUrl || null;
+      // se for um File, envia; se já existir fotoUrl usa-o
       if (it.foto instanceof File) {
         try {
           fotoUrl = await uploadFileAndGetUrl(
@@ -480,18 +484,20 @@ textarea{font-size:15px;}
     return { id: ref.id, ...docData };
   }
 
+  // expõe para o script principal para permitir upload imediato ao selecionar foto no checklist
   window.fbApi = {
     loadAll,
     savePiece,
     deletePiece,
     setInspectors,
-    saveInspection
+    saveInspection,
+    uploadFile: uploadFileAndGetUrl
   };
 </script>
 
 <!-- SCRIPT PRINCIPAL -->
 <script>
-/* Dados iniciais locais - serão sobrescritos por loadAll se houver dados no Firebase */
+/* Dados locais iniciais - serão sobrescritos se houver dados no Firebase */
 let pieces = [
     {
         code: "597-2445#01",
@@ -606,7 +612,7 @@ function showChecklist() {
     if(!piece || !insp) { alert("Selecione um inspetor e uma peça!"); return;}
     checklistCurrentPiece = pieces.find(p => p.code === piece);
     checklistItemStates = (checklistCurrentPiece?.items||[]).map(()=>({
-        status:null,motivo:"",foto:null,fotoUrl:null,encaminhamento:"",nome_terceiro:""
+        status:null,motivo:"",foto:null,fotoUrl:null,encaminhamento:"",nome_terceiro:"",uploading:false
     }));
     showScreen('checklist');
     renderChecklist();
@@ -643,10 +649,10 @@ function renderChecklist() {
         : `[Imagem aqui]`;
 
     document.getElementById("checklist-item-list").innerHTML = (checklistCurrentPiece?.items||[]).map((item, idx) => {
-        const state = checklistItemStates[idx];
+        const state = checklistItemStates[idx] || {};
         let divClass = "checklist-item";
-        if(state && state.status==='OK') divClass += " ok";
-        if(state && state.status==='NOK') divClass += " not-ok";
+        if(state.status==='OK') divClass += " ok";
+        if(state.status==='NOK') divClass += " not-ok";
 
         const itemImgSrc = getItemImageSrc(item);
         let fileThumb = itemImgSrc
@@ -654,8 +660,9 @@ function renderChecklist() {
             : `<div style="background-color:#e9ecef; width:120px; height:120px; border-radius:10px;"></div>`;
 
         let extra = "";
-        if(state && state.status==='NOK') {
+        if(state.status==='NOK') {
             const fotoExistingSrc = getFotoSrc(state);
+            const uploadingHtml = state.uploading ? `<div class="uploading-indicator">Enviando imagem...</div>` : '';
             extra = `
             <div class="checklist-extra-wrapper">
                 <div class="checklist-extra-block" id="extra_box_${idx}">
@@ -663,6 +670,7 @@ function renderChecklist() {
                     <textarea id="motivo_${idx}" placeholder="Descreva o motivo">${state.motivo||''}</textarea>
                     <div class="checklist-extra-label" style="margin-bottom:2px;">Foto <span style="color:#e23636">(obrigatório)</span>:</div>
                     <input type="file" id="foto_${idx}" accept="image/*">
+                    ${uploadingHtml}
                     <div class="checklist-radio-group" style="margin-top:10px;">
                         <label><input type="radio" name="encaminhar_${idx}" value="retrabalho" ${state.encaminhamento==="retrabalho"?"checked":""}> Encaminhar para retrabalho</label>
                         <label><input type="radio" name="encaminhar_${idx}" value="terceiro" ${state.encaminhamento==="terceiro"?"checked":""}> Aprovado por terceiro</label>
@@ -695,11 +703,12 @@ function renderChecklist() {
         </div>`;
     }).join('');
 
+    // handlers OK / NÃO OK
     document.querySelectorAll(".checklist-item-actions .btn-ok").forEach(btn=>{
         btn.onclick = function(){
             let idx = parseInt(btn.dataset.idx);
             checklistItemStates[idx] = {
-              status:"OK",motivo:"",foto:null,fotoUrl:null,encaminhamento:"",nome_terceiro:""
+              status:"OK",motivo:"",foto:null,fotoUrl:null,encaminhamento:"",nome_terceiro:"",uploading:false
             };
             renderChecklist();
         };
@@ -709,23 +718,54 @@ function renderChecklist() {
             let idx = parseInt(btn.dataset.idx);
             if (!checklistItemStates[idx]) checklistItemStates[idx] = {};
             checklistItemStates[idx].status = "NOK";
+            checklistItemStates[idx].uploading = false;
             renderChecklist();
         };
     });
 
+    // attach inputs' handlers (motivo, foto onchange, radios, nome terceiro)
     checklistItemStates.forEach((st, idx) => {
-        if(st && st.status==='NOK') {
+        if(!st) return;
+        if(st.status==='NOK') {
             let motivoEl = document.getElementById('motivo_'+idx);
             let fotoEl = document.getElementById('foto_'+idx);
             let nomeTerceiroEl = document.getElementById("nome_terceiro_"+idx);
             let retrabalhoRadio = document.querySelector('input[name="encaminhar_'+idx+'"][value="retrabalho"]');
             let terceiroRadio = document.querySelector('input[name="encaminhar_'+idx+'"][value="terceiro"]');
             if (motivoEl) motivoEl.oninput = ()=>{ checklistItemStates[idx].motivo = motivoEl.value; }
-            if (fotoEl) fotoEl.onchange = ()=>{ 
-              checklistItemStates[idx].foto = fotoEl.files[0]||null; 
-              checklistItemStates[idx].fotoUrl = null;
-              renderChecklist(); 
-            };
+            if (fotoEl) {
+                fotoEl.onchange = async ()=>{ 
+                  const file = fotoEl.files[0]||null;
+                  checklistItemStates[idx].foto = file;
+                  // remove fotoUrl in case user replaced file
+                  checklistItemStates[idx].fotoUrl = null;
+                  // show uploading indicator
+                  checklistItemStates[idx].uploading = true;
+                  renderChecklist();
+                  // se API de upload estiver disponível, subir imediatamente para preservar imagem ao atualizar a página
+                  if (file && window.fbApi && window.fbApi.uploadFile) {
+                    try {
+                      // caminho inclui código da peça para organização e usa timestamp
+                      const path = `inspections/${encodeURIComponent(checklistCurrentPiece.code)}/${Date.now()}_${idx}`;
+                      const url = await window.fbApi.uploadFile(path, file);
+                      // quando upload completar, armazenar a URL em fotoUrl e remover o File para evitar re-upload no saveInspection
+                      checklistItemStates[idx].fotoUrl = url;
+                      checklistItemStates[idx].foto = null;
+                      checklistItemStates[idx].uploading = false;
+                      renderChecklist();
+                    } catch (err) {
+                      console.error("Erro ao enviar foto imediatamente:", err);
+                      checklistItemStates[idx].uploading = false;
+                      renderChecklist();
+                      alert("Falha ao enviar foto. Tente novamente.");
+                    }
+                  } else {
+                    // sem upload imediato (ex.: offline), apenas renderiza a pré-visualização local
+                    checklistItemStates[idx].uploading = false;
+                    renderChecklist();
+                  }
+                };
+            }
             if(retrabalhoRadio){
                 retrabalhoRadio.onchange = ()=>{
                     checklistItemStates[idx].encaminhamento = "retrabalho";
@@ -743,9 +783,11 @@ function renderChecklist() {
             }
         }
     });
+
     renderNokLibrary();
 
-    document.getElementById("finalizar-inspecao-btn").onclick = function() {
+    // finalizar inspeção
+    document.getElementById("finalizar-inspecao-btn").onclick = async function() {
       for (let i = 0; i < checklistItemStates.length; i++) {
         const state = checklistItemStates[i];
         if (!state || !state.status) {
@@ -782,33 +824,34 @@ function renderChecklist() {
           motivo: s.motivo,
           encaminhamento: s.encaminhamento,
           nome_terceiro: s.nome_terceiro,
+          // se já foi enviado (fotoUrl), não precisa reenviar; caso contrário, pode manter File em foto para upload no backend
           foto: s.foto || null,
           fotoUrl: s.fotoUrl || null
         }))
       };
 
       if (window.fbApi && window.fbApi.saveInspection) {
-        window.fbApi.saveInspection(inspectionToSave)
-          .then(saved => {
-            inspections.push(saved);
-            alert("Inspeção finalizada e salva no Firebase!");
-            showScreen('home');
-            renderReports();
-          })
-          .catch(e => {
-            console.error("Erro ao salvar inspeção no Firebase:", e);
-            inspections.push({
-              ...inspectionToSave,
-              itens: inspectionToSave.itens.map(it => ({ ...it, foto:null, fotoUrl:null }))
-            });
-            alert("Erro ao salvar no servidor. Inspeção salva só localmente neste navegador.");
-            showScreen('home');
-            renderReports();
+        try {
+          const saved = await window.fbApi.saveInspection(inspectionToSave);
+          inspections.push(saved);
+          alert("Inspeção finalizada e salva no Firebase!");
+          showScreen('home');
+          renderReports();
+        } catch (e) {
+          console.error("Erro ao salvar inspeção no Firebase:", e);
+          // fallback local (sem fotos)
+          inspections.push({
+            ...inspectionToSave,
+            itens: inspectionToSave.itens.map(it => ({ ...it, foto:null, fotoUrl: it.fotoUrl || null }))
           });
+          alert("Erro ao salvar no servidor. Inspeção salva só localmente neste navegador.");
+          showScreen('home');
+          renderReports();
+        }
       } else {
         inspections.push({
           ...inspectionToSave,
-          itens: inspectionToSave.itens.map(it => ({ ...it, foto:null, fotoUrl:null }))
+          itens: inspectionToSave.itens.map(it => ({ ...it, foto:null, fotoUrl: it.fotoUrl || null }))
         });
         alert("Inspeção finalizada (somente local).");
         showScreen('home');
@@ -817,7 +860,6 @@ function renderChecklist() {
     };
 }
 
-/* NOVA renderNokLibrary (constrói DOM e exibe imagem anexada dos casos NÃO OK) */
 function renderNokLibrary() {
   const nokDiv = document.getElementById('checklist-nok-library');
   const pieceCode = checklistCurrentPiece?.code || "";
@@ -837,7 +879,6 @@ function renderNokLibrary() {
     return;
   }
 
-  // título
   const title = document.createElement('div');
   title.className = 'checklist-nok-title';
   title.textContent = `Histórico de Casos de Reprovação (${nokCases.length})`;
@@ -877,7 +918,7 @@ function renderNokLibrary() {
     card.appendChild(encaminEl);
     card.appendChild(document.createElement('br'));
 
-    // tenta obter URL da foto no conjunto de possíveis campos
+    // tenta obter URL da foto em múltiplos campos possíveis
     const src = caso.fotoUrl || caso.foto || caso.imageUrl || caso.photoUrl || caso.foto_url || null;
     if (src) {
       const img = document.createElement('img');
@@ -899,7 +940,6 @@ function renderNokLibrary() {
   nokDiv.appendChild(list);
 }
 
-/* Funções de edição/remover peã e itens (mantidas) */
 function editPiece(idx){
   const p = pieces[idx];
   showModal(`
