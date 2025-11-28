@@ -8,260 +8,298 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
 </head>
 <body>
-<div class="app-wrapper">
-  <div class="container">
-    <!-- HEADER -->
-    <div class="header">
-      <div class="header-left">
-        <div class="header-circles" aria-hidden="true">
-          <span></span><span></span><span></span><span></span>
+<div class="app-shell">
+  <!-- MENU LATERAL -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon">M</div>
+      <div class="sidebar-logo-text">
+        <div class="sidebar-logo-main">MAGIUS</div>
+        <div class="sidebar-logo-sub">Checklist</div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <button class="sidebar-item active" onclick="selectSidebar('home')">
+        <span class="sidebar-icon">🏠</span>
+        <span class="sidebar-label">Checklist</span>
+      </button>
+
+      <button class="sidebar-item" onclick="selectSidebar('inspectors')">
+        <span class="sidebar-icon">👤</span>
+        <span class="sidebar-label">Inspetores</span>
+      </button>
+
+      <button class="sidebar-item" onclick="selectSidebar('pieces')">
+        <span class="sidebar-icon">🧩</span>
+        <span class="sidebar-label">Peças & Itens</span>
+      </button>
+
+      <button class="sidebar-item" onclick="selectSidebar('dashboard')">
+        <span class="sidebar-icon">📊</span>
+        <span class="sidebar-label">Dashboard</span>
+      </button>
+
+      <button class="sidebar-item" onclick="selectSidebar('reports')">
+        <span class="sidebar-icon">📑</span>
+        <span class="sidebar-label">Relatórios</span>
+      </button>
+    </nav>
+  </aside>
+
+  <!-- CONTEÚDO PRINCIPAL -->
+  <div class="app-wrapper">
+    <div class="container">
+
+      <!-- HEADER SUPERIOR -->
+      <div class="header">
+        <div class="header-left">
+          <div class="header-circles" aria-hidden="true">
+            <span></span><span></span><span></span><span></span>
+          </div>
+          <div class="header-tagline">
+            AJUDANDO A CONSTRUIR, CULTIVAR,<br>TRANSPORTAR E SEGUIR EM FRENTE
+          </div>
         </div>
-        <div class="header-tagline">
-          AJUDANDO A CONSTRUIR, CULTIVAR,<br>TRANSPORTAR E SEGUIR EM FRENTE
+        <div class="header-brand">
+          <div class="header-logo">MAGIUS</div>
+          <div class="header-sub">METALÚRGICA INDUSTRIAL</div>
         </div>
       </div>
-      <div class="header-brand">
-        <div class="header-logo">MAGIUS</div>
-        <div class="header-sub">METALÚRGICA INDUSTRIAL</div>
-      </div>
-    </div>
 
-    <!-- NAV -->
-    <div class="main-nav">
-      <div class="nav-left">
-        <button class="btn-home" onclick="showScreen('home')">Início</button>
-      </div>
-      <div class="nav-right" role="navigation" aria-label="Navegação principal">
-        <button class="nav-btn" onclick="showScreen('reports')">Relatórios</button>
-        <button class="nav-btn admin" onclick="requestAdminAccess()">Admin</button>
-      </div>
-    </div>
-
-    <!-- HOME -->
-    <div id="home" class="screen active">
-      <h2 class="page-title">MAGIUS - Sistema de Checklist de Inspeção</h2>
-
-      <div class="form-group">
-        <label for="inspector">Inspetor:</label>
-        <select id="inspector">
-          <option value="" disabled selected>Selecionar inspetor</option>
-        </select>
+      <!-- NAV SUPERIOR -->
+      <div class="main-nav">
+        <div class="nav-left">
+          <button class="btn-home" onclick="selectSidebar('home')">Início</button>
+        </div>
+        <div class="nav-right" role="navigation" aria-label="Navegação principal">
+          <button class="nav-btn" onclick="selectSidebar('dashboard')">Dashboard</button>
+          <button class="nav-btn admin" onclick="requestAdminAccess()">Admin</button>
+        </div>
       </div>
 
-      <div id="inspector-preview" class="inspector-preview"></div>
+      <!-- HOME / SELEÇÃO -->
+      <div id="home" class="screen active">
+        <h2 class="page-title">MAGIUS - Sistema de Checklist de Inspeção</h2>
 
-      <div class="form-group">
-        <label for="piece">Peça:</label>
-        <select id="piece">
-          <option value="" disabled selected>Selecionar peça</option>
-        </select>
+        <div class="form-group">
+          <label for="inspector">Inspetor:</label>
+          <select id="inspector">
+            <option value="" disabled selected>Selecionar inspetor</option>
+          </select>
+        </div>
+
+        <div id="inspector-preview" class="inspector-preview"></div>
+
+        <div class="form-group">
+          <label for="piece">Peça:</label>
+          <select id="piece">
+            <option value="" disabled selected>Selecionar peça</option>
+          </select>
+        </div>
+
+        <button class="btn-checklist" onclick="showChecklist()">Iniciar Checklist</button>
       </div>
 
-      <button class="btn-checklist" onclick="showChecklist()">Iniciar Checklist</button>
-    </div>
+      <!-- CHECKLIST -->
+      <div id="checklist" class="screen">
+        <div class="checklist-layout">
+          <div class="checklist-main">
+            <div class="checklist-piece-title" id="checklist-header"></div>
 
-    <!-- CHECKLIST -->
-    <div id="checklist" class="screen">
-      <div class="checklist-layout">
-        <!-- coluna principal -->
-        <div class="checklist-main">
-          <div class="checklist-piece-title" id="checklist-header"></div>
-          <div id="piece-image-box" class="piece-image-box">
-            [Imagem aqui]
+            <div id="piece-image-box" class="piece-image-box">
+              [Imagem aqui]
+            </div>
+
+            <div class="checklist-item-list" id="checklist-item-list"></div>
+
+            <button class="btn-primary" id="finalizar-inspecao-btn" style="margin-top:20px;">
+              Finalizar Inspeção
+            </button>
+
+            <div class="checklist-nok-library" id="checklist-nok-library"></div>
           </div>
 
-          <div class="checklist-item-list" id="checklist-item-list"></div>
-          <button class="btn-primary" id="finalizar-inspecao-btn" style="margin-top:20px;">
-            Finalizar Inspeção
-          </button>
-
-          <div class="checklist-nok-library" id="checklist-nok-library"></div>
-        </div>
-
-        <!-- painel lateral -->
-        <aside class="checklist-side">
-          <div class="side-card" id="side-inspector-card">
-            <div class="side-card-title">Inspetor</div>
-            <div class="side-inspector-content">
-              <div class="side-avatar" id="side-inspector-avatar"></div>
-              <div>
-                <div id="side-inspector-name" class="side-inspector-name">—</div>
-                <div id="side-inspector-info" class="side-inspector-info">
-                  Selecione um inspetor na tela inicial.
+          <!-- LATERAL DO CHECKLIST -->
+          <aside class="checklist-side">
+            <div class="side-card" id="side-inspector-card">
+              <div class="side-card-title">Inspetor</div>
+              <div class="side-inspector-content">
+                <div class="side-avatar" id="side-inspector-avatar">?</div>
+                <div>
+                  <div id="side-inspector-name" class="side-inspector-name">—</div>
+                  <div id="side-inspector-info" class="side-inspector-info">
+                    Selecione um inspetor na tela inicial.
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          <div class="side-card" id="side-piece-card">
-            <div class="side-card-title">Peça</div>
-            <div class="side-piece-code" id="side-piece-code">—</div>
-            <div class="side-piece-desc" id="side-piece-desc">
-              Selecione peça na tela inicial.
+            <div class="side-card" id="side-piece-card">
+              <div class="side-card-title">Peça</div>
+              <div class="side-piece-code" id="side-piece-code">—</div>
+              <div class="side-piece-desc" id="side-piece-desc">
+                Selecione a peça na tela inicial.
+              </div>
+              <div class="side-piece-extra">
+                <span id="side-piece-items">0 itens de inspeção</span>
+              </div>
             </div>
-            <div class="side-piece-extra">
-              <span id="side-piece-items">0 itens de inspeção</span>
+
+            <div class="side-card" id="side-status-card">
+              <div class="side-card-title">Status da inspeção</div>
+              <div class="side-status-row">
+                <span>Itens OK:</span>
+                <span id="side-count-ok" class="badge badge-ok">0</span>
+              </div>
+              <div class="side-status-row">
+                <span>Itens NÃO OK:</span>
+                <span id="side-count-nok" class="badge badge-nok">0</span>
+              </div>
+              <div class="side-status-row">
+                <span>Itens pendentes:</span>
+                <span id="side-count-pend" class="badge badge-pend">0</span>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </div>
+
+      <!-- DASHBOARD + RELATÓRIOS -->
+      <div id="reports" class="screen">
+        <div class="report-header">Dashboard & Relatórios</div>
+
+        <div class="report-controls">
+          <button class="report-csv-btn" onclick="exportCSV()">Exportar CSV</button>
+          <div class="report-total-volume">
+            Total (todas inspeções):
+            <span id="total-inspecoes" class="report-total-num">0</span>
+          </div>
+          <div>
+            <label for="report-month-select" class="label-inline">Selecionar mês:</label>
+            <select id="report-month-select"></select>
+          </div>
+        </div>
+
+        <div class="section-title">Volume mensal</div>
+        <div id="volume-mensal-box">
+          <span id="volume-mensal-num">0</span> inspeções
+        </div>
+
+        <div class="report-graph-area">
+          <canvas id="graficoRosca" class="grafico-bola" width="140" height="140"></canvas>
+          <div class="report-graph-legend">
+            <div class="report-graph-legend-item">
+              <span class="legend-color legend-ok"></span>
+              <span>Embarcadas</span>
+            </div>
+            <div class="report-graph-legend-item">
+              <span class="legend-color legend-retrabalho"></span>
+              <span>Retrabalho</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-title">Histórico (planilha)</div>
+        <div class="report-history">
+          <table class="report-history-table">
+            <thead>
+              <tr>
+                <th>Data</th>
+                <th>Inspetor</th>
+                <th>Peça</th>
+                <th>Descrição</th>
+              </tr>
+            </thead>
+            <tbody id="reports-history-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ADMIN -->
+      <div id="admin" class="screen">
+        <!-- Peças -->
+        <div class="activity-block" id="admin-pieces-block">
+          <div class="activity-header">Peças & Itens</div>
+
+          <div id="piece-form-fields">
+            <div class="form-group">
+              <label for="new-code">Código (Ex: 597-2445#01)</label>
+              <input type="text" id="new-code" placeholder="Ex: 597-2445#01">
+            </div>
+            <div class="form-group">
+              <label for="new-description">Descrição</label>
+              <input type="text" id="new-description" placeholder="Longarina">
+            </div>
+            <div class="form-group">
+              <label for="new-image">Imagem (obrigatória)</label>
+              <input type="file" id="new-image" accept="image/*">
+              <p class="file-info" id="image-file-info">Nenhum arquivo escolhido</p>
             </div>
           </div>
 
-          <div class="side-card" id="side-status-card">
-            <div class="side-card-title">Status da inspeção</div>
-            <div class="side-status-row">
-              <span>Itens OK:</span>
-              <span id="side-count-ok" class="badge badge-ok">0</span>
+          <button class="btn-primary" id="add-piece-btn" style="margin-right:10px;">Adicionar peça</button>
+          <button class="btn-secondary" id="clear-piece-btn">Limpar</button>
+
+          <h4 class="section-subtitle" style="margin-top:20px;">Peças existentes</h4>
+          <div class="admin-piece-list" id="admin-piece-list"></div>
+
+          <hr style="margin:18px 0; border:none; border-top:1px solid #d0d7e8;">
+
+          <div class="form-group">
+            <label for="select-piece-item">Selecionar peça para itens</label>
+            <select id="select-piece-item"></select>
+          </div>
+
+          <h5 class="section-subtitle">Itens atuais</h5>
+          <div id="admin-piece-items-list"></div>
+
+          <div id="item-form-fields">
+            <div class="form-group">
+              <label for="new-item-name">Novo item</label>
+              <input type="text" id="new-item-name" placeholder="Dimensão X">
             </div>
-            <div class="side-status-row">
-              <span>Itens NÃO OK:</span>
-              <span id="side-count-nok" class="badge badge-nok">0</span>
+            <div class="form-group">
+              <label for="new-item-description">Descrição do item (obrigatória)</label>
+              <textarea id="new-item-description"></textarea>
             </div>
-            <div class="side-status-row">
-              <span>Itens pendentes:</span>
-              <span id="side-count-pend" class="badge badge-pend">0</span>
+            <div class="form-group">
+              <label for="new-item-image">Imagem do item (obrigatória)</label>
+              <input type="file" id="new-item-image" accept="image/*">
+              <p class="file-info" id="item-image-file-info">Nenhum arquivo escolhido</p>
             </div>
           </div>
-        </aside>
-      </div>
-    </div>
 
-    <!-- RELATÓRIOS -->
-    <div id="reports" class="screen">
-      <div class="report-header">Relatórios</div>
-      <div class="report-controls">
-        <button class="report-csv-btn" onclick="exportCSV()">Exportar CSV</button>
-        <div class="report-total-volume">
-          Total (todas inspeções):
-          <span id="total-inspecoes" class="report-total-num">0</span>
+          <button class="btn-primary" id="add-piece-item-btn">Adicionar item</button>
         </div>
-        <div>
-          <label for="report-month-select" class="label-inline">Selecionar mês:</label>
-          <select id="report-month-select"></select>
-        </div>
-      </div>
 
-      <div class="section-title">Volume mensal</div>
-      <div id="volume-mensal-box">
-        <span id="volume-mensal-num">0</span> inspeções
-      </div>
+        <!-- Inspetores -->
+        <div class="activity-block" id="admin-inspectors-block">
+          <div class="activity-header">Inspetores</div>
 
-      <div class="report-graph-area">
-        <canvas id="graficoRosca" class="grafico-bola" width="140" height="140"></canvas>
-        <div class="report-graph-legend">
-          <div class="report-graph-legend-item">
-            <span class="legend-color legend-ok"></span>
-            <span>Embarcadas</span>
+          <div style="display:flex;">
+            <input type="text" id="inspector-new-name" placeholder="Nome do inspetor" style="margin-right:10px;">
+            <button class="btn-primary" id="add-inspector-btn" style="height:40px;">Adicionar</button>
+            <button class="btn-secondary" id="clear-inspector-btn" style="height:40px;margin-left:5px;">Limpar</button>
           </div>
-          <div class="report-graph-legend-item">
-            <span class="legend-color legend-retrabalho"></span>
-            <span>Retrabalho</span>
-          </div>
+
+          <h4 class="section-subtitle" style="margin-top:20px;">Inspetores cadastrados</h4>
+          <div class="admin-inspector-list" id="admin-inspector-list"></div>
         </div>
       </div>
 
-      <div class="section-title">Histórico</div>
-      <div class="report-history">
-        <table class="report-history-table">
-          <thead>
-          <tr>
-            <th>Data</th>
-            <th>Inspetor</th>
-            <th>Peça</th>
-            <th>Descrição</th>
-          </tr>
-          </thead>
-          <tbody id="reports-history-body"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- ADMIN -->
-    <div id="admin" class="screen">
-      <!-- Peças -->
-      <div class="activity-block">
-        <div class="activity-header">Adicionar Peça</div>
-        <div id="piece-form-fields">
-          <div class="form-group">
-            <label for="new-code">Código (Ex: 597-2445#01)</label>
-            <input type="text" id="new-code" placeholder="Ex: 597-2445#01">
-          </div>
-          <div class="form-group">
-            <label for="new-description">Descrição</label>
-            <input type="text" id="new-description" placeholder="Longarina">
-          </div>
-          <div class="form-group">
-            <label for="new-image">Imagem (obrigatória)</label>
-            <input type="file" id="new-image" accept="image/*">
-            <p class="file-info" id="image-file-info">Nenhum arquivo escolhido</p>
-          </div>
-        </div>
-        <button class="btn-primary" id="add-piece-btn" style="margin-right:10px;">Adicionar peça</button>
-        <button class="btn-secondary" id="clear-piece-btn">Limpar</button>
-
-        <h4 class="section-subtitle" style="margin-top:20px;">Peças existentes</h4>
-        <div class="admin-piece-list" id="admin-piece-list"></div>
+      <!-- MODAL GLOBAL -->
+      <div id="modal-overlay" class="modal-overlay" style="display:none;">
+        <div id="modal-box" class="modal-box"></div>
       </div>
 
-      <!-- Itens -->
-      <div class="activity-block">
-        <div class="activity-header">Adicionar Item</div>
-        <div class="form-group">
-          <label for="select-piece-item">Selecionar peça</label>
-          <select id="select-piece-item"></select>
-        </div>
-
-        <h5 class="section-subtitle">Itens atuais</h5>
-        <div id="admin-piece-items-list"></div>
-
-        <div id="item-form-fields">
-          <div class="form-group">
-            <label for="new-item-name">Novo item</label>
-            <input type="text" id="new-item-name" placeholder="Dimensão X">
-          </div>
-          <div class="form-group">
-            <label for="new-item-description">Descrição do item (obrigatória)</label>
-            <textarea id="new-item-description"></textarea>
-          </div>
-          <div class="form-group">
-            <label for="new-item-image">Imagem do item (obrigatória)</label>
-            <input type="file" id="new-item-image" accept="image/*">
-            <p class="file-info" id="item-image-file-info">Nenhum arquivo escolhido</p>
-          </div>
-        </div>
-        <button class="btn-primary" id="add-piece-item-btn">Adicionar item</button>
-      </div>
-
-      <!-- Inspetores -->
-      <div class="activity-block">
-        <div class="activity-header">Adicionar Inspetor</div>
-
-        <div class="form-group">
-          <label for="inspector-new-name">Nome do inspetor</label>
-          <input type="text" id="inspector-new-name" placeholder="Nome do inspetor">
-        </div>
-
-        <div class="form-group">
-          <label for="inspector-new-photo">Foto do inspetor</label>
-          <input type="file" id="inspector-new-photo" accept="image/*">
-          <p class="file-info" id="inspector-photo-info">Nenhum arquivo escolhido</p>
-        </div>
-
-        <div class="admin-buttons-row">
-          <button class="btn-primary" id="add-inspector-btn">Adicionar</button>
-          <button class="btn-secondary" id="clear-inspector-btn">Limpar</button>
-        </div>
-
-        <h4 class="section-subtitle" style="margin-top:20px;">Inspetores</h4>
-        <div class="admin-inspector-list" id="admin-inspector-list"></div>
-      </div>
-    </div>
-
-    <!-- MODAL GLOBAL -->
-    <div id="modal-overlay" class="modal-overlay" style="display:none;">
-      <div id="modal-box" class="modal-box"></div>
     </div>
   </div>
 </div>
 
+<!-- Firebase (já existe no repositório) -->
 <script type="module" src="firebase.js"></script>
+<!-- Lógica principal -->
 <script src="app.js"></script>
 </body>
 </html>
