@@ -5,238 +5,240 @@
   <title>Magius - Sistema de Checklist de Inspeção</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- CSS -->
-  <link rel="stylesheet" href="estilo.css">
+  <!-- CSS separado -->
+  <link rel="stylesheet" href="style.css">
 
-  <!-- Chart.js -->
+  <!-- Chart.js para o gráfico dos relatórios -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
 
-  <!-- Firebase (módulo) -->
+  <!-- Firebase (módulo que expõe window.fbApi) -->
   <script type="module" src="firebase.js"></script>
 
-  <!-- Lógica da aplicação -->
+  <!-- Lógica principal da aplicação -->
   <script src="app.js" defer></script>
 </head>
 <body>
 <div class="container">
-  <!-- Cabeçalho azul -->
-  <div class="header">
-    <div class="header-left">
-      <div class="header-circles" aria-hidden="true">
-        <span></span><span></span><span></span><span></span>
-      </div>
-      <div class="header-tagline">
-        AJUDANDO A CONSTRUIR, CULTIVAR,<br>TRANSPORTAR E SEGUIR EM FRENTE
-      </div>
-    </div>
-
-    <div class="header-brand">
-      <div class="header-logo">MAGIUS</div>
-      <div class="header-sub">METALÚRGICA INDUSTRIAL</div>
-    </div>
-  </div>
-
-  <!-- NAV abaixo do cabeçalho -->
-  <div class="main-nav">
-    <div class="nav-left">
-      <button class="btn-home" onclick="showScreen('home')">Início</button>
-    </div>
-    <div class="nav-right" role="navigation" aria-label="Navegação principal">
-      <button class="nav-btn" onclick="showScreen('reports')">Relatórios</button>
-      <button class="nav-btn admin" onclick="requestAdminAccess()">Admin</button>
-    </div>
-  </div>
-
-  <!-- TELA HOME -->
-  <div id="home" class="screen active">
-    <h2 class="home-title">MAGIUS - Sistema de Checklist de Inspeção</h2>
-
-    <div class="form-group">
-      <label for="inspector">Inspetor:</label>
-      <select id="inspector">
-        <option value="" disabled selected>Selecionar inspetor</option>
-      </select>
-    </div>
-
-    <div class="form-group">
-      <label for="piece">Peça:</label>
-      <select id="piece">
-        <option value="" disabled selected>Selecionar peça</option>
-      </select>
-    </div>
-
-    <button class="btn-checklist" onclick="showChecklist()">Iniciar Checklist</button>
-  </div>
-
-  <!-- TELA CHECKLIST -->
-  <div id="checklist" class="screen">
-    <div class="checklist-piece-title" id="checklist-header"></div>
-
-    <!-- NOVO RESUMO ITENS / OK / NÃO OK -->
-    <div id="checklist-summary" class="checklist-summary">
-      <div class="summary-card">
-        <span class="summary-label">Itens</span>
-        <span class="summary-value" id="sum-itens">0</span>
-      </div>
-      <div class="summary-card">
-        <span class="summary-label">OK</span>
-        <span class="summary-value" id="sum-ok">0</span>
-      </div>
-      <div class="summary-card">
-        <span class="summary-label">NÃO OK</span>
-        <span class="summary-value" id="sum-nok">0</span>
-      </div>
-    </div>
-
-    <div id="piece-image-box" class="piece-image-box">
-      [Imagem aqui]
-    </div>
-
-    <div class="checklist-item-list" id="checklist-item-list"></div>
-
-    <button class="btn-primary" id="finalizar-inspecao-btn" style="margin-top:20px;">
-      Finalizar Inspeção
-    </button>
-
-    <div class="checklist-nok-library" id="checklist-nok-library"></div>
-  </div>
-
-  <!-- TELA RELATÓRIOS -->
-  <div id="reports" class="screen">
-    <div class="report-header">Relatórios</div>
-
-    <div class="report-controls">
-      <button class="report-csv-btn" onclick="exportCSV()">Exportar CSV</button>
-      <div class="report-total-volume">
-        Total (todas inspeções):
-        <span id="total-inspecoes" class="total-inspecoes-num">0</span>
-      </div>
-      <div>
-        <label for="report-month-select" class="label-mes">Selecionar mês:</label>
-        <select id="report-month-select"></select>
-      </div>
-    </div>
-
-    <div class="label-volume-mensal">Volume mensal</div>
-    <div id="volume-mensal-box">
-      <span id="volume-mensal-num">0</span> inspeções
-    </div>
-
-    <div class="report-graph-area">
-      <canvas id="graficoRosca" class="grafico-bola" width="140" height="140"></canvas>
-      <div class="report-graph-legend">
-        <div class="report-graph-legend-item">
-          <span class="legend-box legend-ok"></span>
-          <span>Embarcadas</span>
+    <!-- cabeçalho azul: apenas marca e tagline -->
+    <div class="header">
+      <div class="header-left">
+        <div class="header-circles" aria-hidden="true">
+          <span></span><span></span><span></span><span></span>
         </div>
-        <div class="report-graph-legend-item">
-          <span class="legend-box legend-retrabalho"></span>
-          <span>Retrabalho</span>
+        <div class="header-tagline">
+          AJUDANDO A CONSTRUIR, CULTIVAR,<br>
+          TRANSPORTAR E SEGUIR EM FRENTE
         </div>
       </div>
+
+      <div class="header-brand">
+        <div class="header-logo">MAGIUS</div>
+        <div class="header-sub">METALÚRGICA INDUSTRIAL</div>
+      </div>
     </div>
 
-    <div class="label-historico">Histórico</div>
-    <div class="report-history">
-      <table class="report-history-table">
-        <thead>
-        <tr>
-          <th>Data</th>
-          <th>Inspetor</th>
-          <th>Peça</th>
-          <th>Descrição</th>
-        </tr>
-        </thead>
-        <tbody id="reports-history-body"></tbody>
-      </table>
+    <!-- NAV abaixo do cabeçalho azul -->
+    <div class="main-nav">
+      <div class="nav-left">
+        <button class="btn-home" onclick="showScreen('home')">Início</button>
+      </div>
+      <div class="nav-right" role="navigation" aria-label="Navegação principal">
+        <button class="nav-btn" onclick="showScreen('reports')">Relatórios</button>
+        <button class="nav-btn admin" onclick="requestAdminAccess()">Admin</button>
+      </div>
     </div>
-  </div>
 
-  <!-- TELA ADMIN -->
-  <div id="admin" class="screen">
-    <!-- Peças -->
-    <div class="activity-block">
-      <div class="activity-header">Adicionar Peça</div>
-
-      <div id="piece-form-fields">
+    <!-- TELA HOME -->
+    <div id="home" class="screen active">
+        <h2 style="font-size:2em;font-weight:700;margin-bottom:0.2em;">
+          MAGIUS - Sistema de Checklist de Inspeção
+        </h2>
         <div class="form-group">
-          <label for="new-code">Código (Ex: 597-2445#01)</label>
-          <input type="text" id="new-code" placeholder="Ex: 597-2445#01">
+            <label for="inspector">Inspetor:</label>
+            <select id="inspector">
+              <option value="" disabled selected>Selecionar inspetor</option>
+            </select>
         </div>
         <div class="form-group">
-          <label for="new-description">Descrição</label>
-          <input type="text" id="new-description" placeholder="Longarina">
+            <label for="piece">Peça:</label>
+            <select id="piece">
+              <option value="" disabled selected>Selecionar peça</option>
+            </select>
         </div>
-        <div class="form-group">
-          <label for="new-image">Imagem (obrigatória)</label>
-          <input type="file" id="new-image">
-          <p class="helper-text" id="image-file-info">Nenhum arquivo escolhido</p>
-        </div>
-      </div>
-
-      <div class="edit-control hide" id="edit-piece-controls">
-        <button class="btn-primary" id="update-piece-btn">Salvar edição</button>
-      </div>
-
-      <button class="btn-primary" id="add-piece-btn" style="margin-right:10px;">Adicionar peça</button>
-      <button class="btn-secondary" id="clear-piece-btn">Limpar</button>
-
-      <h4 class="sub-section-title">Peças existentes</h4>
-      <div class="admin-piece-list" id="admin-piece-list"></div>
+        <button class="btn-checklist" onclick="showChecklist()">Iniciar Checklist</button>
     </div>
 
-    <!-- Itens -->
-    <div class="activity-block">
-      <div class="activity-header">Adicionar Item</div>
+    <!-- TELA CHECKLIST -->
+    <div id="checklist" class="screen">
+        <div class="checklist-piece-title" id="checklist-header"></div>
 
-      <div class="form-group">
-        <label for="select-piece-item">Selecionar peça</label>
-        <select id="select-piece-item"></select>
-      </div>
-
-      <h5 class="sub-section-title">Itens atuais</h5>
-      <div id="admin-piece-items-list"></div>
-
-      <div id="item-form-fields">
-        <div class="form-group">
-          <label for="new-item-name">Novo item</label>
-          <input type="text" id="new-item-name" placeholder="Dimensão X">
+        <div id="piece-image-box"
+             style="background-color:#f0f5fa;height:260px;margin-bottom:20px;
+                    display:flex;justify-content:center;align-items:center;
+                    border-radius:10px;">
+            [Imagem aqui]
         </div>
-        <div class="form-group">
-          <label for="new-item-description">Descrição do item (obrigatória)</label>
-          <textarea id="new-item-description"></textarea>
-        </div>
-        <div class="form-group">
-          <label for="new-item-image">Imagem do item (obrigatória)</label>
-          <input type="file" id="new-item-image">
-          <p class="helper-text" id="item-image-file-info">Nenhum arquivo escolhido</p>
-        </div>
-      </div>
 
-      <div class="edit-control hide" id="edit-item-controls">
-        <button class="btn-primary" id="update-piece-item-btn">Salvar edição</button>
-      </div>
+        <div class="checklist-item-list" id="checklist-item-list"></div>
 
-      <button class="btn-primary" id="add-piece-item-btn">Adicionar item</button>
+        <button class="btn-primary" id="finalizar-inspecao-btn" style="margin-top:20px;">
+          Finalizar Inspeção
+        </button>
+
+        <div class="checklist-nok-library" id="checklist-nok-library"></div>
     </div>
 
-    <!-- Inspetores -->
-    <div class="activity-block">
-      <div class="activity-header">Adicionar Inspetor</div>
-      <div class="add-inspector-row">
-        <input type="text" id="inspector-new-name" placeholder="Nome do inspetor">
-        <button class="btn-primary" id="add-inspector-btn">Adicionar</button>
-        <button class="btn-secondary" id="clear-inspector-btn">Limpar</button>
-      </div>
-      <h4 class="sub-section-title">Inspetores</h4>
-      <div class="admin-inspector-list" id="admin-inspector-list"></div>
-    </div>
-  </div>
+    <!-- TELA RELATÓRIOS -->
+    <div id="reports" class="screen">
+      <div class="report-header">Relatórios</div>
 
-  <!-- Modal genérico -->
-  <div id="modal-overlay" class="modal-overlay" style="display:none;">
-    <div id="modal-box" class="modal-box"></div>
-  </div>
+      <div class="report-controls">
+          <button class="report-csv-btn" onclick="exportCSV()">Exportar CSV</button>
+
+          <div class="report-total-volume">
+              Total (todas inspeções):
+              <span id="total-inspecoes" style="margin-left:10px;font-size:21px;">0</span>
+          </div>
+
+          <div>
+              <label for="report-month-select"
+                     style="font-weight:500;margin-right:7px;">Selecionar mês:</label>
+              <select id="report-month-select"></select>
+          </div>
+      </div>
+
+      <div style="font-weight:600;margin-bottom:7px;">Volume mensal</div>
+      <div id="volume-mensal-box">
+        <span id="volume-mensal-num">0</span> inspeções
+      </div>
+
+      <div class="report-graph-area">
+          <canvas id="graficoRosca" class="grafico-bola" width="140" height="140"></canvas>
+          <div class="report-graph-legend">
+              <div class="report-graph-legend-item">
+                  <span style="display:inline-block;width:18px;height:18px;
+                               background:#228be6;border-radius:6px;"></span>
+                  <span>Embarcadas</span>
+              </div>
+              <div class="report-graph-legend-item">
+                  <span style="display:inline-block;width:18px;height:18px;
+                               background:#e23636;border-radius:6px;"></span>
+                  <span>Retrabalho</span>
+              </div>
+          </div>
+      </div>
+
+      <div style="font-weight:600;margin-bottom:6px;">Histórico</div>
+      <div class="report-history">
+          <table class="report-history-table">
+              <thead>
+                  <tr>
+                      <th>Data</th>
+                      <th>Inspetor</th>
+                      <th>Peça</th>
+                      <th>Descrição</th>
+                  </tr>
+              </thead>
+              <tbody id="reports-history-body"></tbody>
+          </table>
+      </div>
+    </div>
+
+    <!-- TELA ADMIN -->
+    <div id="admin" class="screen">
+        <!-- BLOCO PEÇAS -->
+        <div class="activity-block">
+            <div class="activity-header">Adicionar Peça</div>
+            <div id="piece-form-fields">
+                <div class="form-group">
+                    <label for="new-code">Código (Ex: 597-2445#01)</label>
+                    <input type="text" id="new-code" placeholder="Ex: 597-2445#01">
+                </div>
+                <div class="form-group">
+                    <label for="new-description">Descrição</label>
+                    <input type="text" id="new-description" placeholder="Longarina">
+                </div>
+                <div class="form-group">
+                    <label for="new-image">Imagem (obrigatória)</label>
+                    <input type="file" id="new-image">
+                    <p style="font-size:12px;margin-top:5px;" id="image-file-info">
+                      Nenhum arquivo escolhido
+                    </p>
+                </div>
+            </div>
+
+            <div class="edit-control hide" id="edit-piece-controls">
+                <button class="btn-primary" id="update-piece-btn">Salvar edição</button>
+            </div>
+
+            <button class="btn-primary" id="add-piece-btn" style="margin-right:10px;">
+              Adicionar peça
+            </button>
+            <button class="btn-secondary" id="clear-piece-btn">Limpar</button>
+
+            <h4 style="margin-top:30px;">Peças existentes</h4>
+            <div class="admin-piece-list" id="admin-piece-list"></div>
+        </div>
+
+        <!-- BLOCO ITENS -->
+        <div class="activity-block">
+            <div class="activity-header">Adicionar Item</div>
+            <div class="form-group">
+                <label for="select-piece-item">Selecionar peça</label>
+                <select id="select-piece-item"></select>
+            </div>
+
+            <h5 style="margin-top:10px;">Itens atuais</h5>
+            <div id="admin-piece-items-list"></div>
+
+            <div id="item-form-fields">
+                <div class="form-group">
+                    <label for="new-item-name">Novo item</label>
+                    <input type="text" id="new-item-name" placeholder="Dimensão X">
+                </div>
+                <div class="form-group">
+                    <label for="new-item-description">Descrição do item (obrigatória)</label>
+                    <textarea id="new-item-description"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="new-item-image">Imagem do item (obrigatória)</label>
+                    <input type="file" id="new-item-image">
+                    <p style="font-size:12px;margin-top:5px;" id="item-image-file-info">
+                      Nenhum arquivo escolhido
+                    </p>
+                </div>
+            </div>
+
+            <div class="edit-control hide" id="edit-item-controls">
+                <button class="btn-primary" id="update-piece-item-btn">Salvar edição</button>
+            </div>
+
+            <button class="btn-primary" id="add-piece-item-btn">Adicionar item</button>
+        </div>
+
+        <!-- BLOCO INSPETORES -->
+        <div class="activity-block">
+            <div class="activity-header">Adicionar Inspetor</div>
+            <div style="display:flex;">
+                <input type="text" id="inspector-new-name"
+                       placeholder="Nome do inspetor" style="margin-right:10px;">
+                <button class="btn-primary" id="add-inspector-btn" style="height:40px;">
+                  Adicionar
+                </button>
+                <button class="btn-secondary" id="clear-inspector-btn"
+                        style="height:40px;margin-left:5px;">Limpar</button>
+            </div>
+
+            <h4 style="margin-top:30px;">Inspetores</h4>
+            <div class="admin-inspector-list" id="admin-inspector-list"></div>
+        </div>
+    </div>
+
+    <!-- MODAL GENÉRICO -->
+    <div id="modal-overlay" class="modal-overlay" style="display:none;">
+      <div id="modal-box" class="modal-box"></div>
+    </div>
 </div>
 </body>
 </html>
+
