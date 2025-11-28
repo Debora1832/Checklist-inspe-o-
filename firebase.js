@@ -1,7 +1,9 @@
-// firebase.js
+// firebase.js  (carregado como <script type="module">)
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
 import {
-  getFirestore, collection, doc, setDoc, addDoc, getDocs, getDoc, deleteDoc
+  getFirestore, collection, doc, setDoc, addDoc,
+  getDocs, getDoc, deleteDoc
 } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
 import {
   getStorage, ref as sRef, uploadBytes, getDownloadURL
@@ -10,7 +12,6 @@ import {
   getAuth, signInAnonymously, onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
 
-// CONFIG DO SEU PROJETO
 const firebaseConfig = {
   apiKey: "AIzaSyCAAowsqkoUjIAPhSvq6dUlKMZGdXOO1b0",
   authDomain: "magiuschecklist-9ad0f.firebaseapp.com",
@@ -25,43 +26,36 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const storage = getStorage(app);
 
-// Auth anônima
+// Auth anônimo (para liberar regras que exigem auth)
 const auth = getAuth(app);
-signInAnonymously(auth)
-  .then(() => console.log("Autenticado anonimamente (Firebase Auth)"))
-  .catch(err => {
-    console.warn("Falha ao autenticar anonimamente:", err);
-  });
-
+signInAnonymously(auth).catch(err => {
+  console.warn("Falha ao autenticar anonimamente:", err);
+});
 onAuthStateChanged(auth, user => {
-  if (user) {
-    console.log("Auth state: usuário autenticado", user.uid);
-  } else {
-    console.log("Auth state: não autenticado");
-  }
+  if (user) console.log("Auth OK:", user.uid);
 });
 
-// util upload
+// Helper upload
 async function uploadFileAndGetUrl(path, file) {
   if (!file) return null;
-  try {
-    const ref = sRef(storage, path);
-    const metadata = { contentType: file.type || 'image/jpeg' };
-    await uploadBytes(ref, file, metadata);
-    const url = await getDownloadURL(ref);
-    return url;
-  } catch (err) {
-    console.error("Falha ao enviar arquivo para o Storage:", err, { path, fileName: file && file.name });
-    throw err;
-  }
+  const ref = sRef(storage, path);
+  const metadata = { contentType: file.type || "image/jpeg" };
+  const snap = await uploadBytes(ref, file, metadata);
+  const url = await getDownloadURL(snap.ref);
+  return url;
 }
 
-// loadAll
+/**
+ * Carrega peças, inspetores e inspeções.
+ * Inspetores agora são objetos { name, photoUrl }.
+ * Se encontrar string, converte.
+ */
 async function loadAll() {
   const pieces = [];
   let inspectors = [];
-  let inspections = [];
+  const inspections = [];
 
+  // Peças
   try {
     const piecesSnap = await getDocs(collection(db, "pieces"));
     piecesSnap.docs.forEach(d => {
@@ -79,20 +73,33 @@ async function loadAll() {
         }))
       });
     });
-  } catch (err) {
-    console.warn("Não foi possível carregar 'pieces' do Firestore:", err);
+  } catch (e) {
+    console.warn("Erro ao carregar 'pieces':", e);
   }
 
+  // Inspetores
   try {
     const inspRef = doc(db, "config", "inspectors");
     const inspSnap = await getDoc(inspRef);
-    if (inspSnap && inspSnap.exists()) {
-      inspectors = inspSnap.data().list || [];
+    if (inspSnap.exists()) {
+      const raw = inspSnap.data().list || [];
+      inspectors = raw
+        .map(it => {
+          if (typeof it === "string") {
+            return { name: it, photoUrl: null };
+          }
+          return {
+            name: it.name || "",
+            photoUrl: it.photoUrl || null
+          };
+        })
+        .filter(it => it.name);
     }
-  } catch (err) {
-    console.warn("Não foi possível carregar 'inspectors' do Firestore:", err);
+  } catch (e) {
+    console.warn("Erro ao carregar 'inspectors':", e);
   }
 
+  // Inspeções
   try {
     const inspecSnap = await getDocs(collection(db, "inspections"));
     inspecSnap.docs.forEach(d => {
@@ -113,123 +120,117 @@ async function loadAll() {
         }))
       });
     });
-  } catch (err) {
-    console.warn("Não foi possível carregar 'inspections' do Firestore:", err);
+  } catch (e) {
+    console.warn("Erro ao carregar 'inspections':", e);
   }
 
   return { pieces, inspectors, inspections };
 }
 
-// savePiece
+// Salvar / apagar peça
 async function savePiece(piece) {
   if (!piece || !piece.code) return;
-  try {
-    let imageUrl = piece.imageUrl || null;
-    if (piece.image instanceof File) {
-      const ext = (piece.image.name && piece.image.name.split('.').pop()) || 'jpg';
-      imageUrl = await uploadFileAndGetUrl(
-        `pieces/${piece.code}/main_${Date.now()}.${ext}`,
-        piece.image
+
+  let imageUrl = piece.imageUrl || null;
+  if (piece.image instanceof File) {
+    const ext = (piece.image.name && piece.image.name.split(".").pop()) || "jpg";
+    imageUrl = await uploadFileAndGetUrl(
+      `pieces/${piece.code}/main_${Date.now()}.${ext}`,
+      piece.image
+    );
+  }
+
+  const itemsToSave = [];
+  for (let idx = 0; idx < (piece.items || []).length; idx++) {
+    const it = piece.items[idx];
+    let itemImageUrl = it.imageUrl || null;
+    if (it.image instanceof File) {
+      const ext = (it.image.name && it.image.name.split(".").pop()) || "jpg";
+      itemImageUrl = await uploadFileAndGetUrl(
+        `pieces/${piece.code}/items/${idx}_${Date.now()}.${ext}`,
+        it.image
       );
     }
-
-    const itemsToSave = [];
-    for (let idx = 0; idx < (piece.items || []).length; idx++) {
-      const it = piece.items[idx];
-      let itemImageUrl = it.imageUrl || null;
-      if (it.image instanceof File) {
-        const ext = (it.image.name && it.image.name.split('.').pop()) || 'jpg';
-        itemImageUrl = await uploadFileAndGetUrl(
-          `pieces/${piece.code}/items/${idx}_${Date.now()}.${ext}`,
-          it.image
-        );
-      }
-      itemsToSave.push({
-        name: it.name,
-        description: it.description,
-        imageUrl: itemImageUrl
-      });
-    }
-
-    const ref = doc(db, "pieces", piece.code);
-    await setDoc(ref, {
-      code: piece.code,
-      description: piece.description,
-      imageUrl,
-      items: itemsToSave
+    itemsToSave.push({
+      name: it.name,
+      description: it.description,
+      imageUrl: itemImageUrl
     });
-    console.log("Peça salva com sucesso:", piece.code);
-  } catch (err) {
-    console.error("Erro em savePiece:", err, piece && piece.code);
-    throw err;
   }
+
+  const ref = doc(db, "pieces", piece.code);
+  await setDoc(ref, {
+    code: piece.code,
+    description: piece.description,
+    imageUrl,
+    items: itemsToSave
+  });
 }
 
-// deletePiece
 async function deletePiece(code) {
   if (!code) return;
-  try {
-    await deleteDoc(doc(db, "pieces", code));
-    console.log("Peça removida:", code);
-  } catch (err) {
-    console.error("Erro ao deletar peça:", code, err);
-    throw err;
-  }
+  await deleteDoc(doc(db, "pieces", code));
 }
 
+/**
+ * Salva lista de inspetores.
+ * Cada inspetor pode ter .photo (File) -> faz upload e grava photoUrl.
+ */
 async function setInspectors(list) {
-  try {
-    const ref = doc(db, "config", "inspectors");
-    await setDoc(ref, { list: list || [] });
-    console.log("Lista de inspetores atualizada.");
-  } catch (err) {
-    console.error("Erro ao salvar inspetores:", err);
-    throw err;
-  }
-}
-
-// saveInspection
-async function saveInspection(inspec) {
-  try {
-    const timeStamp = Date.now();
-    const itensToSave = [];
-
-    for (let idx = 0; idx < (inspec.itens || []).length; idx++) {
-      const it = inspec.itens[idx];
-      let fotoUrl = it.fotoUrl || null;
-      if (it.foto instanceof File) {
-        const ext = (it.foto.name && it.foto.name.split('.').pop()) || 'jpg';
-        fotoUrl = await uploadFileAndGetUrl(
-          `inspections/${inspec.piece}/${timeStamp}_${idx}.${ext}`,
-          it.foto
-        );
-      }
-      itensToSave.push({
-        status: it.status,
-        motivo: it.motivo,
-        encaminhamento: it.encaminhamento,
-        nome_terceiro: it.nome_terceiro || "",
-        fotoUrl
-      });
+  const sanitized = [];
+  for (const insp of (list || [])) {
+    if (!insp || !insp.name) continue;
+    let photoUrl = insp.photoUrl || null;
+    if (insp.photo instanceof File) {
+      const safeName = encodeURIComponent(insp.name.replace(/\s+/g, "_"));
+      const ext = (insp.photo.name && insp.photo.name.split(".").pop()) || "jpg";
+      photoUrl = await uploadFileAndGetUrl(
+        `inspectors/${safeName}_${Date.now()}.${ext}`,
+        insp.photo
+      );
     }
-
-    const docData = {
-      date: inspec.date,
-      inspector: inspec.inspector,
-      piece: inspec.piece,
-      descricao: inspec.descricao || "",
-      itens: itensToSave
-    };
-    const ref = await addDoc(collection(db, "inspections"), docData);
-    console.log("Inspeção salva no Firestore, id:", ref.id);
-    return { id: ref.id, ...docData };
-  } catch (err) {
-    console.error("saveInspection falhou:", err);
-    throw err;
+    sanitized.push({ name: insp.name, photoUrl });
   }
+  const ref = doc(db, "config", "inspectors");
+  await setDoc(ref, { list: sanitized });
 }
 
-// expõe a API no window
+// Salvar inspeção com fotos de NOK
+async function saveInspection(inspec) {
+  const timestamp = Date.now();
+  const itensToSave = [];
+
+  for (let idx = 0; idx < (inspec.itens || []).length; idx++) {
+    const it = inspec.itens[idx];
+    let fotoUrl = it.fotoUrl || null;
+    if (it.foto instanceof File) {
+      const ext = (it.foto.name && it.foto.name.split(".").pop()) || "jpg";
+      fotoUrl = await uploadFileAndGetUrl(
+        `inspections/${inspec.piece}/${timestamp}_${idx}.${ext}`,
+        it.foto
+      );
+    }
+    itensToSave.push({
+      status: it.status,
+      motivo: it.motivo,
+      encaminhamento: it.encaminhamento,
+      nome_terceiro: it.nome_terceiro || "",
+      fotoUrl
+    });
+  }
+
+  const data = {
+    date: inspec.date,
+    inspector: inspec.inspector,
+    piece: inspec.piece,
+    descricao: inspec.descricao || "",
+    itens: itensToSave
+  };
+  const ref = await addDoc(collection(db, "inspections"), data);
+  return { id: ref.id, ...data };
+}
+
+// Expor API global
 window.fbApi = {
   loadAll,
   savePiece,
@@ -237,3 +238,5 @@ window.fbApi = {
   setInspectors,
   saveInspection
 };
+
+
