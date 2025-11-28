@@ -1,0 +1,646 @@
+/* --- ESTILOS GERAIS --- */
+body {
+    font-family: Arial, sans-serif;
+    background:#fff;
+    color:#333;
+    margin:0;
+}
+.container {
+    max-width:1200px;
+    margin:32px auto;
+    padding:20px;
+    background:#fff;
+    border-radius:8px;
+    box-shadow:0 0 10px #0001;
+}
+
+/* --- HEADER AZUL --- */
+.header {
+    background:#003366;
+    color:#fff;
+    padding:15px 20px;
+    border-radius:8px 8px 0 0;
+    margin:-20px -20px 0 -20px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+.header-left {
+    display:flex;
+    align-items:center;
+    gap:12px;
+}
+.header-circles {
+    display:flex;
+    gap:8px;
+    align-items:center;
+}
+.header-circles span {
+    display:inline-block;
+    width:18px;
+    height:18px;
+    border:2px solid #fff;
+    border-radius:50%;
+}
+.header-tagline {
+    color:#fff;
+    font-size:13px;
+    line-height:1.1;
+    font-weight:600;
+}
+.header-brand {
+    text-align:right;
+    min-width:180px;
+}
+.header-logo {
+    font-size:22px;
+    font-weight:800;
+}
+.header-sub {
+    font-size:12px;
+    color:#cfe6ff;
+    margin-top:4px;
+    font-weight:600;
+}
+
+/* --- NAV BAR --- */
+.main-nav {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin:14px -20px 20px -20px;
+  padding:12px 20px;
+  background:transparent;
+  border-radius:0 0 8px 8px;
+}
+.nav-left { display:flex; align-items:center; }
+.btn-home {
+  background:#093762;
+  color:#fff;
+  border:none;
+  padding:10px 16px;
+  border-radius:8px;
+  font-weight:700;
+  cursor:pointer;
+  box-shadow:0 2px 6px #0001;
+}
+.nav-right {
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  align-items:flex-end;
+}
+.nav-right .nav-btn {
+  background:#0b4b7a;
+  color:#fff;
+  border:none;
+  padding:10px 18px;
+  border-radius:8px;
+  cursor:pointer;
+  box-shadow:0 2px 6px #0001;
+  min-width:140px;
+  text-align:center;
+}
+.nav-right .nav-btn.admin { background:#093762; }
+
+@media (max-width:700px){
+  .main-nav {
+    flex-direction:column;
+    align-items:flex-start;
+    gap:10px;
+    margin:12px -20px 16px -20px;
+  }
+  .nav-right {
+    flex-direction:row;
+    width:100%;
+    justify-content:flex-end;
+    align-items:center;
+    gap:8px;
+  }
+  .nav-right .nav-btn {
+    min-width:unset;
+    padding:8px 12px;
+  }
+  .header { padding:12px; }
+  .header-tagline { font-size:12px; }
+}
+
+/* BOTÕES PADRÃO */
+.nav-btn,.btn-primary,.btn-secondary,.btn-checklist,#finalizar-inspecao-btn {
+    background:#003366 !important;
+    color:#fff !important;
+    border:none;
+    box-shadow:0 2px 6px #0001;
+}
+.nav-btn,.btn-primary,.btn-checklist {
+    padding:13px 32px;
+    border-radius:9px;
+    font-size:20px;
+    font-weight:500;
+    cursor:pointer;
+    transition:background-color 0.2s;
+}
+.btn-primary,.btn-secondary,.btn-checklist,#finalizar-inspecao-btn {
+    padding:10px 20px;
+    border-radius:5px;
+    font-size:16px;
+    font-weight:500;
+}
+.btn-secondary { margin-left:10px; }
+
+.nav-btn:hover,.btn-primary:hover,.btn-secondary:hover,
+.btn-checklist:hover,#finalizar-inspecao-btn:hover {
+    background:#005bb5 !important;
+    color:#fff;
+}
+
+.home-title {
+    font-size:2em;
+    font-weight:700;
+    margin-bottom:0.2em;
+}
+
+/* BOTÕES DE EDIÇÃO/EXCLUSÃO */
+.edit-btn {
+    background:#093762 !important;
+    color:#fff !important;
+    border-radius:8px;
+    cursor:pointer;
+    width:56px;
+    height:44px;
+    padding:0;
+    font-size:0;
+    border:none;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+}
+.edit-btn::before {
+    content:'';
+    display:inline-block;
+    width:20px;
+    height:20px;
+    background-image:url('data:image/svg+xml;utf8,<svg fill="white" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 512 512"><path d="M290.74,93.24,218.49,165.49,346.51,293.5,418.76,221.25C437.1,202.91,437.1,175,418.76,156.66Z"/><path d="M223.25,232.6l-20,20L87.27,347.68a16,16,0,0,0,0,22.62l54.57,54.58a16,16,0,0,0,22.62,0l95.88-95.89,20-20Z"/></svg>');
+    background-size:20px 20px;
+    background-repeat:no-repeat;
+}
+.remove-btn {
+    background:#dc3545 !important;
+    color:#fff !important;
+    border-radius:8px;
+    width:44px;
+    height:44px;
+    padding:0;
+    font-size:0;
+    border:none;
+    margin-left:8px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+}
+.remove-btn::before {
+    content:'';
+    display:inline-block;
+    width:20px;
+    height:20px;
+    background-image:url('data:image/svg+xml;utf8,<svg fill="white" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 320 320"><path d="M20 20L300 300M20 300L300 20" stroke="white" stroke-width="35"/></svg>');
+    background-size:20px 20px;
+    background-repeat:no-repeat;
+}
+
+/* FORMULÁRIOS / LAYOUT BÁSICO */
+.activity-header,.report-header {
+    background:#003366;
+    color:#fff;
+    padding:11px 18px;
+    font-size:17px;
+    font-weight:700;
+    border-radius:7px 7px 0 0;
+    margin-bottom:14px;
+    letter-spacing:0.5px;
+}
+.report-header { margin-bottom:24px; }
+
+.activity-block {
+    background:#f6f8fa;
+    border-radius:7px;
+    box-shadow:0 2px 12px #0001;
+    margin-bottom:28px;
+    padding:20px 18px 15px 18px;
+}
+
+.form-group label {
+    font-weight:bold;
+    display:block;
+    margin-bottom:5px;
+}
+input[type="text"],select,textarea {
+    width:100%;
+    padding:10px;
+    margin:8px 0 16px 0;
+    border:1px solid #ccc;
+    border-radius:4px;
+    box-sizing:border-box;
+}
+input[type="file"] { margin-bottom:12px; }
+textarea { font-size:15px; }
+
+.screen { display:none; padding:20px 0; }
+.screen.active { display:block; }
+
+.file-info {
+    font-size:12px;
+    margin-top:5px;
+}
+
+.admin-subtitle {
+    margin-top:30px;
+}
+.admin-inspector-form {
+    display:flex;
+}
+.admin-inspector-form input {
+    margin-right:10px;
+}
+.admin-inspector-form .btn-primary,
+.admin-inspector-form .btn-secondary {
+    height:40px;
+}
+
+/* CHECKLIST VISUAL */
+.checklist-piece-title {
+    font-size:2.4em;
+    font-weight:700;
+    color:#003366;
+    margin-bottom:15px;
+}
+.piece-image-box {
+    background-color:#f0f5fa;
+    height:260px;
+    margin-bottom:20px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    border-radius:10px;
+}
+
+.checklist-item {
+    display:flex;
+    align-items:flex-start;
+    background:#f9f9f9;
+    border:1px solid #ddd;
+    border-radius:4px;
+    margin-bottom:10px;
+    padding:10px;
+    transition:background 0.25s;
+    position:relative;
+}
+.checklist-item.ok { background:#dafdda !important; }
+.checklist-item.not-ok { background:#fedede !important; }
+
+.checklist-item-info {
+    flex-grow:1;
+    padding-left:10px;
+}
+.checklist-item-actions {
+    display:flex;
+    gap:0;
+    align-items:center;
+    height:38px;
+    margin-left:6px;
+}
+.checklist-item-actions .btn-ok,
+.checklist-item-actions .btn-nao-ok {
+    width:90px;
+    height:38px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    border:none;
+    outline:none;
+    font-size:18px;
+    font-family:Arial,sans-serif;
+    font-weight:700;
+    color:#fff;
+    margin:0;
+    cursor:pointer;
+    border-radius:3px;
+    transition:filter 0.15s;
+    background:#28b649 !important;
+}
+.checklist-item-actions .btn-nao-ok {
+    background:#e23636 !important;
+    margin-left:-1px;
+}
+.checklist-item-actions .btn-ok {
+    border-top-right-radius:0;
+    border-bottom-right-radius:0;
+}
+.checklist-item-actions .btn-nao-ok {
+    border-top-left-radius:0;
+    border-bottom-left-radius:0;
+}
+
+/* BLOCO EXTRA QUANDO NOK */
+.checklist-extra-wrapper {
+    width:100%;
+    margin-top:6px;
+    display:flex;
+    flex-direction:row;
+    gap:0;
+}
+.checklist-extra-block {
+    flex:1;
+    padding:15px;
+    border-radius:6px;
+    border:2px solid #e23636;
+    background:#fff6f7;
+    box-sizing:border-box;
+    display:flex;
+    flex-direction:column;
+    gap:17px;
+    margin-left:0;
+}
+.checklist-extra-label {
+    color:#e23636;
+    font-weight:600;
+    margin-bottom:7px;
+    font-size:16px;
+}
+.checklist-radio-group {
+    display:flex;
+    gap:32px;
+    margin-top:2px;
+}
+.checklist-radio-group label {
+    font-size:17px;
+    font-weight:600;
+}
+input[type="radio"] {
+    margin-right:7px;
+    transform:scale(1.2);
+}
+.checklist-terceiro-nome-box {
+    margin-top:8px;
+}
+.checklist-terceiro-nome-box label {
+    font-size:15px;
+    font-weight:600;
+    margin-bottom:4px;
+    display:block;
+}
+.checklist-terceiro-nome-box input {
+    padding:8px;
+    border-radius:4px;
+    border:1px solid #bbb;
+    width:99%;
+}
+input[type="file"] { margin-bottom:4px; }
+.hide { display:none !important; }
+
+/* LISTAS ADMIN */
+.admin-piece-item,.admin-inspector-item {
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:5px 10px;
+    border:1px solid #eee;
+    margin-bottom:5px;
+    background:#f9f9f9;
+    border-radius:4px;
+}
+.admin-piece-list,.admin-inspector-list {
+    margin-top:10px;
+    max-height:200px;
+    overflow-y:auto;
+}
+.admin-item-line {
+    display:flex;
+    align-items:center;
+    justify-content:flex-end;
+    margin-bottom:5px;
+    gap:6px;
+}
+.item-label-box {
+    display:flex;
+    align-items:center;
+    gap:6px;
+    flex-grow:1;
+    word-break:break-word;
+}
+.edit-control {
+    margin-top:8px;
+    display:flex;
+    gap:8px;
+}
+
+/* RELATÓRIOS */
+.report-controls {
+    display:flex;
+    align-items:center;
+    gap:30px;
+    margin-bottom:22px;
+}
+.report-total-volume,.report-csv-btn {
+    padding:13px 34px;
+    background:#093762;
+    color:#fff;
+    font-weight:700;
+    border-radius:8px;
+    box-shadow:0 3px 11px #0001;
+    font-size:18px;
+    display:inline-flex;
+    align-items:center;
+    border:none;
+    cursor:pointer;
+}
+.report-csv-btn:hover { background:#16457c; }
+#report-month-select {
+    padding:6px 12px;
+    border-radius:5px;
+    border:1px solid #bbb;
+    font-size:15px;
+}
+.report-total-num {
+    margin-left:10px;
+    font-size:21px;
+}
+.report-section-title {
+    font-weight:600;
+    margin-bottom:7px;
+}
+#volume-mensal-box {
+    border:1px solid #ddd;
+    padding:38px 20px;
+    text-align:center;
+    background-color:#f8fafc;
+    border-radius:6px;
+    margin-bottom:18px;
+    font-size:21px;
+}
+.report-graph-area {
+    background:#f8f8fc;
+    border:1px solid #ddd;
+    border-radius:12px;
+    margin-bottom:30px;
+    padding:10px 0 30px 0;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+}
+.report-graph-legend {
+    display:flex;
+    gap:30px;
+    justify-content:center;
+    margin-top:8px;
+}
+.report-graph-legend-item {
+    display:flex;
+    gap:7px;
+    align-items:center;
+    font-weight:500;
+    margin-top:9px;
+}
+.grafico-bola {
+    width:140px;
+    height:140px;
+}
+.legend-box {
+    display:inline-block;
+    width:18px;
+    height:18px;
+    border-radius:6px;
+}
+.legend-ok { background:#228be6; }
+.legend-rework { background:#e23636; }
+
+.report-history-table {
+    width:100%;
+    background:#e8f0fa;
+    border-radius:8px;
+    box-shadow:0 1px 6px #0001;
+    border-spacing:0;
+    border-collapse:separate;
+    margin-top:7px;
+}
+.report-history-table thead tr { background:#dde7f3; }
+.report-history-table th {
+    padding:14px 0;
+    border-bottom:2px solid #093762;
+    font-weight:700;
+    font-size:17px;
+    text-align:center;
+}
+.report-history-table td {
+    padding:12px 0;
+    border-bottom:1px solid #b8d4f1;
+    font-size:17px;
+    text-align:center;
+    background:#e8f0fa;
+}
+
+@media (max-width: 600px) {
+    .container { padding:10px; }
+    .report-controls { flex-direction:column; gap:14px; }
+    .report-total-volume, .report-csv-btn {
+        width:100%;
+        justify-content:center;
+    }
+}
+
+/* BIBLIOTECA NOK */
+.checklist-nok-library {
+  background:#f8f0f3;
+  border-radius:10px;
+  padding:12px 16px;
+  margin-top:30px;
+  margin-bottom:10px;
+}
+.checklist-nok-library-list {
+  display:flex;
+  flex-wrap:wrap;
+  gap:18px;
+}
+.checklist-nok-case {
+  background:#f8f4f6;
+  border-radius:9px;
+  border:2px solid #e23636;
+  padding:17px;
+  width:260px;
+  box-sizing:border-box;
+  word-break:break-word;
+}
+.checklist-nok-case img {
+  width:100%;
+  max-width:200px;
+  max-height:160px;
+  object-fit:cover;
+  margin-top:8px;
+  cursor:pointer;
+  border-radius:8px;
+  box-shadow:0 2px 16px #0002;
+}
+.checklist-nok-title {
+  font-size:1.12em;
+  color:#e23636;
+  font-weight:700;
+  margin-bottom:17px;
+}
+@media (max-width: 700px) {
+  .checklist-nok-library-list {
+    flex-direction:column;
+    gap:11px;
+  }
+  .checklist-nok-case {
+    width:100%;
+    max-width:99vw;
+  }
+}
+
+/* MODAL */
+.modal-overlay {
+    position:fixed;
+    top:0; left:0; right:0; bottom:0;
+    background:rgba(0,0,0,0.35);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    z-index:9999;
+}
+.modal-box {
+    background:#fff;
+    border-radius:15px;
+    box-shadow:0 6px 24px #0002;
+    padding:36px 30px 30px 30px;
+    min-width:320px;
+    max-width:98vw;
+    max-height:96vh;
+    position:relative;
+}
+.modal-close {
+    position:absolute;
+    top:12px;
+    right:12px;
+    font-size:28px;
+    background:none;
+    border:none;
+    color:#093762;
+    cursor:pointer;
+    padding:8px;
+    border-radius:7px;
+    font-weight:bold;
+}
+.modal-title {
+    font-size:1.5em;
+    font-weight:700;
+    margin-bottom:28px;
+    color:#093762;
+}
+.modal-form-row {
+    margin-bottom:22px;
+}
+.modal-form-row label {
+    font-weight:500;
+    margin-right:7px;
+}
