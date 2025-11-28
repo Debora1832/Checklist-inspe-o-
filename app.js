@@ -1,13 +1,12 @@
-// app.js (lógica de UI)
+// app.js
 
-// senha simples do Admin (mesma que você já usava)
 const ADMIN_PASSWORD = "Magius123";
 window.adminAuthenticated = false;
 
-/** DADOS EM MEMÓRIA
- *  pieces: [{ code, description, image, imageUrl, items:[{name, description, image, imageUrl}] }]
- *  inspectors: [{ name, photo, photoUrl }]
- *  inspections: [{...}]
+/**
+ * pieces: [{ code, description, image, imageUrl, items:[{name, description, image, imageUrl}] }]
+ * inspectors: [{ name, photo, photoUrl }]
+ * inspections: [...]
  */
 let pieces = [
   {
@@ -22,13 +21,14 @@ let pieces = [
     ]
   }
 ];
+
 let inspectors = [
   { name: "João Silva", photo: null, photoUrl: null },
   { name: "Maria Santos", photo: null, photoUrl: null }
 ];
+
 let inspections = [];
 
-// estado da checklist atual
 let checklistItemStates = [];
 let checklistCurrentPiece = null;
 let currentInspectorName = "";
@@ -41,7 +41,7 @@ const screens = {
   admin: document.getElementById("admin")
 };
 
-/* ---------- helpers de imagem ---------- */
+/* ---------- Helpers de imagem ---------- */
 function getPieceImageSrc(piece) {
   if (!piece) return null;
   if (piece.image instanceof File) return URL.createObjectURL(piece.image);
@@ -96,8 +96,9 @@ function showImageModal(src) {
     <img src="${src}" style="max-width:80vw;max-height:80vh;display:block;margin:auto;border-radius:10px;">
   `);
 }
+window.showImageModal = showImageModal;
 
-/* ---------- ADMIN: acesso ---------- */
+/* ---------- Admin access ---------- */
 function requestAdminAccess() {
   if (window.adminAuthenticated) {
     showScreen("admin");
@@ -123,12 +124,6 @@ function requestAdminAccess() {
     const btnCancel = document.getElementById("modal-admin-cancel");
     const passInput = document.getElementById("admin-pass");
 
-    if (btnCancel) {
-      btnCancel.onclick = () => {
-        overlay.style.display = "none";
-        box.innerHTML = "";
-      };
-    }
     function doLogin() {
       const val = passInput.value || "";
       if (val === ADMIN_PASSWORD) {
@@ -142,6 +137,12 @@ function requestAdminAccess() {
         passInput.focus();
       }
     }
+    if (btnCancel) {
+      btnCancel.onclick = () => {
+        overlay.style.display = "none";
+        box.innerHTML = "";
+      };
+    }
     if (btnLogin) btnLogin.onclick = doLogin;
     if (passInput) {
       passInput.addEventListener("keyup", e => {
@@ -151,10 +152,11 @@ function requestAdminAccess() {
     }
   }, 0);
 }
+window.requestAdminAccess = requestAdminAccess;
 
-/* ---------- NAVEGAÇÃO ENTRE TELAS ---------- */
+/* ---------- Navegação ---------- */
 function showScreen(id) {
-  Object.keys(screens).forEach(key => screens[key].classList.remove("active"));
+  Object.keys(screens).forEach(k => screens[k].classList.remove("active"));
   if (screens[id]) screens[id].classList.add("active");
 
   if (id === "home") renderHome();
@@ -163,7 +165,6 @@ function showScreen(id) {
   if (id === "reports") renderReports();
 }
 window.showScreen = showScreen;
-window.requestAdminAccess = requestAdminAccess;
 
 /* ---------- HOME ---------- */
 function renderInspectorPreview(name) {
@@ -186,6 +187,7 @@ function renderInspectorPreview(name) {
     </div>
   `;
 }
+
 function renderHome() {
   const inspSel = document.getElementById("inspector");
   const pieceSel = document.getElementById("piece");
@@ -203,7 +205,6 @@ function renderHome() {
     renderInspectorPreview(currentInspectorName);
   };
 
-  // se já havia um inspetor selecionado
   if (currentInspectorName) {
     inspSel.value = currentInspectorName;
     renderInspectorPreview(currentInspectorName);
@@ -250,7 +251,7 @@ function updateSideStatus() {
 }
 
 function renderChecklistSide() {
-  // Inspetor
+  // inspetor
   const insp = inspectors.find(i => i.name === currentInspectorName);
   const nameEl = document.getElementById("side-inspector-name");
   const infoEl = document.getElementById("side-inspector-info");
@@ -267,7 +268,7 @@ function renderChecklistSide() {
     avatarEl.innerHTML = "";
   }
 
-  // Peça
+  // peça
   const pieceCodeEl = document.getElementById("side-piece-code");
   const pieceDescEl = document.getElementById("side-piece-desc");
   const pieceItemsEl = document.getElementById("side-piece-items");
@@ -308,10 +309,9 @@ function renderNokLibrary() {
       Histórico de Casos de Reprovação (${nokCases.length})
     </div>
     <div class="checklist-nok-library-list">
-      ${nokCases
-        .map(caso => {
-          const src = getFotoSrc(caso);
-          return `
+      ${nokCases.map(caso => {
+        const src = getFotoSrc(caso);
+        return `
           <div class="checklist-nok-case">
             <strong>${caso.inspection.date}</strong><br/>
             <span style="font-size:92%;">Inspetor:
@@ -332,8 +332,7 @@ function renderNokLibrary() {
                 : ""
             }
           </div>`;
-        })
-        .join("")}
+      }).join("")}
     </div>
   `;
 }
@@ -349,7 +348,6 @@ function renderChecklist() {
     ? `<img src="${mainImgSrc}" style="max-width:100%;max-height:210px;border-radius:10px;cursor:pointer;" onclick="showImageModal('${mainImgSrc}')">`
     : "[Imagem aqui]";
 
-  // Render itens
   const listEl = document.getElementById("checklist-item-list");
   listEl.innerHTML = (checklistCurrentPiece?.items || [])
     .map((item, idx) => {
@@ -431,7 +429,7 @@ function renderChecklist() {
     })
     .join("");
 
-  // Ações OK / NOK
+  // botões OK / NOK
   listEl.querySelectorAll(".btn-ok").forEach(btn => {
     btn.onclick = () => {
       const idx = parseInt(btn.dataset.idx, 10);
@@ -450,15 +448,12 @@ function renderChecklist() {
     btn.onclick = () => {
       const idx = parseInt(btn.dataset.idx, 10);
       const prev = checklistItemStates[idx] || {};
-      checklistItemStates[idx] = {
-        ...prev,
-        status: "NOK"
-      };
+      checklistItemStates[idx] = { ...prev, status: "NOK" };
       renderChecklist();
     };
   });
 
-  // Inputs adicionais de NOK
+  // inputs NOK
   checklistItemStates.forEach((st, idx) => {
     if (st.status === "NOK") {
       const motivoEl = document.getElementById("motivo_" + idx);
@@ -505,9 +500,8 @@ function renderChecklist() {
   document.getElementById("finalizar-inspecao-btn").onclick = finalizarInspecao;
 }
 
-/* ---------- FINALIZAR INSPEÇÃO ---------- */
+/* ---------- Finalizar inspeção ---------- */
 async function finalizarInspecao() {
-  // validação
   for (let i = 0; i < checklistItemStates.length; i++) {
     const st = checklistItemStates[i];
     if (!st.status) {
@@ -578,39 +572,40 @@ async function finalizarInspecao() {
   renderReports();
 }
 
-/* ---------- ADMIN: PEÇAS / ITENS / INSPETORES ---------- */
+/* ---------- ADMIN: clicks globais (editar/remover) ---------- */
+document.addEventListener("click", function (event) {
+  if (event.target.closest(".edit-btn")) {
+    const btn = event.target.closest(".edit-btn");
+    const pieceIdx = btn.getAttribute("data-pieceidx");
+    const itemIdx = btn.getAttribute("data-itemidx");
+    const inspIdx = btn.getAttribute("data-inspectoridx");
 
-// cliques nos botões de editar / remover (delegação)
-document.addEventListener("click", ev => {
-  const editBtn = ev.target.closest(".edit-btn");
-  const removeBtn = ev.target.closest(".remove-btn");
-
-  if (editBtn) {
-    const pieceIdx = editBtn.getAttribute("data-pieceidx");
-    const itemIdx = editBtn.getAttribute("data-itemidx");
-    if (itemIdx !== null && itemIdx !== "") {
+    if (inspIdx !== null && inspIdx !== "" && inspIdx !== undefined) {
+      editInspector(parseInt(inspIdx, 10));
+    } else if (itemIdx !== null && itemIdx !== "" && itemIdx !== undefined) {
       editPieceItem(parseInt(pieceIdx, 10), parseInt(itemIdx, 10));
-    } else {
+    } else if (pieceIdx !== null && pieceIdx !== "" && pieceIdx !== undefined) {
       editPiece(parseInt(pieceIdx, 10));
     }
   }
 
-  if (removeBtn) {
-    const pieceIdx = removeBtn.getAttribute("data-pieceidx");
-    const itemIdx = removeBtn.getAttribute("data-itemidx");
-    const inspIdx = removeBtn.getAttribute("data-inspectoridx");
+  if (event.target.closest(".remove-btn")) {
+    const btn = event.target.closest(".remove-btn");
+    const pieceIdx = btn.getAttribute("data-pieceidx");
+    const itemIdx = btn.getAttribute("data-itemidx");
+    const inspIdx = btn.getAttribute("data-inspectoridx");
 
-    if (inspIdx !== null && inspIdx !== "") {
+    if (inspIdx !== null && inspIdx !== "" && inspIdx !== undefined) {
       removeInspector(parseInt(inspIdx, 10));
-    } else if (itemIdx !== null && itemIdx !== "") {
+    } else if (itemIdx !== null && itemIdx !== "" && itemIdx !== undefined) {
       removePieceItem(parseInt(pieceIdx, 10), parseInt(itemIdx, 10));
-    } else if (pieceIdx !== null && pieceIdx !== "") {
+    } else if (pieceIdx !== null && pieceIdx !== "" && pieceIdx !== undefined) {
       removePiece(parseInt(pieceIdx, 10));
     }
   }
 });
 
-// Adicionar peça
+/* ---------- ADMIN: Peças ---------- */
 document.getElementById("add-piece-btn").onclick = async () => {
   const code = document.getElementById("new-code").value.trim();
   const desc = document.getElementById("new-description").value.trim();
@@ -634,18 +629,20 @@ document.getElementById("add-piece-btn").onclick = async () => {
     }
   }
 };
+
 document.getElementById("clear-piece-btn").onclick = () => {
   document.getElementById("new-code").value = "";
   document.getElementById("new-description").value = "";
   document.getElementById("new-image").value = "";
   document.getElementById("image-file-info").textContent = "Nenhum arquivo escolhido";
 };
+
 document.getElementById("new-image").onchange = e => {
   const txt = e.target.files[0] ? e.target.files[0].name : "Nenhum arquivo escolhido";
   document.getElementById("image-file-info").textContent = txt;
 };
 
-// Adicionar item
+/* ---------- ADMIN: Itens ---------- */
 document.getElementById("add-piece-item-btn").onclick = async () => {
   const idxStr = document.getElementById("select-piece-item").value;
   const name = document.getElementById("new-item-name").value.trim();
@@ -664,6 +661,7 @@ document.getElementById("add-piece-item-btn").onclick = async () => {
   const idx = parseInt(idxStr, 10);
   pieces[idx].items.push({ name, description: desc, image: imgFile, imageUrl: null });
   renderAdminPieceItems();
+
   document.getElementById("new-item-name").value = "";
   document.getElementById("new-item-description").value = "";
   document.getElementById("new-item-image").value = "";
@@ -677,20 +675,23 @@ document.getElementById("add-piece-item-btn").onclick = async () => {
     }
   }
 };
+
 document.getElementById("select-piece-item").onchange = renderAdminPieceItems;
+
 document.getElementById("new-item-image").onchange = e => {
   const txt = e.target.files[0] ? e.target.files[0].name : "Nenhum arquivo escolhido";
   document.getElementById("item-image-file-info").textContent = txt;
 };
 
-// Inspetores
+/* ---------- ADMIN: Inspetores ---------- */
 document.getElementById("inspector-new-photo").onchange = e => {
   const txt = e.target.files[0] ? e.target.files[0].name : "Nenhum arquivo escolhido";
   document.getElementById("inspector-photo-info").textContent = txt;
 };
+
 document.getElementById("add-inspector-btn").onclick = async () => {
   const name = document.getElementById("inspector-new-name").value.trim();
-  const photoFile = document.getElementById("inspector-new-photo").files[0];
+  const file = document.getElementById("inspector-new-photo").files[0];
 
   if (!name) {
     alert("Digite o nome do inspetor.");
@@ -701,7 +702,7 @@ document.getElementById("add-inspector-btn").onclick = async () => {
     return;
   }
 
-  inspectors.push({ name, photo: photoFile || null, photoUrl: null });
+  inspectors.push({ name, photo: file || null, photoUrl: null });
   renderAdmin();
   renderHome();
 
@@ -713,6 +714,7 @@ document.getElementById("add-inspector-btn").onclick = async () => {
     }
   }
 };
+
 document.getElementById("clear-inspector-btn").onclick = () => {
   document.getElementById("inspector-new-name").value = "";
   document.getElementById("inspector-new-photo").value = "";
@@ -723,6 +725,7 @@ function removeInspector(idx) {
   inspectors.splice(idx, 1);
   renderAdmin();
   renderHome();
+
   if (window.fbApi && window.fbApi.setInspectors) {
     window.fbApi
       .setInspectors(inspectors)
@@ -730,7 +733,74 @@ function removeInspector(idx) {
   }
 }
 
-// Editar / remover peças e itens (modais simples)
+/* ---------- Editar inspetor ---------- */
+function editInspector(idx) {
+  const insp = inspectors[idx];
+  const src = getInspectorPhotoSrc(insp) || "";
+  showModal(`
+    <button class="modal-close" title="Fechar">&times;</button>
+    <div class="modal-title">Editar Inspetor</div>
+    <div class="modal-form-row">
+      <label>Nome:</label>
+      <input type="text" id="modal-edit-insp-name" value="${insp.name}">
+    </div>
+    <div class="modal-form-row">
+      <label>Foto (opcional):</label>
+      <input type="file" id="modal-edit-insp-photo" accept="image/*">
+      ${
+        src
+          ? `<div style="margin-top:8px;">
+               <img src="${src}" style="width:60px;height:60px;border-radius:50%;object-fit:cover;">
+             </div>`
+          : ""
+      }
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:10px;">
+      <button class="btn-primary" id="modal-save-insp">Salvar</button>
+    </div>
+  `);
+
+  setTimeout(() => {
+    const overlay = document.getElementById("modal-overlay");
+    const box = document.getElementById("modal-box");
+    const saveBtn = document.getElementById("modal-save-insp");
+    const nameInput = document.getElementById("modal-edit-insp-name");
+    const fileInput = document.getElementById("modal-edit-insp-photo");
+
+    if (!saveBtn) return;
+
+    saveBtn.onclick = async () => {
+      const newName = nameInput.value.trim();
+      if (!newName) {
+        alert("Nome não pode ficar vazio.");
+        return;
+      }
+
+      inspectors[idx].name = newName;
+      const newFile = fileInput.files[0];
+      if (newFile) {
+        inspectors[idx].photo = newFile;
+        // photoUrl será atualizado pelo Firebase ao salvar
+      }
+
+      overlay.style.display = "none";
+      box.innerHTML = "";
+
+      renderAdmin();
+      renderHome();
+
+      if (window.fbApi && window.fbApi.setInspectors) {
+        try {
+          await window.fbApi.setInspectors(inspectors);
+        } catch (e) {
+          console.error("Erro ao salvar inspetores:", e);
+        }
+      }
+    };
+  }, 0);
+}
+
+/* ---------- Editar / remover peças e itens ---------- */
 function editPiece(idx) {
   const p = pieces[idx];
   showModal(`
@@ -754,7 +824,11 @@ function editPiece(idx) {
   `);
 
   setTimeout(() => {
-    document.getElementById("modal-save-edit").onclick = async () => {
+    const overlay = document.getElementById("modal-overlay");
+    const box = document.getElementById("modal-box");
+    const btnSave = document.getElementById("modal-save-edit");
+
+    btnSave.onclick = async () => {
       const code = document.getElementById("modal-edit-code").value.trim();
       const desc = document.getElementById("modal-edit-desc").value.trim();
       const imgFile = document.getElementById("modal-edit-img").files[0];
@@ -763,6 +837,7 @@ function editPiece(idx) {
         alert("Preencha código e descrição.");
         return;
       }
+
       p.code = code;
       p.description = desc;
       if (imgFile) {
@@ -770,7 +845,8 @@ function editPiece(idx) {
         p.imageUrl = null;
       }
 
-      document.getElementById("modal-overlay").style.display = "none";
+      overlay.style.display = "none";
+      box.innerHTML = "";
       renderAdmin();
       renderHome();
 
@@ -784,6 +860,7 @@ function editPiece(idx) {
     };
   }, 0);
 }
+
 function removePiece(idx) {
   const p = pieces[idx];
   showModal(`
@@ -796,12 +873,18 @@ function removePiece(idx) {
   `);
 
   setTimeout(() => {
-    document.getElementById("modal-confirm-del").onclick = async () => {
+    const overlay = document.getElementById("modal-overlay");
+    const box = document.getElementById("modal-box");
+    const btnDel = document.getElementById("modal-confirm-del");
+
+    btnDel.onclick = async () => {
       const codeToDelete = p.code;
       pieces.splice(idx, 1);
-      document.getElementById("modal-overlay").style.display = "none";
+      overlay.style.display = "none";
+      box.innerHTML = "";
       renderAdmin();
       renderHome();
+
       if (window.fbApi && window.fbApi.deletePiece) {
         try {
           await window.fbApi.deletePiece(codeToDelete);
@@ -836,7 +919,11 @@ function editPieceItem(pieceIdx, itemIdx) {
   `);
 
   setTimeout(() => {
-    document.getElementById("modal-save-item-edit").onclick = async () => {
+    const overlay = document.getElementById("modal-overlay");
+    const box = document.getElementById("modal-box");
+    const btnSave = document.getElementById("modal-save-item-edit");
+
+    btnSave.onclick = async () => {
       const name = document.getElementById("modal-edit-name").value.trim();
       const desc = document.getElementById("modal-edit-desc").value.trim();
       const imgFile = document.getElementById("modal-edit-img").files[0];
@@ -845,6 +932,7 @@ function editPieceItem(pieceIdx, itemIdx) {
         alert("Preencha nome e descrição.");
         return;
       }
+
       item.name = name;
       item.description = desc;
       if (imgFile) {
@@ -852,7 +940,8 @@ function editPieceItem(pieceIdx, itemIdx) {
         item.imageUrl = null;
       }
 
-      document.getElementById("modal-overlay").style.display = "none";
+      overlay.style.display = "none";
+      box.innerHTML = "";
       renderAdminPieceItems();
 
       if (window.fbApi && window.fbApi.savePiece) {
@@ -865,6 +954,7 @@ function editPieceItem(pieceIdx, itemIdx) {
     };
   }, 0);
 }
+
 function removePieceItem(pieceIdx, itemIdx) {
   showModal(`
     <button class="modal-close" title="Fechar">&times;</button>
@@ -876,10 +966,16 @@ function removePieceItem(pieceIdx, itemIdx) {
   `);
 
   setTimeout(() => {
-    document.getElementById("modal-confirm-del-item").onclick = async () => {
+    const overlay = document.getElementById("modal-overlay");
+    const box = document.getElementById("modal-box");
+    const btnDel = document.getElementById("modal-confirm-del-item");
+
+    btnDel.onclick = async () => {
       pieces[pieceIdx].items.splice(itemIdx, 1);
-      document.getElementById("modal-overlay").style.display = "none";
+      overlay.style.display = "none";
+      box.innerHTML = "";
       renderAdminPieceItems();
+
       if (window.fbApi && window.fbApi.savePiece) {
         try {
           await window.fbApi.savePiece(pieces[pieceIdx]);
@@ -891,14 +987,15 @@ function removePieceItem(pieceIdx, itemIdx) {
   }, 0);
 }
 
+/* ---------- Render Admin ---------- */
 function renderAdmin() {
   // peças
-  const list = document.getElementById("admin-piece-list");
-  list.innerHTML = pieces
+  const pieceListDiv = document.getElementById("admin-piece-list");
+  pieceListDiv.innerHTML = pieces
     .map((p, idx) => {
       const src = getPieceImageSrc(p);
       const thumb = src
-        ? `<img src="${src}" style="width:50px;height:40px;object-fit:cover;margin-right:8px;">`
+        ? `<img src="${src}" style="width:50px;height:40px;border-radius:4px;object-fit:cover;margin-right:8px;">`
         : `<div style="width:50px;height:40px;background:#e4e7f1;margin-right:8px;border-radius:4px;"></div>`;
       return `
         <div class="admin-piece-item">
@@ -915,6 +1012,7 @@ function renderAdmin() {
     })
     .join("");
 
+  // select de peça
   const selectPieceItem = document.getElementById("select-piece-item");
   selectPieceItem.innerHTML = pieces
     .map((p, idx) => `<option value="${idx}">${p.code} — ${p.description}</option>`)
@@ -924,15 +1022,20 @@ function renderAdmin() {
   // inspetores
   const inspList = document.getElementById("admin-inspector-list");
   inspList.innerHTML = inspectors
-    .map((i, idx) => {
-      const src = getInspectorPhotoSrc(i);
+    .map((insp, idx) => {
+      const src = getInspectorPhotoSrc(insp);
       return `
         <div class="admin-inspector-item">
           <div class="admin-inspector-name">
-            <div class="inspector-list-avatar">${src ? `<img src="${src}">` : ""}</div>
-            <span>${i.name}</span>
+            <div class="inspector-list-avatar">
+              ${src ? `<img src="${src}">` : ""}
+            </div>
+            <span>${insp.name}</span>
           </div>
-          <button class="remove-btn" data-inspectoridx="${idx}"></button>
+          <div>
+            <button class="edit-btn" data-inspectoridx="${idx}"></button>
+            <button class="remove-btn" data-inspectoridx="${idx}"></button>
+          </div>
         </div>
       `;
     })
@@ -972,7 +1075,6 @@ function renderAdminPieceItems() {
 }
 
 /* ---------- RELATÓRIOS ---------- */
-
 const ctx = document.getElementById("graficoRosca").getContext("2d");
 const graficoRosca = new Chart(ctx, {
   type: "doughnut",
@@ -1080,13 +1182,20 @@ function exportCSV() {
 }
 window.exportCSV = exportCSV;
 
-/* ---------- INICIALIZAÇÃO ---------- */
+/* ---------- Inicialização ---------- */
 document.addEventListener("DOMContentLoaded", async () => {
   if (window.fbApi && window.fbApi.loadAll) {
     try {
       const data = await window.fbApi.loadAll();
       if (data.pieces && data.pieces.length) pieces = data.pieces;
-      if (data.inspectors && data.inspectors.length) inspectors = data.inspectors;
+      if (data.inspectors && data.inspectors.length) {
+        // normaliza inspetores carregados
+        inspectors = data.inspectors.map(i => ({
+          name: i.name || "",
+          photo: null,
+          photoUrl: i.photoUrl || null
+        }));
+      }
       if (data.inspections && data.inspections.length) inspections = data.inspections;
     } catch (e) {
       console.error("Erro ao carregar dados do Firebase:", e);
