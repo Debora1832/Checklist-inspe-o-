@@ -26,7 +26,7 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const storage = getStorage(app);
 
-// Auth anônimo (para liberar regras que exigem auth)
+// Auth anônimo
 const auth = getAuth(app);
 signInAnonymously(auth).catch(err => {
   console.warn("Falha ao autenticar anonimamente:", err);
@@ -35,7 +35,7 @@ onAuthStateChanged(auth, user => {
   if (user) console.log("Auth OK:", user.uid);
 });
 
-// Helper upload
+// upload helper
 async function uploadFileAndGetUrl(path, file) {
   if (!file) return null;
   const ref = sRef(storage, path);
@@ -45,11 +45,7 @@ async function uploadFileAndGetUrl(path, file) {
   return url;
 }
 
-/**
- * Carrega peças, inspetores e inspeções.
- * Inspetores agora são objetos { name, photoUrl }.
- * Se encontrar string, converte.
- */
+// Carrega tudo
 async function loadAll() {
   const pieces = [];
   let inspectors = [];
@@ -84,15 +80,10 @@ async function loadAll() {
     if (inspSnap.exists()) {
       const raw = inspSnap.data().list || [];
       inspectors = raw
-        .map(it => {
-          if (typeof it === "string") {
-            return { name: it, photoUrl: null };
-          }
-          return {
-            name: it.name || "",
-            photoUrl: it.photoUrl || null
-          };
-        })
+        .map(it => ({
+          name: it.name || "",
+          photoUrl: it.photoUrl || null
+        }))
         .filter(it => it.name);
     }
   } catch (e) {
@@ -127,7 +118,7 @@ async function loadAll() {
   return { pieces, inspectors, inspections };
 }
 
-// Salvar / apagar peça
+// Salvar peça
 async function savePiece(piece) {
   if (!piece || !piece.code) return;
 
@@ -167,15 +158,13 @@ async function savePiece(piece) {
   });
 }
 
+// Remover peça
 async function deletePiece(code) {
   if (!code) return;
   await deleteDoc(doc(db, "pieces", code));
 }
 
-/**
- * Salva lista de inspetores.
- * Cada inspetor pode ter .photo (File) -> faz upload e grava photoUrl.
- */
+// Salvar inspetores com foto
 async function setInspectors(list) {
   const sanitized = [];
   for (const insp of (list || [])) {
@@ -195,7 +184,7 @@ async function setInspectors(list) {
   await setDoc(ref, { list: sanitized });
 }
 
-// Salvar inspeção com fotos de NOK
+// Salvar inspeção e fotos de NOK
 async function saveInspection(inspec) {
   const timestamp = Date.now();
   const itensToSave = [];
@@ -230,7 +219,7 @@ async function saveInspection(inspec) {
   return { id: ref.id, ...data };
 }
 
-// Expor API global
+// Expor global
 window.fbApi = {
   loadAll,
   savePiece,
@@ -238,5 +227,3 @@ window.fbApi = {
   setInspectors,
   saveInspection
 };
-
-
