@@ -1,12 +1,10 @@
-// =====================
-// Config simples Admin
-// =====================
+/*
+  Proteção simples para a tela Admin (client-side)
+*/
 const ADMIN_PASSWORD = "Magius123";
 window.adminAuthenticated = false;
 
-// =====================
-// Dados em memória
-// =====================
+/* estado inicial */
 let pieces = [
   {
     code: "597-2445#01",
@@ -14,24 +12,9 @@ let pieces = [
     image: null,
     imageUrl: null,
     items: [
-      {
-        name: "Dimensão A (Ø)",
-        description: "Verificar diâmetro da furação.",
-        image: null,
-        imageUrl: null
-      },
-      {
-        name: "Furo B posição",
-        description: "Conferir posição do furo de encaixe.",
-        image: null,
-        imageUrl: null
-      },
-      {
-        name: "Solda - qualidade",
-        description: "Avaliar acabamento da solda.",
-        image: null,
-        imageUrl: null
-      }
+      { name: "Dimensão A (Ø)", description: "Verificar diâmetro da furação.", image: null, imageUrl: null },
+      { name: "Furo B posição", description: "Conferir posição do furo de encaixe.", image: null, imageUrl: null },
+      { name: "Solda - qualidade", description: "Avaliar acabamento da solda.", image: null, imageUrl: null }
     ]
   },
   {
@@ -48,7 +31,6 @@ let inspections = [];
 let checklistItemStates = [];
 let checklistCurrentPiece = null;
 
-// Map de telas
 const screens = {
   home: document.getElementById("home"),
   checklist: document.getElementById("checklist"),
@@ -56,9 +38,7 @@ const screens = {
   admin: document.getElementById("admin")
 };
 
-// =====================
-// Funções utilitárias
-// =====================
+/* ---- MODAL GENÉRICO ---- */
 function showModal(html, onclose) {
   const overlay = document.getElementById("modal-overlay");
   const box = document.getElementById("modal-box");
@@ -87,14 +67,14 @@ function showImageModal(src) {
   showModal(
     `
     <button class="modal-close" title="Fechar">&times;</button>
-    <img src="${src}" style="max-width:80vw;max-height:80vh;display:block;margin:auto;border-radius:10px;box-shadow:0 6px 22px #0002;">
+    <img src="${src}"
+         style="max-width:80vw;max-height:80vh;display:block;margin:auto;
+                border-radius:10px;box-shadow:0 6px 22px #0002;">
   `
   );
 }
 
-// =====================
-// Acesso Admin (senha)
-// =====================
+/* ---- senha admin ---- */
 function requestAdminAccess() {
   if (window.adminAuthenticated) {
     showScreen("admin");
@@ -107,7 +87,8 @@ function requestAdminAccess() {
     <div class="modal-title">Acesso Admin</div>
     <div class="modal-form-row">
       <label for="admin-pass">Digite a senha:</label><br>
-      <input id="admin-pass" type="password" style="width:100%;padding:10px;border:1px solid #ccc;border-radius:6px;">
+      <input id="admin-pass" type="password"
+             style="width:100%;padding:10px;border:1px solid #ccc;border-radius:6px;">
     </div>
     <div style="display:flex;justify-content:flex-end;gap:10px;">
       <button class="btn-secondary" id="modal-admin-cancel">Cancelar</button>
@@ -132,7 +113,7 @@ function requestAdminAccess() {
       };
     }
 
-    function tentarLogin() {
+    function tryLogin() {
       const val = passInput.value || "";
       if (val === ADMIN_PASSWORD) {
         window.adminAuthenticated = true;
@@ -146,45 +127,65 @@ function requestAdminAccess() {
       }
     }
 
-    if (loginBtn) {
-      loginBtn.onclick = tentarLogin;
-    }
+    if (loginBtn) loginBtn.onclick = tryLogin;
 
     if (passInput) {
-      passInput.addEventListener("keyup", (e) => {
-        if (e.key === "Enter") tentarLogin();
+      passInput.addEventListener("keyup", e => {
+        if (e.key === "Enter") tryLogin();
       });
       passInput.focus();
     }
   }, 0);
 }
 
-// =====================
-// Navegação de telas
-// =====================
+/* ---- delegação de cliques em editar/excluir ---- */
+document.addEventListener("click", function (event) {
+  if (event.target.closest(".edit-btn")) {
+    const btn = event.target.closest(".edit-btn");
+    const pieceIdx = btn.getAttribute("data-pieceidx");
+    const itemIdx = btn.getAttribute("data-itemidx");
+    if (itemIdx !== null && itemIdx !== undefined && itemIdx !== "") {
+      editPieceItem(parseInt(pieceIdx), parseInt(itemIdx));
+    } else {
+      editPiece(parseInt(pieceIdx));
+    }
+  }
+  if (event.target.closest(".remove-btn")) {
+    const btn = event.target.closest(".remove-btn");
+    const pieceIdx = btn.getAttribute("data-pieceidx");
+    const itemIdx = btn.getAttribute("data-itemidx");
+    const inspIdx = btn.getAttribute("data-inspectoridx");
+    if (inspIdx !== null && inspIdx !== undefined && inspIdx !== "") {
+      removeInspector(parseInt(inspIdx));
+    } else if (itemIdx !== null && itemIdx !== undefined && itemIdx !== "") {
+      removePieceItem(parseInt(pieceIdx), parseInt(itemIdx));
+    } else {
+      removePiece(parseInt(pieceIdx));
+    }
+  }
+});
+
+/* ---- navegação ---- */
 function showScreen(screenId) {
   for (let key in screens) screens[key].classList.remove("active");
   if (screens[screenId]) screens[screenId].classList.add("active");
-
   if (screenId === "home") renderHome();
   if (screenId === "admin") renderAdmin();
   if (screenId === "checklist") renderChecklist();
   if (screenId === "reports") renderReports();
 }
 
-// =====================
-// Render HOME
-// =====================
+/* ---- HOME ---- */
 function renderHome() {
   const inspSel = document.getElementById("inspector");
   inspSel.innerHTML =
     '<option value="" disabled selected>Selecionar inspetor</option>' +
-    inspectors.map((i) => `<option value="${i}">${i}</option>`).join("");
+    inspectors.map(i => `<option value="${i}">${i}</option>`).join("");
 
   const pieceSel = document.getElementById("piece");
   pieceSel.innerHTML =
     '<option value="" disabled selected>Selecionar peça</option>' +
-    pieces.map((p) => `<option value="${p.code}">${p.code}</option>`).join("");
+    pieces.map(p => `<option value="${p.code}">${p.code}</option>`).join("");
 }
 
 function showChecklist() {
@@ -194,7 +195,7 @@ function showChecklist() {
     alert("Selecione um inspetor e uma peça!");
     return;
   }
-  checklistCurrentPiece = pieces.find((p) => p.code === piece);
+  checklistCurrentPiece = pieces.find(p => p.code === piece);
   checklistItemStates = (checklistCurrentPiece?.items || []).map(() => ({
     status: null,
     motivo: "",
@@ -206,59 +207,37 @@ function showChecklist() {
   showScreen("checklist");
 }
 
-// =====================
-// Helpers de imagem
-// =====================
+/* ---- helpers de imagem ---- */
 function getPieceImageSrc(piece) {
   if (!piece) return null;
   if (piece.image instanceof File) return URL.createObjectURL(piece.image);
   if (piece.imageUrl) return piece.imageUrl;
   return null;
 }
-
 function getItemImageSrc(item) {
   if (!item) return null;
   if (item.image instanceof File) return URL.createObjectURL(item.image);
   if (item.imageUrl) return item.imageUrl;
   return null;
 }
-
 function getFotoSrc(it) {
   if (it.foto instanceof File) return URL.createObjectURL(it.foto);
   if (it.fotoUrl) return it.fotoUrl;
   return null;
 }
 
-// =====================
-// Render CHECKLIST
-// =====================
+/* ---- CHECKLIST ---- */
 function renderChecklist() {
   const headerEl = document.getElementById("checklist-header");
   const pieceImgBox = document.getElementById("piece-image-box");
-
   headerEl.textContent = checklistCurrentPiece ? checklistCurrentPiece.code : "";
 
   const mainImgSrc = getPieceImageSrc(checklistCurrentPiece);
   pieceImgBox.innerHTML = mainImgSrc
     ? `<img src="${mainImgSrc}" style="max-width:100%; max-height:240px; cursor:pointer; border-radius:10px;" onclick="showImageModal('${mainImgSrc}')">`
-    : "[Imagem aqui]";
+    : `[Imagem aqui]`;
 
-  // *** NOVO: atualizar resumo Itens / OK / NÃO OK ***
-  const total = checklistItemStates.length;
-  const ok = checklistItemStates.filter((s) => s.status === "OK").length;
-  const nok = checklistItemStates.filter((s) => s.status === "NOK").length;
-
-  const sumItensEl = document.getElementById("sum-itens");
-  if (sumItensEl) {
-    document.getElementById("sum-itens").textContent = total;
-    document.getElementById("sum-ok").textContent = ok;
-    document.getElementById("sum-nok").textContent = nok;
-  }
-
-  // Lista de itens
-  document.getElementById("checklist-item-list").innerHTML = (
-    checklistCurrentPiece?.items || []
-  )
+  document.getElementById("checklist-item-list").innerHTML = (checklistCurrentPiece?.items || [])
     .map((item, idx) => {
       const state = checklistItemStates[idx];
       let divClass = "checklist-item";
@@ -266,7 +245,7 @@ function renderChecklist() {
       if (state.status === "NOK") divClass += " not-ok";
 
       const itemImgSrc = getItemImageSrc(item);
-      const fileThumb = itemImgSrc
+      let fileThumb = itemImgSrc
         ? `<img src="${itemImgSrc}" style="width:120px;height:120px;object-fit:cover;border-radius:10px;cursor:pointer;" onclick="showImageModal('${itemImgSrc}')">`
         : `<div style="background-color:#e9ecef; width:120px; height:120px; border-radius:10px;"></div>`;
 
@@ -279,42 +258,33 @@ function renderChecklist() {
               <div class="checklist-extra-label">
                 Descrição da não conformidade <span style="color:#e23636">(obrigatório)</span>:
               </div>
-              <textarea id="motivo_${idx}" placeholder="Descreva o motivo">${
-          state.motivo || ""
-        }</textarea>
-
+              <textarea id="motivo_${idx}" placeholder="Descreva o motivo">
+${state.motivo || ""}</textarea>
               <div class="checklist-extra-label" style="margin-bottom:2px;">
                 Foto <span style="color:#e23636">(obrigatório)</span>:
               </div>
               <input type="file" id="foto_${idx}" accept="image/*">
-
               <div class="checklist-radio-group" style="margin-top:10px;">
                 <label>
-                  <input type="radio" name="encaminhar_${idx}" value="retrabalho" ${
-          state.encaminhamento === "retrabalho" ? "checked" : ""
-        }>
+                  <input type="radio" name="encaminhar_${idx}" value="retrabalho"
+                    ${state.encaminhamento === "retrabalho" ? "checked" : ""}>
                   Encaminhar para retrabalho
                 </label>
                 <label>
-                  <input type="radio" name="encaminhar_${idx}" value="terceiro" ${
-          state.encaminhamento === "terceiro" ? "checked" : ""
-        }>
+                  <input type="radio" name="encaminhar_${idx}" value="terceiro"
+                    ${state.encaminhamento === "terceiro" ? "checked" : ""}>
                   Aprovado por terceiro
                 </label>
               </div>
-
               ${
                 state.encaminhamento === "terceiro"
                   ? `
-              <div class="checklist-terceiro-nome-box">
-                <label for="nome_terceiro_${idx}">Nome ou matrícula do aprovador:</label>
-                <input type="text" id="nome_terceiro_${idx}" value="${
-                    state.nome_terceiro || ""
-                  }">
-              </div>`
+                <div class="checklist-terceiro-nome-box">
+                  <label for="nome_terceiro_${idx}">Nome ou matrícula do aprovador:</label>
+                  <input type="text" id="nome_terceiro_${idx}" value="${state.nome_terceiro || ""}">
+                </div>`
                   : ""
               }
-
               ${
                 fotoExistingSrc
                   ? `<img src="${fotoExistingSrc}" style="width:120px;height:120px;object-fit:cover;border-radius:10px;margin-top:9px;cursor:pointer;" onclick="showImageModal('${fotoExistingSrc}')">`
@@ -346,10 +316,9 @@ function renderChecklist() {
     })
     .join("");
 
-  // Botões OK / NÃO OK
-  document.querySelectorAll(".checklist-item-actions .btn-ok").forEach((btn) => {
+  document.querySelectorAll(".checklist-item-actions .btn-ok").forEach(btn => {
     btn.onclick = function () {
-      const idx = parseInt(btn.dataset.idx, 10);
+      let idx = parseInt(btn.dataset.idx);
       checklistItemStates[idx] = {
         status: "OK",
         motivo: "",
@@ -361,58 +330,50 @@ function renderChecklist() {
       renderChecklist();
     };
   });
+  document.querySelectorAll(".checklist-item-actions .btn-nao-ok").forEach(btn => {
+    btn.onclick = function () {
+      let idx = parseInt(btn.dataset.idx);
+      if (!checklistItemStates[idx]) checklistItemStates[idx] = {};
+      checklistItemStates[idx].status = "NOK";
+      renderChecklist();
+    };
+  });
 
-  document
-    .querySelectorAll(".checklist-item-actions .btn-nao-ok")
-    .forEach((btn) => {
-      btn.onclick = function () {
-        const idx = parseInt(btn.dataset.idx, 10);
-        if (!checklistItemStates[idx]) checklistItemStates[idx] = {};
-        checklistItemStates[idx].status = "NOK";
-        renderChecklist();
-      };
-    });
-
-  // Eventos dos campos adicionais
   checklistItemStates.forEach((st, idx) => {
     if (st.status === "NOK") {
-      const motivoEl = document.getElementById("motivo_" + idx);
-      const fotoEl = document.getElementById("foto_" + idx);
-      const nomeTerceiroEl = document.getElementById("nome_terceiro_" + idx);
-      const retrabalhoRadio = document.querySelector(
+      let motivoEl = document.getElementById("motivo_" + idx);
+      let fotoEl = document.getElementById("foto_" + idx);
+      let nomeTerceiroEl = document.getElementById("nome_terceiro_" + idx);
+      let retrabalhoRadio = document.querySelector(
         `input[name="encaminhar_${idx}"][value="retrabalho"]`
       );
-      const terceiroRadio = document.querySelector(
+      let terceiroRadio = document.querySelector(
         `input[name="encaminhar_${idx}"][value="terceiro"]`
       );
 
       motivoEl.oninput = () => {
-        checklistItemStates[idx].motivo = motivoEl.value;
+        checklistItemStates[idx].motivo = motivoEl.value.trim();
       };
-
       fotoEl.onchange = () => {
         checklistItemStates[idx].foto = fotoEl.files[0] || null;
         checklistItemStates[idx].fotoUrl = null;
         renderChecklist();
       };
-
       if (retrabalhoRadio) {
         retrabalhoRadio.onchange = () => {
           checklistItemStates[idx].encaminhamento = "retrabalho";
           renderChecklist();
         };
       }
-
       if (terceiroRadio) {
         terceiroRadio.onchange = () => {
           checklistItemStates[idx].encaminhamento = "terceiro";
           renderChecklist();
         };
       }
-
       if (nomeTerceiroEl) {
         nomeTerceiroEl.oninput = () => {
-          checklistItemStates[idx].nome_terceiro = nomeTerceiroEl.value;
+          checklistItemStates[idx].nome_terceiro = nomeTerceiroEl.value.trim();
         };
       }
     }
@@ -420,22 +381,101 @@ function renderChecklist() {
 
   renderNokLibrary();
 
-  // Finalizar inspeção
-  document.getElementById("finalizar-inspecao-btn").onclick = salvarInspecao;
+  document.getElementById("finalizar-inspecao-btn").onclick = async function () {
+    for (let i = 0; i < checklistItemStates.length; i++) {
+      const state = checklistItemStates[i];
+      if (!state.status) {
+        alert("Responda todos os itens do checklist.");
+        return;
+      }
+      if (state.status === "NOK") {
+        if (!state.motivo || !state.motivo.trim()) {
+          alert("Preencha o motivo para todos itens NÃO OK.");
+          return;
+        }
+        if (!state.foto && !state.fotoUrl) {
+          alert("Insira uma foto evidência para todos itens NÃO OK.");
+          return;
+        }
+        if (!state.encaminhamento) {
+          alert("Escolha um encaminhamento para todos itens NÃO OK.");
+          return;
+        }
+        if (
+          state.encaminhamento === "terceiro" &&
+          (!state.nome_terceiro || !state.nome_terceiro.trim())
+        ) {
+          alert("Informe o nome ou matrícula do aprovador terceiro.");
+          return;
+        }
+      }
+    }
+
+    const now = new Date();
+    const inspectionToSave = {
+      date: now.toLocaleDateString("pt-BR"),
+      inspector: document.getElementById("inspector").value,
+      piece: checklistCurrentPiece.code,
+      descricao: "Inspeção realizada com sucesso",
+      itens: checklistItemStates.map(s => ({
+        status: s.status,
+        motivo: s.motivo,
+        encaminhamento: s.encaminhamento,
+        nome_terceiro: s.nome_terceiro,
+        foto: s.foto || null,
+        fotoUrl: s.fotoUrl || null
+      }))
+    };
+
+    if (window.fbApi && window.fbApi.saveInspection) {
+      try {
+        const saved = await window.fbApi.saveInspection(inspectionToSave);
+        inspections.push(saved);
+        alert("Inspeção finalizada e salva no Firebase!");
+        showScreen("home");
+        renderReports();
+      } catch (e) {
+        console.error("Erro ao salvar inspeção no Firebase (UI catch):", e);
+        inspections.push({
+          ...inspectionToSave,
+          itens: inspectionToSave.itens.map(it => ({
+            ...it,
+            foto: null,
+            fotoUrl: null
+          }))
+        });
+        alert(
+          "Erro ao salvar no servidor. Inspeção salva só localmente neste navegador."
+        );
+        showScreen("home");
+        renderReports();
+      }
+    } else {
+      inspections.push({
+        ...inspectionToSave,
+        itens: inspectionToSave.itens.map(it => ({
+          ...it,
+          foto: null,
+          fotoUrl: null
+        }))
+      });
+      alert("Inspeção finalizada (somente local).");
+      showScreen("home");
+      renderReports();
+    }
+  };
 }
 
-// =====================
-// Biblioteca NOK
-// =====================
+/* ---- biblioteca de NOK ---- */
 function renderNokLibrary() {
   const nokDiv = document.getElementById("checklist-nok-library");
   const pieceCode = checklistCurrentPiece?.code || "";
   const nokCases = inspections
-    .filter((i) => i.piece === pieceCode)
-    .flatMap((i) =>
+    .filter(i => i.piece === pieceCode)
+    .flatMap(i =>
       (i.itens || [])
-        .map((it) => ({ ...it, inspection: i }))
-        .filter((it) => it.status === "NOK")
+        .map((it, idx) => ({ ...it, inspection: i, idx }))
+        .filter(it => it.status === "NOK")
     );
 
   if (!nokCases.length) {
@@ -450,7 +490,7 @@ function renderNokLibrary() {
     </div>
     <div class="checklist-nok-library-list">
       ${nokCases
-        .map((caso) => {
+        .map(caso => {
           const src = getFotoSrc(caso);
           return `
           <div class="checklist-nok-case">
@@ -460,143 +500,26 @@ function renderNokLibrary() {
             </span><br>
             <span style="font-size:95%;color:#c22;">${caso.motivo}</span><br>
             <span style="font-size:90%;">Encaminhamento:
-              <b>${caso.encaminhamento}</b>${
-            caso.encaminhamento === "terceiro"
-              ? "<br>Terceiro aprovador: <b>" + (caso.nome_terceiro || "") + "</b>"
-              : ""
-          }</span><br>
+              <b>${caso.encaminhamento}</b>
+              ${
+                caso.encaminhamento === "terceiro"
+                  ? `<br>Terceiro aprovador: <b>${caso.nome_terceiro}</b>`
+                  : ""
+              }
+            </span><br>
             ${
               src
                 ? `<img src="${src}" onclick="showImageModal('${src}')" alt="foto não conforme">`
                 : ""
             }
-          </div>
-        `;
+          </div>`;
         })
         .join("")}
     </div>
   `;
 }
 
-// =====================
-// Salvar inspeção
-// =====================
-async function salvarInspecao() {
-  for (let i = 0; i < checklistItemStates.length; i++) {
-    const state = checklistItemStates[i];
-    if (!state.status) {
-      alert("Responda todos os itens do checklist.");
-      return;
-    }
-    if (state.status === "NOK") {
-      if (!state.motivo || !state.motivo.trim()) {
-        alert("Preencha o motivo para todos itens NÃO OK.");
-        return;
-      }
-      if (!state.foto && !state.fotoUrl) {
-        alert("Insira uma foto evidência para todos itens NÃO OK.");
-        return;
-      }
-      if (!state.encaminhamento) {
-        alert("Escolha um encaminhamento para todos itens NÃO OK.");
-        return;
-      }
-      if (
-        state.encaminhamento === "terceiro" &&
-        (!state.nome_terceiro || !state.nome_terceiro.trim())
-      ) {
-        alert("Informe o nome ou matrícula do aprovador terceiro.");
-        return;
-      }
-    }
-  }
-
-  const now = new Date();
-  const inspectionToSave = {
-    date: now.toLocaleDateString("pt-BR"),
-    inspector: document.getElementById("inspector").value,
-    piece: checklistCurrentPiece.code,
-    descricao: "Inspeção realizada com sucesso",
-    itens: checklistItemStates.map((s) => ({
-      status: s.status,
-      motivo: s.motivo,
-      encaminhamento: s.encaminhamento,
-      nome_terceiro: s.nome_terceiro,
-      foto: s.foto || null,
-      fotoUrl: s.fotoUrl || null
-    }))
-  };
-
-  if (window.fbApi && window.fbApi.saveInspection) {
-    try {
-      const saved = await window.fbApi.saveInspection(inspectionToSave);
-      inspections.push(saved);
-      alert("Inspeção finalizada e salva no Firebase!");
-      showScreen("home");
-      renderReports();
-      return;
-    } catch (e) {
-      console.error("Erro ao salvar inspeção no Firebase:", e);
-      inspections.push({
-        ...inspectionToSave,
-        itens: inspectionToSave.itens.map((it) => ({
-          ...it,
-          foto: null,
-          fotoUrl: null
-        }))
-      });
-      alert(
-        "Erro ao salvar no servidor. Inspeção salva só localmente neste navegador."
-      );
-      showScreen("home");
-      renderReports();
-      return;
-    }
-  }
-
-  // Sem Firebase
-  inspections.push({
-    ...inspectionToSave,
-    itens: inspectionToSave.itens.map((it) => ({
-      ...it,
-      foto: null,
-      fotoUrl: null
-    }))
-  });
-  alert("Inspeção finalizada (somente local).");
-  showScreen("home");
-  renderReports();
-}
-
-// =====================
-// Admin – editar / excluir
-// =====================
-document.addEventListener("click", function (event) {
-  if (event.target.closest(".edit-btn")) {
-    const btn = event.target.closest(".edit-btn");
-    const pieceIdx = btn.getAttribute("data-pieceidx");
-    const itemIdx = btn.getAttribute("data-itemidx");
-    if (itemIdx !== null && itemIdx !== undefined && itemIdx !== "") {
-      editPieceItem(parseInt(pieceIdx, 10), parseInt(itemIdx, 10));
-    } else {
-      editPiece(parseInt(pieceIdx, 10));
-    }
-  }
-  if (event.target.closest(".remove-btn")) {
-    const btn = event.target.closest(".remove-btn");
-    const pieceIdx = btn.getAttribute("data-pieceidx");
-    const itemIdx = btn.getAttribute("data-itemidx");
-    const inspIdx = btn.getAttribute("data-inspectoridx");
-    if (inspIdx !== null && inspIdx !== undefined && inspIdx !== "") {
-      removeInspector(parseInt(inspIdx, 10));
-    } else if (itemIdx !== null && itemIdx !== undefined && itemIdx !== "") {
-      removePieceItem(parseInt(pieceIdx, 10), parseInt(itemIdx, 10));
-    } else {
-      removePiece(parseInt(pieceIdx, 10));
-    }
-  }
-});
-
+/* ---- ADMIN: PEÇAS ---- */
 function editPiece(idx) {
   const p = pieces[idx];
   showModal(
@@ -627,7 +550,6 @@ function editPiece(idx) {
     </div>
   `
   );
-
   setTimeout(function () {
     document.getElementById("modal-save-edit").onclick = function () {
       const code = document.getElementById("modal-edit-code").value.trim();
@@ -645,11 +567,9 @@ function editPiece(idx) {
       renderHome();
 
       if (window.fbApi && window.fbApi.savePiece) {
-        window.fbApi.savePiece(p).catch((e) => {
+        window.fbApi.savePiece(p).catch(e => {
           console.error("Erro ao salvar peça no Firebase:", e);
-          alert(
-            "Erro ao enviar imagem/peça ao Firebase. Verifique console para detalhes."
-          );
+          alert("Erro ao enviar imagem/peça ao Firebase.");
         });
       }
     };
@@ -670,7 +590,6 @@ function removePiece(idx) {
     </div>
   `
   );
-
   setTimeout(function () {
     document.getElementById("modal-confirm-delete").onclick = function () {
       const codeToDelete = p.code;
@@ -680,7 +599,7 @@ function removePiece(idx) {
       renderHome();
 
       if (window.fbApi && window.fbApi.deletePiece) {
-        window.fbApi.deletePiece(codeToDelete).catch((e) => {
+        window.fbApi.deletePiece(codeToDelete).catch(e => {
           console.error("Erro ao apagar peça no Firebase:", e);
         });
       }
@@ -688,6 +607,7 @@ function removePiece(idx) {
   }, 0);
 }
 
+/* ---- ADMIN: ITENS ---- */
 function editPieceItem(pieceIdx, itemIdx) {
   const item = pieces[pieceIdx].items[itemIdx];
   showModal(
@@ -718,7 +638,6 @@ function editPieceItem(pieceIdx, itemIdx) {
     </div>
   `
   );
-
   setTimeout(function () {
     document.getElementById("modal-save-edit").onclick = function () {
       const name = document.getElementById("modal-edit-name").value.trim();
@@ -735,7 +654,7 @@ function editPieceItem(pieceIdx, itemIdx) {
       renderAdminPieceItems();
 
       if (window.fbApi && window.fbApi.savePiece) {
-        window.fbApi.savePiece(pieces[pieceIdx]).catch((e) => {
+        window.fbApi.savePiece(pieces[pieceIdx]).catch(e => {
           console.error("Erro ao salvar item no Firebase:", e);
         });
       }
@@ -756,7 +675,6 @@ function removePieceItem(pieceIdx, itemIdx) {
     </div>
   `
   );
-
   setTimeout(function () {
     document.getElementById("modal-confirm-del-item").onclick = function () {
       pieces[pieceIdx].items.splice(itemIdx, 1);
@@ -764,7 +682,7 @@ function removePieceItem(pieceIdx, itemIdx) {
       renderAdminPieceItems();
 
       if (window.fbApi && window.fbApi.savePiece) {
-        window.fbApi.savePiece(pieces[pieceIdx]).catch((e) => {
+        window.fbApi.savePiece(pieces[pieceIdx]).catch(e => {
           console.error("Erro ao salvar peça no Firebase:", e);
         });
       }
@@ -772,9 +690,7 @@ function removePieceItem(pieceIdx, itemIdx) {
   }, 0);
 }
 
-// =====================
-// Admin – add peça / item / inspetor
-// =====================
+/* ---- ADMIN: BOTÕES ---- */
 document.getElementById("add-piece-btn").onclick = function () {
   const code = document.getElementById("new-code").value.trim();
   const desc = document.getElementById("new-description").value.trim();
@@ -790,11 +706,9 @@ document.getElementById("add-piece-btn").onclick = function () {
   renderHome();
 
   if (window.fbApi && window.fbApi.savePiece) {
-    window.fbApi.savePiece(newPiece).catch((e) => {
+    window.fbApi.savePiece(newPiece).catch(e => {
       console.error("Erro ao salvar peça no Firebase:", e);
-      alert(
-        "Erro ao enviar imagem/peça ao Firebase. Verifique as regras de Storage e o console."
-      );
+      alert("Erro ao enviar peça ao Firebase.");
     });
   }
 };
@@ -803,23 +717,19 @@ document.getElementById("clear-piece-btn").onclick = function () {
   document.getElementById("new-code").value = "";
   document.getElementById("new-description").value = "";
   document.getElementById("new-image").value = "";
-  document.getElementById("image-file-info").textContent =
-    "Nenhum arquivo escolhido";
+  document.getElementById("image-file-info").textContent = "Nenhum arquivo escolhido";
 };
 
 document.getElementById("new-image").onchange = function (e) {
-  const txt = e.target.files[0]
-    ? e.target.files[0].name
-    : "Nenhum arquivo escolhido";
+  let txt = e.target.files[0] ? e.target.files[0].name : "Nenhum arquivo escolhido";
   document.getElementById("image-file-info").textContent = txt;
 };
 
 document.getElementById("add-piece-item-btn").onclick = function () {
-  const idx = document.getElementById("select-piece-item").value;
-  const name = document.getElementById("new-item-name").value.trim();
-  const desc = document.getElementById("new-item-description").value.trim();
-  const imgFile = document.getElementById("new-item-image").files[0];
-
+  let idx = document.getElementById("select-piece-item").value;
+  let name = document.getElementById("new-item-name").value.trim();
+  let desc = document.getElementById("new-item-description").value.trim();
+  let imgFile = document.getElementById("new-item-image").files[0];
   if (!idx && idx !== 0) {
     alert("Selecione uma peça!");
     return;
@@ -828,22 +738,15 @@ document.getElementById("add-piece-item-btn").onclick = function () {
     alert("Preencha todos os campos, incluindo imagem!");
     return;
   }
-
-  pieces[idx].items.push({
-    name,
-    description: desc,
-    image: imgFile,
-    imageUrl: null
-  });
+  pieces[idx].items.push({ name, description: desc, image: imgFile, imageUrl: null });
   renderAdminPieceItems();
   document.getElementById("new-item-name").value = "";
   document.getElementById("new-item-description").value = "";
   document.getElementById("new-item-image").value = "";
-  document.getElementById("item-image-file-info").textContent =
-    "Nenhum arquivo escolhido";
+  document.getElementById("item-image-file-info").textContent = "Nenhum arquivo escolhido";
 
   if (window.fbApi && window.fbApi.savePiece) {
-    window.fbApi.savePiece(pieces[idx]).catch((e) => {
+    window.fbApi.savePiece(pieces[idx]).catch(e => {
       console.error("Erro ao salvar peça no Firebase:", e);
     });
   }
@@ -852,9 +755,7 @@ document.getElementById("add-piece-item-btn").onclick = function () {
 document.getElementById("select-piece-item").onchange = renderAdminPieceItems;
 
 document.getElementById("new-item-image").onchange = function (e) {
-  const txt = e.target.files[0]
-    ? e.target.files[0].name
-    : "Nenhum arquivo escolhido";
+  let txt = e.target.files[0] ? e.target.files[0].name : "Nenhum arquivo escolhido";
   document.getElementById("item-image-file-info").textContent = txt;
 };
 
@@ -873,7 +774,7 @@ document.getElementById("add-inspector-btn").onclick = function () {
   renderHome();
 
   if (window.fbApi && window.fbApi.setInspectors) {
-    window.fbApi.setInspectors(inspectors).catch((e) => {
+    window.fbApi.setInspectors(inspectors).catch(e => {
       console.error("Erro ao salvar inspetores no Firebase:", e);
     });
   }
@@ -889,17 +790,15 @@ function removeInspector(idx) {
   renderHome();
 
   if (window.fbApi && window.fbApi.setInspectors) {
-    window.fbApi.setInspectors(inspectors).catch((e) => {
+    window.fbApi.setInspectors(inspectors).catch(e => {
       console.error("Erro ao salvar inspetores no Firebase:", e);
     });
   }
 }
 
-// =====================
-// Render Admin
-// =====================
+/* ---- RENDER ADMIN ---- */
 function renderAdmin() {
-  const pieceListDiv = document.getElementById("admin-piece-list");
+  let pieceListDiv = document.getElementById("admin-piece-list");
   pieceListDiv.innerHTML = pieces
     .map((p, idx) => {
       const imgSrc = getPieceImageSrc(p);
@@ -907,27 +806,25 @@ function renderAdmin() {
         ? `<img src="${imgSrc}" style="width:50px;height:40px;border-radius:4px;object-fit:cover;">`
         : `<div style="width:50px;height:40px;background-color:#eee;margin-right:10px;border-radius:4px;display:flex;align-items:center;justify-content:center;">Sem imagem</div>`;
       return `
-      <div class="admin-piece-item">
-        ${thumb}
-        <span>${p.code} — ${p.description}</span>
-        <div>
-          <button class="edit-btn" data-pieceidx="${idx}"></button>
-          <button class="remove-btn" data-pieceidx="${idx}"></button>
+        <div class="admin-piece-item">
+          ${thumb}
+          <span>${p.code} — ${p.description}</span>
+          <div>
+            <button class="edit-btn" data-pieceidx="${idx}"></button>
+            <button class="remove-btn" data-pieceidx="${idx}"></button>
+          </div>
         </div>
-      </div>
-    `;
+      `;
     })
     .join("");
 
-  const selectPieceItem = document.getElementById("select-piece-item");
+  let selectPieceItem = document.getElementById("select-piece-item");
   selectPieceItem.innerHTML = pieces
-    .map(
-      (p, idx) => `<option value="${idx}">${p.code} — ${p.description}</option>`
-    )
+    .map((p, idx) => `<option value="${idx}">${p.code} — ${p.description}</option>`)
     .join("");
   renderAdminPieceItems();
 
-  const inspList = document.getElementById("admin-inspector-list");
+  let inspList = document.getElementById("admin-inspector-list");
   inspList.innerHTML = inspectors
     .map(
       (i, idx) => `
@@ -942,10 +839,10 @@ function renderAdmin() {
 }
 
 function renderAdminPieceItems() {
-  const idx = document.getElementById("select-piece-item").value;
+  let idx = document.getElementById("select-piece-item").value;
   if (idx === undefined || idx === "") return;
-  const itemsBox = document.getElementById("admin-piece-items-list");
-  const items = pieces[idx].items || [];
+  let itemsBox = document.getElementById("admin-piece-items-list");
+  let items = pieces[idx].items || [];
   itemsBox.innerHTML = items
     .map((item, i) => {
       const imgSrc = getItemImageSrc(item);
@@ -953,76 +850,69 @@ function renderAdminPieceItems() {
         ? `<img src="${imgSrc}" style="width:22px;height:22px;border-radius:3px;margin-right:4px;object-fit:cover;">`
         : "";
       return `
-      <div class="admin-item-line">
-        <div class="item-label-box">
-          ${icon}
-          <span>${item.name}</span>
+        <div class="admin-item-line">
+          <div class="item-label-box">
+            ${icon}
+            <span>${item.name}</span>
+          </div>
+          <div>
+            <button class="edit-btn" data-pieceidx="${idx}" data-itemidx="${i}"></button>
+            <button class="remove-btn" data-pieceidx="${idx}" data-itemidx="${i}"></button>
+          </div>
         </div>
-        <div>
-          <button class="edit-btn" data-pieceidx="${idx}" data-itemidx="${i}"></button>
-          <button class="remove-btn" data-pieceidx="${idx}" data-itemidx="${i}"></button>
-        </div>
-      </div>
-    `;
+      `;
     })
     .join("");
 }
 
-// =====================
-// Relatórios
-// =====================
-let graficoRosca;
-function initChart() {
-  const ctx = document.getElementById("graficoRosca").getContext("2d");
-  graficoRosca = new Chart(ctx, {
-    type: "doughnut",
-    data: {
-      labels: ["Embarcadas", "Retrabalho"],
-      datasets: [
-        {
-          data: [0, 0],
-          backgroundColor: ["#228be6", "#e23636"],
-          borderColor: "#fff",
-          borderWidth: 2
-        }
-      ]
-    },
-    options: {
-      responsive: false,
-      plugins: { legend: { display: false } },
-      cutout: "60%"
-    }
-  });
-}
+/* ---- RELATÓRIOS ---- */
+const ctx = document.getElementById("graficoRosca").getContext("2d");
+const graficoRosca = new Chart(ctx, {
+  type: "doughnut",
+  data: {
+    labels: ["Embarcadas", "Retrabalho"],
+    datasets: [
+      {
+        data: [0, 0],
+        backgroundColor: ["#228be6", "#e23636"],
+        borderColor: "#fff",
+        borderWidth: 2
+      }
+    ]
+  },
+  options: {
+    responsive: false,
+    plugins: { legend: { display: false } },
+    cutout: "60%"
+  }
+});
 
 function renderReports() {
-  if (!graficoRosca) return;
-
-  const monthsSet = new Set();
-  inspections.forEach((i) => {
+  let monthsSet = new Set();
+  inspections.forEach(i => {
     if (!i.date) return;
-    const [day, month, year] = i.date.split("/");
+    let [day, month, year] = i.date.split("/");
     if (month && year) monthsSet.add(`${month}/${year}`);
   });
 
-  const selectMonth = document.getElementById("report-month-select");
-  const months = Array.from(monthsSet).sort().reverse();
+  let selectMonth = document.getElementById("report-month-select");
+  let months = Array.from(monthsSet).sort().reverse();
   selectMonth.innerHTML =
-    months.map((m) => `<option value="${m}">${m}</option>`).join("") ||
+    months.map(m => `<option value="${m}">${m}</option>`).join("") ||
     `<option value="">---</option>`;
 
-  const currentMonth = selectMonth.value || months[0] || "";
-  let embarcadas = 0;
-  let retrabalho = 0;
+  let currentMonth = selectMonth.value || months[0] || "";
+  let embarcadas = 0,
+    retrabalho = 0;
   let t = 0;
 
-  inspections.forEach((i) => {
+  inspections.forEach(i => {
     if (!i.date) return;
-    const [d, m, y] = i.date.split("/");
-    const mes = `${m}/${y}`;
+    let [d, m, y] = i.date.split("/");
+    let mes = `${m}/${y}`;
     if (mes !== currentMonth) return;
     t++;
-    (i.itens || []).forEach((it) =>
+    (i.itens || []).forEach(it =>
       it.status === "OK"
         ? embarcadas++
         : it.encaminhamento === "retrabalho"
@@ -1033,26 +923,28 @@ function renderReports() {
 
   document.getElementById("total-inspecoes").textContent = inspections.length;
   document.getElementById("volume-mensal-num").textContent = t;
+
   graficoRosca.data.datasets[0].data = [embarcadas, retrabalho];
   graficoRosca.update();
 
-  const tbody = document.getElementById("reports-history-body");
-  const filtered = inspections.filter((i) => {
+  let tbody = document.getElementById("reports-history-body");
+  let filtered = inspections.filter(i => {
     if (!i.date) return false;
-    const [day, month, year] = i.date.split("/");
+    let [day, month, year] = i.date.split("/");
     return `${month}/${year}` === currentMonth;
   });
 
   tbody.innerHTML = filtered.length
     ? filtered
         .map(
-          (i) => `
+          i => `
       <tr>
         <td>${i.date}</td>
         <td>${i.inspector}</td>
         <td>${i.piece}</td>
         <td>${i.descricao || "-"}</td>
-      </tr>`
+      </tr>
+    `
         )
         .join("")
     : `<tr><td colspan="4" style="text-align:center;">Nenhum histórico encontrado.</td></tr>`;
@@ -1060,50 +952,42 @@ function renderReports() {
 
 document.getElementById("report-month-select").onchange = renderReports;
 
+/* ---- EXPORT CSV ---- */
 function exportCSV() {
-  if (!inspections.length) {
-    alert("Sem inspeções!");
-    return;
-  }
-  const csv =
+  if (!inspections.length) return alert("Sem inspeções!");
+  let csv =
     "Data,Inspetor,Peça,Descrição\n" +
     inspections
       .map(
-        (i) =>
+        i =>
           `${i.date},"${i.inspector}","${i.piece}","${(i.descricao || "").replace(
             /"/g,
             '""'
           )}"`
       )
       .join("\n");
-
-  const blob = new Blob([csv], { type: "text/csv" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
+  let blob = new Blob([csv], { type: "text/csv" });
+  let url = URL.createObjectURL(blob);
+  let a = document.createElement("a");
   a.href = url;
   a.download = "relatorio.csv";
   a.click();
   URL.revokeObjectURL(url);
 }
 
-// =====================
-// Inicialização
-// =====================
+/* ---- INICIALIZAÇÃO ---- */
 document.addEventListener("DOMContentLoaded", async () => {
-  // Carrega do Firebase, se disponível
   if (window.fbApi && window.fbApi.loadAll) {
     try {
       const data = await window.fbApi.loadAll();
       if (data.pieces && data.pieces.length) pieces = data.pieces;
       if (data.inspectors && data.inspectors.length) inspectors = data.inspectors;
-      if (data.inspections && data.inspections.length)
-        inspections = data.inspections;
+      if (data.inspections && data.inspections.length) inspections = data.inspections;
     } catch (e) {
       console.error("Erro ao carregar dados do Firebase:", e);
     }
   }
 
-  initChart();
   showScreen("home");
   renderHome();
   renderReports();
