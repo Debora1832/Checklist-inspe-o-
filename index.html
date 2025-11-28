@@ -9,10 +9,8 @@
 </head>
 <body>
 <div class="app-wrapper">
-
-  <!-- CONTEÚDO PRINCIPAL -->
   <div class="container">
-    <!-- Cabeçalho azul -->
+    <!-- HEADER -->
     <div class="header">
       <div class="header-left">
         <div class="header-circles" aria-hidden="true">
@@ -22,14 +20,13 @@
           AJUDANDO A CONSTRUIR, CULTIVAR,<br>TRANSPORTAR E SEGUIR EM FRENTE
         </div>
       </div>
-
       <div class="header-brand">
         <div class="header-logo">MAGIUS</div>
         <div class="header-sub">METALÚRGICA INDUSTRIAL</div>
       </div>
     </div>
 
-    <!-- Barra de navegação -->
+    <!-- NAV -->
     <div class="main-nav">
       <div class="nav-left">
         <button class="btn-home" onclick="showScreen('home')">Início</button>
@@ -40,7 +37,7 @@
       </div>
     </div>
 
-    <!-- TELA HOME -->
+    <!-- HOME -->
     <div id="home" class="screen active">
       <h2 class="page-title">MAGIUS - Sistema de Checklist de Inspeção</h2>
 
@@ -51,7 +48,6 @@
         </select>
       </div>
 
-      <!-- Cartão com foto do inspetor -->
       <div id="inspector-preview" class="inspector-preview"></div>
 
       <div class="form-group">
@@ -64,10 +60,10 @@
       <button class="btn-checklist" onclick="showChecklist()">Iniciar Checklist</button>
     </div>
 
-    <!-- TELA CHECKLIST -->
+    <!-- CHECKLIST -->
     <div id="checklist" class="screen">
       <div class="checklist-layout">
-        <!-- Coluna principal -->
+        <!-- coluna principal -->
         <div class="checklist-main">
           <div class="checklist-piece-title" id="checklist-header"></div>
           <div id="piece-image-box" class="piece-image-box">
@@ -78,10 +74,11 @@
           <button class="btn-primary" id="finalizar-inspecao-btn" style="margin-top:20px;">
             Finalizar Inspeção
           </button>
+
           <div class="checklist-nok-library" id="checklist-nok-library"></div>
         </div>
 
-        <!-- Painel lateral moderno -->
+        <!-- painel lateral -->
         <aside class="checklist-side">
           <div class="side-card" id="side-inspector-card">
             <div class="side-card-title">Inspetor</div>
@@ -99,7 +96,9 @@
           <div class="side-card" id="side-piece-card">
             <div class="side-card-title">Peça</div>
             <div class="side-piece-code" id="side-piece-code">—</div>
-            <div class="side-piece-desc" id="side-piece-desc">Selecione peça na tela inicial.</div>
+            <div class="side-piece-desc" id="side-piece-desc">
+              Selecione peça na tela inicial.
+            </div>
             <div class="side-piece-extra">
               <span id="side-piece-items">0 itens de inspeção</span>
             </div>
@@ -124,7 +123,7 @@
       </div>
     </div>
 
-    <!-- TELA RELATÓRIOS -->
+    <!-- RELATÓRIOS -->
     <div id="reports" class="screen">
       <div class="report-header">Relatórios</div>
       <div class="report-controls">
@@ -174,7 +173,7 @@
       </div>
     </div>
 
-    <!-- TELA ADMIN -->
+    <!-- ADMIN -->
     <div id="admin" class="screen">
       <!-- Peças -->
       <div class="activity-block">
@@ -197,7 +196,7 @@
         <button class="btn-primary" id="add-piece-btn" style="margin-right:10px;">Adicionar peça</button>
         <button class="btn-secondary" id="clear-piece-btn">Limpar</button>
 
-        <h4 class="section-subtitle">Peças existentes</h4>
+        <h4 class="section-subtitle" style="margin-top:20px;">Peças existentes</h4>
         <div class="admin-piece-list" id="admin-piece-list"></div>
       </div>
 
@@ -255,16 +254,14 @@
       </div>
     </div>
 
-    <!-- MODAL REUTILIZÁVEL -->
+    <!-- MODAL GLOBAL -->
     <div id="modal-overlay" class="modal-overlay" style="display:none;">
       <div id="modal-box" class="modal-box"></div>
     </div>
-  </div><!-- /container -->
-</div><!-- /app-wrapper -->
+  </div>
+</div>
 
-<!-- Firebase (módulo) + app -->
 <script type="module" src="firebase.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
-
