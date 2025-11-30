@@ -1,5 +1,5 @@
 // firebase.js
-// Expor window.fbApi para o app.js
+// Integração com Firestore + Storage e API global window.fbApi
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
 import {
@@ -12,10 +12,16 @@ import {
   setDoc,
   deleteDoc,
 } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
+import {
+  getStorage,
+  ref as sRef,
+  uploadBytes,
+  getDownloadURL,
+} from "https://www.gstatic.com/firebasejs/9.22.2/firebase-storage.js";
 
 /* ===== CONFIGURE AQUI SEU PROJETO ===== */
 const firebaseConfig = {
-  apiKey: "SUA_APIKEY_AQUI",
+  apiKey: "SUA_API_KEY",
   authDomain: "SEU_DOMINIO.firebaseapp.com",
   projectId: "SEU_PROJECT_ID",
   storageBucket: "SEU_BUCKET.appspot.com",
@@ -25,8 +31,19 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const storage = getStorage(app);
 
-// Carregar peças / inspetores / inspeções
+// ===== Upload genérico para Storage =====
+async function uploadFileAndGetUrl(path, file) {
+  if (!file) return null;
+  const ref = sRef(storage, path);
+  const metadata = { contentType: file.type || "image/jpeg" };
+  const snap = await uploadBytes(ref, file, metadata);
+  const url = await getDownloadURL(snap.ref);
+  return url;
+}
+
+// ===== Carregar tudo =====
 async function loadAll() {
   const pieces = [];
   const inspectors = [];
@@ -81,6 +98,9 @@ async function loadAll() {
         items: (data.items || data.itens || []).map((it) => ({
           status: it.status,
           motivo: it.motivo || "",
+          encaminhamento: it.encaminhamento || "",
+          nomeTerceiro: it.nome_terceiro || "",
+          fotoUrl: it.fotoUrl || null,
         })),
       });
     });
@@ -91,50 +111,113 @@ async function loadAll() {
   return { pieces, inspectors, inspections };
 }
 
-// Salvar / atualizar peça
+// ===== Salvar / atualizar peça =====
 async function savePiece(piece) {
   if (!piece || !piece.code) return;
+
+  let imageUrl = piece.imageUrl || null;
+  if (piece.image instanceof File) {
+    const ext =
+      (piece.image.name && piece.image.name.split(".").pop()) || "jpg";
+    imageUrl = await uploadFileAndGetUrl(
+      `pieces/${piece.code}/main_${Date.now()}.${ext}`,
+      piece.image
+    );
+  }
+
+  const itemsToSave = [];
+  for (let i = 0; i < (piece.items || []).length; i++) {
+    const it = piece.items[i];
+    let itemImageUrl = it.imageUrl || null;
+    if (it.image instanceof File) {
+      const ext =
+        (it.image.name && it.image.name.split(".").pop()) || "jpg";
+      itemImageUrl = await uploadFileAndGetUrl(
+        `pieces/${piece.code}/items/${i}_${Date.now()}.${ext}`,
+        it.image
+      );
+    }
+    itemsToSave.push({
+      name: it.name,
+      description: it.description,
+      imageUrl: itemImageUrl,
+    });
+  }
+
   const ref = doc(db, "pieces", piece.code);
   await setDoc(ref, {
     code: piece.code,
     description: piece.description || "",
-    imageUrl: piece.imageUrl || null,
-    items: (piece.items || []).map((it) => ({
-      name: it.name,
-      description: it.description || "",
-      imageUrl: it.imageUrl || null,
-    })),
+    imageUrl,
+    items: itemsToSave,
   });
 }
 
-// Deletar peça
+// ===== Deletar peça =====
 async function deletePiece(code) {
   if (!code) return;
   await deleteDoc(doc(db, "pieces", code));
 }
 
-// Salvar inspetores (array de nomes)
+// ===== Salvar inspetores (array de nomes) =====
 async function setInspectors(list) {
   const ref = doc(db, "config", "inspectors");
   await setDoc(ref, { list: list || [] });
 }
 
-// Salvar inspeção
+// ===== Salvar inspeção (com upload da foto) =====
 async function saveInspection(inspec) {
-  const ref = await addDoc(collection(db, "inspections"), {
+  const timeStamp = Date.now();
+  const itensToSave = [];
+
+  for (let i = 0; i < (inspec.items || []).length; i++) {
+    const it = inspec.items[i];
+    let fotoUrl = it.fotoUrl || null;
+
+    if (it.fotoFile instanceof File) {
+      const ext =
+        (it.fotoFile.name && it.fotoFile.name.split(".").pop()) || "jpg";
+      fotoUrl = await uploadFileAndGetUrl(
+        `inspections/${inspec.piece}/${timeStamp}_${i}.${ext}`,
+        it.fotoFile
+      );
+    }
+
+    itensToSave.push({
+      status: it.status,
+      motivo: it.motivo || "",
+      encaminhamento: it.encaminhamento || "",
+      nome_terceiro: it.nomeTerceiro || "",
+      fotoUrl,
+    });
+  }
+
+  const docData = {
     date: inspec.date,
     inspector: inspec.inspector,
     piece: inspec.piece,
-    description: inspec.description || "",
-    items: (inspec.items || []).map((it) => ({
+    descricao: inspec.description || "",
+    itens: itensToSave,
+  };
+
+  const ref = await addDoc(collection(db, "inspections"), docData);
+  return {
+    id: ref.id,
+    date: docData.date,
+    inspector: docData.inspector,
+    piece: docData.piece,
+    description: docData.descricao,
+    items: itensToSave.map((it) => ({
       status: it.status,
-      motivo: it.motivo || "",
+      motivo: it.motivo,
+      encaminhamento: it.encaminhamento,
+      nomeTerceiro: it.nome_terceiro,
+      fotoUrl: it.fotoUrl,
     })),
-  });
-  return { id: ref.id };
+  };
 }
 
-// Expor API global
+// ===== Expor API global =====
 window.fbApi = {
   loadAll,
   savePiece,
