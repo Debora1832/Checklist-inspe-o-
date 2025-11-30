@@ -19,6 +19,110 @@
     color:#333;
   }
 
+  /* LOGIN SCREEN */
+  .login-screen{
+    position:fixed;
+    inset:0;
+    background:#001a3d;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:16px;
+    z-index:99999;
+  }
+  .login-card{
+    width:100%;
+    max-width:360px;
+    background:#fff;
+    border-radius:12px;
+    padding:20px 22px 22px;
+    box-shadow:0 10px 30px rgba(0,0,0,0.35);
+  }
+  .login-logo{
+    font-size:22px;
+    font-weight:800;
+    color:#003366;
+  }
+  .login-sub{
+    font-size:12px;
+    color:#666;
+    margin-bottom:10px;
+  }
+  .login-tabs{
+    display:flex;
+    gap:6px;
+    margin:8px 0 12px;
+  }
+  .login-tab{
+    flex:1;
+    border-radius:999px;
+    padding:6px 8px;
+    background:#e1e6f5;
+    border:none;
+    font-size:13px;
+    font-weight:600;
+    cursor:pointer;
+    color:#003366;
+  }
+  .login-tab.active{
+    background:#003366;
+    color:#fff;
+  }
+  .login-form-group{
+    margin-bottom:10px;
+  }
+  .login-form-group label{
+    font-size:12px;
+    font-weight:600;
+    display:block;
+    margin-bottom:4px;
+  }
+  .login-form-group input,
+  .login-form-group select{
+    width:100%;
+    padding:7px 9px;
+    border-radius:6px;
+    border:1px solid #cbd3e3;
+    font-size:13px;
+  }
+  .login-btn-primary{
+    width:100%;
+    border:none;
+    border-radius:7px;
+    padding:8px 12px;
+    background:#0b4b7a;
+    color:#fff;
+    font-size:14px;
+    font-weight:600;
+    cursor:pointer;
+    margin-top:4px;
+  }
+  .login-btn-primary:hover{background:#0f5f9c;}
+  .login-hint{
+    font-size:11px;
+    color:#666;
+    margin-top:6px;
+  }
+  .login-error{
+    font-size:11px;
+    color:#c0392b;
+    margin-bottom:4px;
+  }
+  .login-title-small{
+    font-size:14px;
+    font-weight:700;
+    margin-bottom:6px;
+    color:#003366;
+  }
+  .login-back-link{
+    font-size:11px;
+    color:#003366;
+    text-decoration:underline;
+    cursor:pointer;
+    margin-top:6px;
+    display:inline-block;
+  }
+
   /* LAYOUT PRINCIPAL */
   .layout{
     display:flex;
@@ -99,6 +203,7 @@
     display:flex;
     justify-content:space-between;
     align-items:center;
+    gap:12px;
   }
   .header-left{display:flex;align-items:center;gap:10px;}
   .header-circles{display:flex;gap:6px;}
@@ -109,6 +214,27 @@
   .header-brand{text-align:right;}
   .header-logo{font-size:20px;font-weight:800;}
   .header-sub{font-size:11px;color:#cfe6ff;}
+  .header-user-meta{
+    margin-top:4px;
+    font-size:11px;
+    display:flex;
+    align-items:center;
+    gap:6px;
+    justify-content:flex-end;
+  }
+  .btn-header-small{
+    border-radius:999px;
+    border:1px solid #cfe6ff;
+    background:transparent;
+    padding:2px 8px;
+    font-size:10px;
+    color:#cfe6ff;
+    cursor:pointer;
+  }
+  .btn-header-small:hover{
+    background:#cfe6ff;
+    color:#003366;
+  }
 
   .main-content{
     padding:16px 24px 32px;
@@ -150,6 +276,10 @@
     border-radius:5px;
     border:1px solid #cbd3e3;
     font-size:13px;
+  }
+  .form-group input[disabled]{
+    background:#eef2fb;
+    color:#555;
   }
   .form-group textarea{resize:vertical;}
   .form-group.small{max-width:200px;}
@@ -199,6 +329,14 @@
       margin-left:16px;
     }
     .sidebar-footer{display:none;}
+    .top-header{
+      flex-direction:column;
+      align-items:flex-start;
+    }
+    .header-brand{text-align:left;}
+    .header-user-meta{
+      justify-content:flex-start;
+    }
   }
 
   .screen{display:none;}
@@ -354,7 +492,7 @@
     gap:10px;
   }
   .inspector-card{
-    width:190px;
+    width:210px;
     border-radius:10px;
     border:1px solid #d6ddeb;
     padding:10px;
@@ -379,10 +517,16 @@
     font-weight:700;
     text-align:center;
   }
+  .inspector-pin-status{
+    font-size:11px;
+    color:#555;
+  }
   .inspector-actions{
     display:flex;
+    flex-wrap:wrap;
     gap:6px;
     margin-top:4px;
+    justify-content:center;
   }
   .btn-icon{
     border-radius:6px;
@@ -393,6 +537,7 @@
   }
   .btn-edit{background:#0b4b7a;color:#fff;}
   .btn-delete{background:#e23636;color:#fff;}
+  .btn-reset-pin{background:#f1c40f;color:#333;}
 
   /* PEÇAS & ITENS */
 
@@ -519,7 +664,7 @@
     display:flex;
     align-items:center;
     justify-content:center;
-    z-index:9999;
+    z-index:88888;
   }
   .modal-box{
     background:#fff;
@@ -550,7 +695,73 @@
   </style>
 </head>
 <body>
-  <div class="layout">
+
+  <!-- TELA DE LOGIN -->
+  <div id="login-screen" class="login-screen">
+    <div class="login-card" id="login-main-panel">
+      <div class="login-logo">MAGIUS</div>
+      <div class="login-sub">Sistema de Checklist de Inspeção</div>
+
+      <div class="login-tabs">
+        <button id="login-tab-inspector" class="login-tab active">Inspetor</button>
+        <button id="login-tab-admin" class="login-tab">Administrador</button>
+      </div>
+
+      <div id="login-error" class="login-error" style="display:none;"></div>
+
+      <!-- PAINEL INSPETOR -->
+      <div id="login-inspector-panel">
+        <div class="login-form-group">
+          <label for="login-insp-select">Inspetor</label>
+          <select id="login-insp-select">
+            <option value="" disabled selected>Selecione o inspetor</option>
+          </select>
+        </div>
+        <div class="login-form-group">
+          <label for="login-insp-pin">PIN (4 dígitos)</label>
+          <input type="password" id="login-insp-pin" maxlength="4" inputmode="numeric" placeholder="****">
+        </div>
+        <button id="btn-login-insp" class="login-btn-primary">Entrar</button>
+        <div class="login-hint">
+          Primeiro acesso: basta informar o nome, digitar o PIN desejado e o sistema vai pedir confirmação.
+        </div>
+      </div>
+
+      <!-- PAINEL ADMIN -->
+      <div id="login-admin-panel" class="hide">
+        <div class="login-form-group">
+          <label for="login-admin-password">Senha do administrador</label>
+          <input type="password" id="login-admin-password" placeholder="Digite a senha">
+        </div>
+        <button id="btn-login-admin" class="login-btn-primary">Entrar como Administrador</button>
+        <div class="login-hint">
+          Acesso restrito para configuração de inspetores, peças e itens.
+        </div>
+      </div>
+    </div>
+
+    <!-- PAINEL CRIAR PIN -->
+    <div class="login-card hide" id="create-pin-panel">
+      <div class="login-title-small">Criar PIN de acesso</div>
+      <div class="login-hint">
+        Inspetor: <strong id="create-pin-name"></strong>
+      </div>
+      <div id="create-pin-error" class="login-error" style="display:none;"></div>
+      <div class="login-form-group">
+        <label for="create-pin-input">Novo PIN (4 dígitos)</label>
+        <input type="password" id="create-pin-input" maxlength="4" inputmode="numeric" placeholder="****">
+      </div>
+      <div class="login-form-group">
+        <label for="create-pin-confirm">Confirmar PIN</label>
+        <input type="password" id="create-pin-confirm" maxlength="4" inputmode="numeric" placeholder="****">
+      </div>
+      <button id="btn-create-pin-confirm" class="login-btn-primary">Salvar PIN e entrar</button>
+      <span id="btn-create-pin-cancel" class="login-back-link">Voltar para login</span>
+    </div>
+  </div>
+
+  <!-- APP PRINCIPAL -->
+  <div class="layout" id="app-layout" style="display:none;">
 
     <!-- SIDEBAR -->
     <aside class="sidebar">
@@ -599,6 +810,11 @@
         <div class="header-brand">
           <div class="header-logo">MAGIUS</div>
           <div class="header-sub">METALÚRGICA INDUSTRIAL</div>
+          <div class="header-user-meta">
+            <span id="header-user-label"></span>
+            <button id="btn-change-pin" class="btn-header-small" style="display:none;">Alterar PIN</button>
+            <button id="btn-logout" class="btn-header-small">Sair</button>
+          </div>
         </div>
       </header>
 
@@ -610,10 +826,8 @@
             <h2 class="screen-title">Checklist de Inspeção</h2>
             <div class="grid-2">
               <div class="form-group">
-                <label for="insp-selector">Inspetor</label>
-                <select id="insp-selector">
-                  <option value="" disabled selected>Selecionar inspetor</option>
-                </select>
+                <label>Inspetor logado</label>
+                <input type="text" id="insp-display" disabled placeholder="Nenhum usuário logado">
               </div>
               <div class="form-group">
                 <label for="piece-selector">Peça</label>
@@ -654,6 +868,9 @@
               </div>
             </div>
             <button class="btn-primary" id="btn-add-inspector">Adicionar inspetor</button>
+            <div class="login-hint" style="margin-top:6px;">
+              O PIN será criado pelo próprio inspetor no primeiro login.
+            </div>
           </div>
 
           <div class="card mt-16">
@@ -800,7 +1017,7 @@
       apiKey: "AIzaSyCAAowsqkoUjIAPhSvq6dUlKMZGdXOO1b0",
       authDomain: "magiuschecklist-9ad0f.firebaseapp.com",
       projectId: "magiuschecklist-9ad0f",
-      storageBucket: "magiuschecklist-9ad0f.firebasestorage.app",  // <-- corrigido
+      storageBucket: "magiuschecklist-9ad0f.firebasestorage.app",
       messagingSenderId: "14669686712",
       appId: "1:14669686712:web:1c205b1111cde18379114d",
       measurementId: "G-GQS591WCBD"
@@ -821,14 +1038,14 @@
       if (!file) return null;
       const ref = sRef(storage, path);
       const metadata = { contentType: file.type || "image/jpeg" };
-      const result = await uploadBytes(ref, file, metadata);
+      await uploadBytes(ref, file, metadata);
       const url = await getDownloadURL(ref);
       return url;
     }
 
     async function loadAll() {
       const pieces = [];
-      let inspectors = [];
+      let inspectorsArr = [];
       let inspections = [];
 
       try {
@@ -856,7 +1073,17 @@
         const inspRef = doc(db, "config", "inspectors");
         const inspSnap = await getDoc(inspRef);
         if (inspSnap && inspSnap.exists()) {
-          inspectors = inspSnap.data().list || [];
+          const rawList = inspSnap.data().list || [];
+          inspectorsArr = rawList.map(it => {
+            if (typeof it === "string") {
+              return { name: it, pin: null };
+            } else {
+              return {
+                name: it.name || "",
+                pin: it.pin || null
+              };
+            }
+          });
         }
       } catch (err) {
         console.warn("Erro load inspectors:", err);
@@ -886,7 +1113,7 @@
         console.warn("Erro load inspections:", err);
       }
 
-      return { pieces, inspectors, inspections };
+      return { pieces, inspectors: inspectorsArr, inspections };
     }
 
     async function savePiece(piece) {
@@ -966,6 +1193,7 @@
 
   <!-- SCRIPT PRINCIPAL (UI) -->
   <script>
+  // ESTADO PRINCIPAL
   let pieces = [
     {
       code: "597-2445#01",
@@ -978,7 +1206,13 @@
       ]
     }
   ];
-  let inspectors = ["João Silva","Maria Santos"];
+
+  // Agora inspetores são objetos {name, pin}
+  let inspectors = [
+    { name: "João Silva", pin: null },
+    { name: "Maria Santos", pin: null }
+  ];
+
   let inspectorPhotos = {};
   let inspections = [];
 
@@ -988,7 +1222,22 @@
   let reportsChart = null;
   let dashboardChart = null;
 
+  let currentUser = null;   // { name, role: 'inspector' | 'admin' }
+  let isAdmin = false;
+  let pendingPinInspector = null;
+
+  // =========================
+  // FUNÇÕES GERAIS / MODAL
+  // =========================
+
   function selectSidebar(screenId){
+    // Bloqueia acesso a telas de admin para não admin
+    const adminScreens = ["inspectors","pieces"];
+    if (adminScreens.includes(screenId) && !isAdmin) {
+      alert("Apenas o Administrador pode acessar esta área.");
+      return;
+    }
+
     document.querySelectorAll(".sidebar-item").forEach(btn=>{
       btn.classList.toggle("active", btn.dataset.screen===screenId);
     });
@@ -1032,37 +1281,242 @@
     `);
   }
 
-  function renderChecklistSelectors(){
-    const inspSel = document.getElementById("insp-selector");
-    inspSel.innerHTML = '<option value="" disabled selected>Selecionar inspetor</option>' +
-      inspectors.map(n=>`<option value="${n}">${n}</option>`).join("");
-
-    const pieceSel = document.getElementById("piece-selector");
-    pieceSel.innerHTML = '<option value="" disabled selected>Selecionar peça</option>' +
-      pieces.map(p=>`<option value="${p.code}">${p.code}</option>`).join("");
-
-    document.getElementById("checklist-execution").classList.add("hide");
+  function findInspectorByName(name){
+    return inspectors.find(i => i.name === name) || null;
   }
 
-  function startChecklist(){
-    const insp = document.getElementById("insp-selector").value;
-    const pieceCode = document.getElementById("piece-selector").value;
-    if(!insp || !pieceCode){
-      alert("Selecione inspetor e peça.");
-      return;
+  function updateHeaderUserInfo(){
+    const label = document.getElementById("header-user-label");
+    const btnChangePin = document.getElementById("btn-change-pin");
+    if(!label) return;
+    if(!currentUser){
+      label.textContent = "";
+      if(btnChangePin) btnChangePin.style.display="none";
+    } else {
+      if(currentUser.role === "admin"){
+        label.textContent = `Admin: ${currentUser.name}`;
+        if(btnChangePin) btnChangePin.style.display="none";
+      } else {
+        label.textContent = `Inspetor: ${currentUser.name}`;
+        if(btnChangePin) btnChangePin.style.display="inline-block";
+      }
     }
-    currentChecklistPiece = pieces.find(p=>p.code===pieceCode);
-    if(!currentChecklistPiece){
-      alert("Peça não encontrada.");
-      return;
+    const inspDisplay = document.getElementById("insp-display");
+    if(inspDisplay){
+      inspDisplay.value = currentUser && currentUser.role==="inspector" ? currentUser.name :
+                          currentUser && currentUser.role==="admin" ? "Administrador" : "";
     }
-    checklistItemStates = (currentChecklistPiece.items||[]).map(()=>({
-      status:null,motivo:"",encaminhamento:"",nomeTerceiro:"",
-      fotoFile:null,fotoUrl:null
-    }));
-    renderChecklistExecution();
-    document.getElementById("checklist-execution").classList.remove("hide");
   }
+
+  function completeLogin(user){
+    currentUser = user;
+    isAdmin = user && user.role === "admin";
+    updateHeaderUserInfo();
+    // Fecha login, abre app
+    const loginScreen = document.getElementById("login-screen");
+    const appLayout = document.getElementById("app-layout");
+    if(loginScreen) loginScreen.style.display="none";
+    if(appLayout) appLayout.style.display="flex";
+    selectSidebar("checklist");
+  }
+
+  function logout(){
+    currentUser = null;
+    isAdmin = false;
+    updateHeaderUserInfo();
+    // Esconde app, mostra login
+    document.getElementById("app-layout").style.display="none";
+    document.getElementById("login-screen").style.display="flex";
+    // Limpa campos de login
+    const pinInput = document.getElementById("login-insp-pin");
+    const adminInput = document.getElementById("login-admin-password");
+    if(pinInput) pinInput.value="";
+    if(adminInput) adminInput.value="";
+  }
+
+  // =========================
+  // LOGIN / PIN
+  // =========================
+
+  function setLoginError(msg){
+    const el = document.getElementById("login-error");
+    if(!el) return;
+    if(msg){
+      el.textContent = msg;
+      el.style.display="block";
+    } else {
+      el.textContent = "";
+      el.style.display="none";
+    }
+  }
+
+  function setCreatePinError(msg){
+    const el = document.getElementById("create-pin-error");
+    if(!el) return;
+    if(msg){
+      el.textContent = msg;
+      el.style.display="block";
+    } else {
+      el.textContent = "";
+      el.style.display="none";
+    }
+  }
+
+  function renderLoginInspectorSelect(){
+    const sel = document.getElementById("login-insp-select");
+    if(!sel) return;
+    sel.innerHTML = '<option value="" disabled selected>Selecione o inspetor</option>' +
+      inspectors.map(i=>`<option value="${i.name}">${i.name}</option>`).join("");
+  }
+
+  function showLoginPanelMain(){
+    document.getElementById("login-main-panel").classList.remove("hide");
+    document.getElementById("create-pin-panel").classList.add("hide");
+    setLoginError("");
+    setCreatePinError("");
+    pendingPinInspector = null;
+  }
+
+  function startCreatePinFlow(name){
+    pendingPinInspector = name;
+    document.getElementById("login-main-panel").classList.add("hide");
+    const panel = document.getElementById("create-pin-panel");
+    panel.classList.remove("hide");
+    document.getElementById("create-pin-name").textContent = name;
+    document.getElementById("create-pin-input").value="";
+    document.getElementById("create-pin-confirm").value="";
+    setCreatePinError("");
+  }
+
+  async function handleInspectorLogin(){
+    setLoginError("");
+    const sel = document.getElementById("login-insp-select");
+    const pinInput = document.getElementById("login-insp-pin");
+    const name = sel ? sel.value : "";
+    const pin = (pinInput ? pinInput.value : "").trim();
+    if(!name){
+      setLoginError("Selecione o inspetor.");
+      return;
+    }
+    if(!pin){
+      setLoginError("Digite o PIN.");
+      return;
+    }
+    if(!/^\d{4}$/.test(pin)){
+      setLoginError("PIN deve conter 4 dígitos numéricos.");
+      return;
+    }
+    const insp = findInspectorByName(name);
+    if(!insp){
+      setLoginError("Inspetor não encontrado.");
+      return;
+    }
+    if(!insp.pin){
+      // Primeiro acesso -> criar PIN
+      startCreatePinFlow(name);
+      // pré preenche o campo de criação com o que ele digitou, se quiser
+      document.getElementById("create-pin-input").value = pin;
+      return;
+    }
+    if(insp.pin !== pin){
+      setLoginError("PIN incorreto.");
+      return;
+    }
+    // login ok
+    pinInput.value="";
+    completeLogin({ name: insp.name, role:"inspector" });
+  }
+
+  async function handleCreatePinConfirm(){
+    setCreatePinError("");
+    if(!pendingPinInspector){
+      setCreatePinError("Erro interno, volte ao login.");
+      return;
+    }
+    const pin1 = document.getElementById("create-pin-input").value.trim();
+    const pin2 = document.getElementById("create-pin-confirm").value.trim();
+    if(!/^\d{4}$/.test(pin1)){
+      setCreatePinError("PIN deve ter exatamente 4 dígitos numéricos.");
+      return;
+    }
+    if(pin1 !== pin2){
+      setCreatePinError("Os PINs não coincidem.");
+      return;
+    }
+    const insp = findInspectorByName(pendingPinInspector);
+    if(!insp){
+      setCreatePinError("Inspetor não encontrado.");
+      return;
+    }
+    insp.pin = pin1;
+    if(window.fbApi && window.fbApi.setInspectors){
+      try{
+        await window.fbApi.setInspectors(inspectors);
+      }catch(e){
+        console.error("Erro salvar PIN no Firebase:", e);
+      }
+    }
+    alert("PIN criado com sucesso!");
+    showLoginPanelMain();
+    completeLogin({ name: insp.name, role:"inspector" });
+  }
+
+  function handleAdminLogin(){
+    setLoginError("");
+    const input = document.getElementById("login-admin-password");
+    const pwd = (input ? input.value : "").trim();
+    if(!pwd){
+      setLoginError("Digite a senha do administrador.");
+      return;
+    }
+    // Senha definida por você
+    if(pwd !== "qualidade2025"){
+      setLoginError("Senha de administrador incorreta.");
+      return;
+    }
+    input.value="";
+    completeLogin({ name: "Administrador", role:"admin" });
+  }
+
+  function setupLoginUI(){
+    const tabInsp = document.getElementById("login-tab-inspector");
+    const tabAdmin = document.getElementById("login-tab-admin");
+    const inspPanel = document.getElementById("login-inspector-panel");
+    const adminPanel = document.getElementById("login-admin-panel");
+
+    if(tabInsp && tabAdmin && inspPanel && adminPanel){
+      tabInsp.addEventListener("click", ()=>{
+        tabInsp.classList.add("active");
+        tabAdmin.classList.remove("active");
+        inspPanel.classList.remove("hide");
+        adminPanel.classList.add("hide");
+        setLoginError("");
+      });
+      tabAdmin.addEventListener("click", ()=>{
+        tabAdmin.classList.add("active");
+        tabInsp.classList.remove("active");
+        adminPanel.classList.remove("hide");
+        inspPanel.classList.add("hide");
+        setLoginError("");
+      });
+    }
+
+    const btnInsp = document.getElementById("btn-login-insp");
+    if(btnInsp) btnInsp.addEventListener("click", handleInspectorLogin);
+
+    const btnAdmin = document.getElementById("btn-login-admin");
+    if(btnAdmin) btnAdmin.addEventListener("click", handleAdminLogin);
+
+    const btnCreatePin = document.getElementById("btn-create-pin-confirm");
+    if(btnCreatePin) btnCreatePin.addEventListener("click", handleCreatePinConfirm);
+
+    const btnCreatePinCancel = document.getElementById("btn-create-pin-cancel");
+    if(btnCreatePinCancel) btnCreatePinCancel.addEventListener("click", showLoginPanelMain);
+  }
+
+  // =========================
+  // CHECKLIST
+  // =========================
 
   function getPieceImageSrc(piece){
     if(!piece) return null;
@@ -1078,6 +1532,46 @@
     if(!st) return null;
     if(st.fotoFile instanceof File) return URL.createObjectURL(st.fotoFile);
     return st.fotoUrl || null;
+  }
+
+  function renderChecklistSelectors(){
+    const pieceSel = document.getElementById("piece-selector");
+    if(pieceSel){
+      pieceSel.innerHTML = '<option value="" disabled selected>Selecionar peça</option>' +
+        pieces.map(p=>`<option value="${p.code}">${p.code}</option>`).join("");
+    }
+    const inspDisplay = document.getElementById("insp-display");
+    if(inspDisplay){
+      inspDisplay.value = currentUser && currentUser.role==="inspector"
+        ? currentUser.name
+        : currentUser && currentUser.role==="admin"
+          ? "Administrador"
+          : "";
+    }
+    document.getElementById("checklist-execution").classList.add("hide");
+  }
+
+  function startChecklist(){
+    if(!currentUser){
+      alert("Faça login antes de iniciar o checklist.");
+      return;
+    }
+    const pieceCode = document.getElementById("piece-selector").value;
+    if(!pieceCode){
+      alert("Selecione a peça para iniciar o checklist.");
+      return;
+    }
+    currentChecklistPiece = pieces.find(p=>p.code===pieceCode);
+    if(!currentChecklistPiece){
+      alert("Peça não encontrada.");
+      return;
+    }
+    checklistItemStates = (currentChecklistPiece.items||[]).map(()=>({
+      status:null,motivo:"",encaminhamento:"",nomeTerceiro:"",
+      fotoFile:null,fotoUrl:null
+    }));
+    renderChecklistExecution();
+    document.getElementById("checklist-execution").classList.remove("hide");
   }
 
   function renderChecklistExecution(){
@@ -1232,6 +1726,10 @@
       alert("Nenhuma peça selecionada.");
       return;
     }
+    if(!currentUser){
+      alert("Sem usuário logado.");
+      return;
+    }
     for(let i=0;i<checklistItemStates.length;i++){
       const st = checklistItemStates[i];
       if(!st.status){
@@ -1259,10 +1757,10 @@
     }
 
     const now = new Date();
-    const insp = document.getElementById("insp-selector").value;
+    const inspName = currentUser.name;
     const inspecToSave = {
       date: now.toLocaleDateString("pt-BR"),
-      inspector: insp,
+      inspector: inspName,
       piece: currentChecklistPiece.code,
       descricao: "Inspeção realizada",
       itens: checklistItemStates.map(s=>({
@@ -1300,14 +1798,18 @@
     renderDashboard();
     renderChecklistExecution();
 
-    // NOVO: voltar para tela inicial e limpar tudo
-    selectSidebar('checklist');                         // volta pra aba Checklist
-    document.getElementById("insp-selector").value = "";   // limpa seleção de inspetor
-    document.getElementById("piece-selector").value = "";  // limpa seleção de peça
-    document.getElementById("checklist-execution").classList.add("hide"); // esconde execução
-    currentChecklistPiece = null;                      // zera estado interno
+    // Voltar para tela inicial do checklist e limpar
+    selectSidebar('checklist');
+    const pieceSel = document.getElementById("piece-selector");
+    if(pieceSel) pieceSel.value="";
+    document.getElementById("checklist-execution").classList.add("hide");
+    currentChecklistPiece = null;
     checklistItemStates = [];
   }
+
+  // =========================
+  // INSPETORES
+  // =========================
 
   function loadInspectorPhotosFromLocalStorage(){
     try{
@@ -1324,19 +1826,25 @@
   function renderInspectors(){
     const listDiv = document.getElementById("inspectors-list");
     listDiv.innerHTML = "";
-    inspectors.forEach(name=>{
+    inspectors.forEach(insp=>{
+      const name = insp.name;
       const card = document.createElement("div");
       card.className="inspector-card";
       const photoSrc = inspectorPhotos[name] || "";
+      const hasPin = !!insp.pin;
       card.innerHTML = `
         <div class="inspector-avatar">
           ${photoSrc?`<img src="${photoSrc}" onclick="showImageModal('${photoSrc}')">`:
             name.split(" ").map(p=>p[0]).join("")}
         </div>
         <div class="inspector-name">${name}</div>
+        <div class="inspector-pin-status">
+          PIN: ${hasPin ? "cadastrado" : "não cadastrado"}
+        </div>
         <div class="inspector-actions">
           <button class="btn-icon btn-edit" data-name="${name}">Editar</button>
           <button class="btn-icon btn-delete" data-name="${name}">Remover</button>
+          <button class="btn-icon btn-reset-pin" data-name="${name}">Resetar PIN</button>
         </div>
       `;
       listDiv.appendChild(card);
@@ -1351,14 +1859,29 @@
       btn.addEventListener("click",()=>{
         const name = btn.dataset.name;
         if(!confirm(`Remover inspetor "${name}"?`)) return;
-        inspectors = inspectors.filter(n=>n!==name);
+        inspectors = inspectors.filter(i=>i.name!==name);
         delete inspectorPhotos[name];
         saveInspectorPhotosToLocalStorage();
         renderInspectors();
         renderChecklistSelectors();
+        renderLoginInspectorSelect();
         if(window.fbApi && window.fbApi.setInspectors){
           window.fbApi.setInspectors(inspectors).catch(e=>console.error("Erro salvar insp Firebase",e));
         }
+      });
+    });
+    listDiv.querySelectorAll(".btn-reset-pin").forEach(btn=>{
+      btn.addEventListener("click",()=>{
+        const name = btn.dataset.name;
+        const insp = findInspectorByName(name);
+        if(!insp) return;
+        if(!confirm(`Resetar PIN do inspetor "${name}"?`)) return;
+        insp.pin = null;
+        if(window.fbApi && window.fbApi.setInspectors){
+          window.fbApi.setInspectors(inspectors).catch(e=>console.error("Erro salvar insp Firebase",e));
+        }
+        alert("PIN resetado. No próximo login o inspetor deverá criar um novo PIN.");
+        renderInspectors();
       });
     });
 
@@ -1367,6 +1890,8 @@
   }
 
   function openEditInspectorModal(name){
+    const insp = findInspectorByName(name);
+    if(!insp) return;
     const currentPhoto = inspectorPhotos[name] || "";
     showModal(`
       <div class="modal-header">
@@ -1375,7 +1900,7 @@
       </div>
       <div class="form-group" style="margin-top:10px;">
         <label>Nome</label>
-        <input type="text" id="modal-insp-name" value="${name}">
+        <input type="text" id="modal-insp-name" value="${insp.name}">
       </div>
       <div class="form-group">
         <label>Foto</label>
@@ -1396,9 +1921,10 @@
       const file = document.getElementById("modal-insp-photo").files[0];
       if(!newName){ alert("Nome não pode ser vazio."); return; }
 
-      const idx = inspectors.indexOf(name);
-      if(idx>=0) inspectors[idx] = newName;
+      // Atualiza nome
+      insp.name = newName;
 
+      // Ajusta mapa de fotos se nome mudou
       if(newName!==name){
         inspectorPhotos[newName] = inspectorPhotos[name];
         delete inspectorPhotos[name];
@@ -1409,6 +1935,8 @@
         closeModal();
         renderInspectors();
         renderChecklistSelectors();
+        renderLoginInspectorSelect();
+        updateHeaderUserInfo();
         if(window.fbApi && window.fbApi.setInspectors){
           window.fbApi.setInspectors(inspectors).catch(e=>console.error("Erro salvar insp Firebase",e));
         }
@@ -1426,6 +1954,75 @@
       }
     });
   }
+
+  function openChangePinModal(){
+    if(!currentUser || currentUser.role!=="inspector") return;
+    const insp = findInspectorByName(currentUser.name);
+    if(!insp) return;
+    showModal(`
+      <div class="modal-header">
+        <div class="modal-title">Alterar PIN</div>
+        <button class="modal-close-btn">&times;</button>
+      </div>
+      <div class="form-group" style="margin-top:10px;">
+        <label>PIN atual</label>
+        <input type="password" id="change-pin-current" maxlength="4" inputmode="numeric">
+      </div>
+      <div class="form-group">
+        <label>Novo PIN (4 dígitos)</label>
+        <input type="password" id="change-pin-new" maxlength="4" inputmode="numeric">
+      </div>
+      <div class="form-group">
+        <label>Confirmar novo PIN</label>
+        <input type="password" id="change-pin-confirm" maxlength="4" inputmode="numeric">
+      </div>
+      <div style="margin-top:12px;text-align:right;">
+        <button class="btn-secondary" onclick="closeModal()">Cancelar</button>
+        <button class="btn-primary" id="change-pin-save">Salvar</button>
+      </div>
+    `);
+
+    document.getElementById("change-pin-save").addEventListener("click",async()=>{
+      const cur = document.getElementById("change-pin-current").value.trim();
+      const pinNew = document.getElementById("change-pin-new").value.trim();
+      const pinConf = document.getElementById("change-pin-confirm").value.trim();
+      if(!cur || !pinNew || !pinConf){
+        alert("Preencha todos os campos.");
+        return;
+      }
+      if(!/^\d{4}$/.test(pinNew)){
+        alert("Novo PIN deve ter 4 dígitos numéricos.");
+        return;
+      }
+      if(pinNew !== pinConf){
+        alert("Novo PIN e confirmação não coincidem.");
+        return;
+      }
+      if(!insp.pin){
+        // se ainda não tinha PIN salvo, ignoramos o atual
+      } else {
+        if(cur !== insp.pin){
+          alert("PIN atual incorreto.");
+          return;
+        }
+      }
+      insp.pin = pinNew;
+      if(window.fbApi && window.fbApi.setInspectors){
+        try{
+          await window.fbApi.setInspectors(inspectors);
+        }catch(e){
+          console.error("Erro salvar PIN no Firebase:", e);
+        }
+      }
+      alert("PIN atualizado com sucesso.");
+      closeModal();
+      renderInspectors();
+    });
+  }
+
+  // =========================
+  // PEÇAS & ITENS
+  // =========================
 
   function renderPieces(){
     const listDiv = document.getElementById("pieces-list");
@@ -1462,7 +2059,7 @@
         renderPieces();
         renderChecklistSelectors();
         if(window.fbApi && window.fbApi.deletePiece){
-          window.fbApi.deletePiece(p.code).catch(e=>console.error("Erro delete piece Firebase",e));
+          window.fbApi.deletePiece(p.code).catch(e=>console.error("Erro delete peça Firebase",e));
         }
       });
     });
@@ -1613,6 +2210,10 @@
       }
     });
   }
+
+  // =========================
+  // RELATÓRIOS / DASHBOARD
+  // =========================
 
   function ensureReportsChart(){
     const ctx = document.getElementById("reports-chart")?.getContext("2d");
@@ -1778,8 +2379,13 @@
     }
   }
 
+  // =========================
+  // DOMCONTENTLOADED
+  // =========================
+
   document.addEventListener("DOMContentLoaded",async()=>{
     loadInspectorPhotosFromLocalStorage();
+    setupLoginUI();
 
     if(window.fbApi && window.fbApi.loadAll){
       try{
@@ -1792,21 +2398,27 @@
       }
     }
 
-    document.getElementById("btn-start-checklist").addEventListener("click",startChecklist);
-    document.getElementById("btn-finish-checklist").addEventListener("click",finishChecklist);
+    // Botões principais
+    const btnStart = document.getElementById("btn-start-checklist");
+    if(btnStart) btnStart.addEventListener("click", startChecklist);
 
-    document.getElementById("btn-add-inspector").addEventListener("click",()=>{
+    const btnFinish = document.getElementById("btn-finish-checklist");
+    if(btnFinish) btnFinish.addEventListener("click", finishChecklist);
+
+    const btnAddInspector = document.getElementById("btn-add-inspector");
+    if(btnAddInspector) btnAddInspector.addEventListener("click",()=>{
       const name = document.getElementById("insp-name-input").value.trim();
       const file = document.getElementById("insp-photo-input").files[0];
       if(!name){ alert("Informe o nome do inspetor."); return; }
-      if(inspectors.includes(name)){ alert("Já existe um inspetor com esse nome."); return; }
+      if(findInspectorByName(name)){ alert("Já existe um inspetor com esse nome."); return; }
 
       const addInspector = (photoDataUrl)=>{
-        inspectors.push(name);
+        inspectors.push({ name, pin: null });
         if(photoDataUrl) inspectorPhotos[name]=photoDataUrl;
         saveInspectorPhotosToLocalStorage();
         renderInspectors();
         renderChecklistSelectors();
+        renderLoginInspectorSelect();
         if(window.fbApi && window.fbApi.setInspectors){
           window.fbApi.setInspectors(inspectors).catch(e=>console.error("Erro salvar insp Firebase",e));
         }
@@ -1821,12 +2433,14 @@
       }
     });
 
-    document.getElementById("piece-items-selector").addEventListener("change",e=>{
+    const pieceItemsSelector = document.getElementById("piece-items-selector");
+    if(pieceItemsSelector) pieceItemsSelector.addEventListener("change",e=>{
       const idx = Number(e.target.value);
       renderPieceItemsList(idx);
     });
 
-    document.getElementById("btn-add-piece").addEventListener("click",async()=>{
+    const btnAddPiece = document.getElementById("btn-add-piece");
+    if(btnAddPiece) btnAddPiece.addEventListener("click",async()=>{
       const code = document.getElementById("piece-code-input").value.trim();
       const desc = document.getElementById("piece-desc-input").value.trim();
       const file = document.getElementById("piece-image-input").files[0];
@@ -1847,7 +2461,8 @@
       }
     });
 
-    document.getElementById("btn-add-item").addEventListener("click",async()=>{
+    const btnAddItem = document.getElementById("btn-add-item");
+    if(btnAddItem) btnAddItem.addEventListener("click",async()=>{
       const pieceIdx = Number(document.getElementById("piece-items-selector").value);
       if(Number.isNaN(pieceIdx) || !pieces[pieceIdx]){
         alert("Selecione uma peça.");
@@ -1870,15 +2485,25 @@
       }
     });
 
-    document.getElementById("btn-export-csv").addEventListener("click",exportCSV);
+    const btnExportCsv = document.getElementById("btn-export-csv");
+    if(btnExportCsv) btnExportCsv.addEventListener("click", exportCSV);
+
     const reportMonthSelect = document.getElementById("report-month-select");
     if(reportMonthSelect) reportMonthSelect.addEventListener("change",renderReports);
 
+    const btnChangePin = document.getElementById("btn-change-pin");
+    if(btnChangePin) btnChangePin.addEventListener("click", openChangePinModal);
+
+    const btnLogout = document.getElementById("btn-logout");
+    if(btnLogout) btnLogout.addEventListener("click", logout);
+
+    // Render inicial em background (app oculto até login)
     renderChecklistSelectors();
     renderInspectors();
     renderPieces();
     renderReports();
     renderDashboard();
+    renderLoginInspectorSelect();
   });
   </script>
 </body>
