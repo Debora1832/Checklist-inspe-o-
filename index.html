@@ -4,20 +4,29 @@
   <meta charset="utf-8" />
   <title>Magius - Sistema de Checklist de Inspeção</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="style.css">
 
   <!-- Chart.js para gráficos -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+
+  <!-- CSS principal -->
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Firebase (seu arquivo) -->
+  <script type="module" src="firebase.js"></script>
+
+  <!-- App -->
+  <script defer src="app.js"></script>
 </head>
 <body>
-  <div class="app-shell">
+  <div class="layout">
+
     <!-- SIDEBAR LATERAL -->
     <aside class="sidebar">
       <div class="sidebar-logo">
-        <div class="sidebar-logo-mark">M</div>
-        <div class="sidebar-logo-text">
-          <div class="sidebar-logo-main">MAGIUS</div>
-          <div class="sidebar-logo-sub">Checklist de Inspeção</div>
+        <div class="logo-icon">M</div>
+        <div class="logo-text">
+          <div class="logo-main">MAGIUS</div>
+          <div class="logo-sub">Checklist</div>
         </div>
       </div>
 
@@ -26,22 +35,18 @@
           <span class="sidebar-icon">✅</span>
           <span class="sidebar-label">Checklist</span>
         </button>
-
         <button class="sidebar-item" data-screen="inspectors" onclick="selectSidebar('inspectors')">
           <span class="sidebar-icon">👤</span>
           <span class="sidebar-label">Inspetores</span>
         </button>
-
         <button class="sidebar-item" data-screen="pieces" onclick="selectSidebar('pieces')">
           <span class="sidebar-icon">🧩</span>
           <span class="sidebar-label">Peças & Itens</span>
         </button>
-
         <button class="sidebar-item" data-screen="dashboard" onclick="selectSidebar('dashboard')">
           <span class="sidebar-icon">📊</span>
           <span class="sidebar-label">Dashboard</span>
         </button>
-
         <button class="sidebar-item" data-screen="reports" onclick="selectSidebar('reports')">
           <span class="sidebar-icon">📑</span>
           <span class="sidebar-label">Relatórios</span>
@@ -50,240 +55,233 @@
 
       <div class="sidebar-footer">
         <div class="sidebar-tagline">
-          AJUDANDO A CONSTRUIR, CULTIVAR,<br>
-          TRANSPORTAR E SEGUIR EM FRENTE
+          Ajudando a construir,<br>
+          cultivar, transportar e<br>
+          seguir em frente.
         </div>
       </div>
     </aside>
 
     <!-- ÁREA PRINCIPAL -->
-    <main class="main-area">
-      <!-- HEADER SUPERIOR -->
+    <main class="main">
       <header class="top-header">
-        <div class="top-header-left">
-          <h1>MAGIUS – Sistema de Checklist de Inspeção</h1>
+        <div class="header-left">
+          <div class="header-circles">
+            <span></span><span></span><span></span><span></span>
+          </div>
+          <div class="header-tagline">
+            AJUDANDO A CONSTRUIR, CULTIVAR,<br>
+            TRANSPORTAR E SEGUIR EM FRENTE
+          </div>
         </div>
-        <div class="top-header-right">
-          <span class="top-badge">Metalúrgica Industrial</span>
+        <div class="header-brand">
+          <div class="header-logo">MAGIUS</div>
+          <div class="header-sub">METALÚRGICA INDUSTRIAL</div>
         </div>
       </header>
 
-      <!-- TELAS (PÁGINAS) -->
+      <div class="main-content">
 
-      <!-- 1) CHECKLIST -->
-      <section id="checklist" class="screen active">
-        <div class="page-header">Checklist de Inspeção</div>
+        <!-- TELA: CHECKLIST -->
+        <section id="checklist" class="screen active">
+          <div class="card">
+            <h2 class="screen-title">Checklist de Inspeção</h2>
 
-        <div class="checklist-layout">
-          <!-- Painel de seleção -->
-          <div class="card checklist-form-panel">
-            <h2 class="card-title">Seleção</h2>
-            <div class="form-group">
-              <label for="inspector-select">Inspetor:</label>
-              <select id="inspector-select">
-                <option value="" disabled selected>Selecionar inspetor</option>
-              </select>
+            <div class="grid-2">
+              <div class="form-group">
+                <label for="insp-selector">Inspetor</label>
+                <select id="insp-selector">
+                  <option value="" disabled selected>Selecionar inspetor</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="piece-selector">Peça</label>
+                <select id="piece-selector">
+                  <option value="" disabled selected>Selecionar peça</option>
+                </select>
+              </div>
             </div>
 
-            <div class="form-group">
-              <label for="piece-select">Peça:</label>
-              <select id="piece-select">
-                <option value="" disabled selected>Selecionar peça</option>
-              </select>
-            </div>
-
-            <button class="btn-primary full" id="btn-carregar-checklist">
-              Carregar checklist
+            <button class="btn-primary mt-8" id="btn-start-checklist">
+              Iniciar Checklist
             </button>
           </div>
 
-          <!-- Painel de execução -->
-          <div class="card checklist-exec-panel">
-            <div class="checklist-piece-title" id="checklist-header"></div>
+          <div id="checklist-execution" class="card mt-16 hide">
+            <div class="checklist-piece-header">
+              <div>
+                <div class="checklist-piece-code" id="cl-piece-code"></div>
+                <div class="checklist-piece-desc" id="cl-piece-desc"></div>
+              </div>
+            </div>
 
-            <div id="piece-image-box" class="piece-image-box">
-              [Selecione uma peça para carregar o checklist]
+            <div id="cl-piece-image-box" class="piece-image-box">
+              [Imagem da peça]
             </div>
 
             <div id="checklist-item-list"></div>
 
-            <button class="btn-primary" id="finalizar-inspecao-btn" style="margin-top:20px;">
-              Finalizar Inspeção
+            <button class="btn-primary mt-16" id="btn-finish-checklist">
+              Finalizar inspeção
             </button>
 
-            <div id="checklist-nok-library" class="checklist-nok-library"></div>
+            <div id="checklist-nok-library" class="checklist-nok-library mt-16"></div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <!-- 2) INSPETORES -->
-      <section id="inspectors" class="screen">
-        <div class="page-header">Cadastro de Inspetores</div>
-
-        <div class="card">
-          <h2 class="card-title">Novo Inspetor</h2>
-          <div class="inspectors-form-row">
-            <div class="form-group">
-              <label for="inspector-new-name">Nome do inspetor</label>
-              <input type="text" id="inspector-new-name" placeholder="Nome completo">
-            </div>
-            <div class="form-group">
-              <label for="inspector-photo-input">Foto</label>
-              <input type="file" id="inspector-photo-input" accept="image/*">
-            </div>
-          </div>
-          <div class="inspectors-form-actions">
-            <button class="btn-primary" id="add-inspector-btn">Adicionar</button>
-            <button class="btn-secondary" id="clear-inspector-btn">Limpar</button>
-          </div>
-        </div>
-
-        <div class="card">
-          <h2 class="card-title">Inspetores cadastrados</h2>
-          <div class="admin-inspector-list" id="admin-inspector-list"></div>
-        </div>
-      </section>
-
-      <!-- 3) PEÇAS & ITENS -->
-      <section id="pieces" class="screen">
-        <div class="page-header">Cadastro de Peças & Itens de Checklist</div>
-
-        <div class="cards-grid-2">
-          <!-- Peça -->
+        <!-- TELA: INSPETORES -->
+        <section id="inspectors" class="screen">
           <div class="card">
-            <h2 class="card-title">Nova Peça</h2>
-            <div class="form-group">
-              <label for="new-code">Código (Ex: 597-2445#01)</label>
-              <input type="text" id="new-code" placeholder="Ex: 597-2445#01">
-            </div>
-            <div class="form-group">
-              <label for="new-description">Descrição</label>
-              <input type="text" id="new-description" placeholder="Longarina">
-            </div>
-            <div class="form-group">
-              <label for="new-image">Imagem (obrigatória)</label>
-              <input type="file" id="new-image" accept="image/*">
-              <p class="file-info" id="image-file-info">Nenhum arquivo escolhido</p>
-            </div>
+            <h2 class="screen-title">Cadastro de Inspetores</h2>
 
-            <div class="form-actions">
-              <button class="btn-primary" id="add-piece-btn">Adicionar peça</button>
-              <button class="btn-secondary" id="clear-piece-btn">Limpar</button>
-            </div>
-
-            <h3 class="card-subtitle">Peças existentes</h3>
-            <div class="admin-piece-list" id="admin-piece-list"></div>
-          </div>
-
-          <!-- Itens da peça -->
-          <div class="card">
-            <h2 class="card-title">Itens do Checklist da Peça</h2>
-
-            <div class="form-group">
-              <label for="select-piece-item">Selecionar peça</label>
-              <select id="select-piece-item"></select>
-            </div>
-
-            <h3 class="card-subtitle">Itens atuais</h3>
-            <div id="admin-piece-items-list"></div>
-
-            <h3 class="card-subtitle" style="margin-top:20px;">Novo item</h3>
-            <div class="form-group">
-              <label for="new-item-name">Nome do item</label>
-              <input type="text" id="new-item-name" placeholder="Ex: Dimensão Ø 7,3 mm">
-            </div>
-            <div class="form-group">
-              <label for="new-item-description">Descrição do item (obrigatória)</label>
-              <textarea id="new-item-description" rows="3"
-                        placeholder="Ex: Verificar diâmetro da furação conforme desenho."></textarea>
-            </div>
-            <div class="form-group">
-              <label for="new-item-image">Imagem do item (obrigatória)</label>
-              <input type="file" id="new-item-image" accept="image/*">
-              <p class="file-info" id="item-image-file-info">Nenhum arquivo escolhido</p>
-            </div>
-
-            <button class="btn-primary" id="add-piece-item-btn">Adicionar item</button>
-          </div>
-        </div>
-      </section>
-
-      <!-- 4) DASHBOARD / KPIs -->
-      <section id="dashboard" class="screen">
-        <div class="page-header">Dashboard – KPIs de Inspeção</div>
-
-        <div class="kpi-grid">
-          <div class="kpi-card">
-            <div class="kpi-label">Inspeções no mês</div>
-            <div class="kpi-value" id="kpi-inspecoes-mes">0</div>
-          </div>
-          <div class="kpi-card">
-            <div class="kpi-label">% Itens NÃO OK</div>
-            <div class="kpi-value" id="kpi-percent-nok">0%</div>
-          </div>
-          <div class="kpi-card">
-            <div class="kpi-label">Peças com mais NOK</div>
-            <div class="kpi-list" id="kpi-top-pecas"></div>
-          </div>
-        </div>
-
-        <div class="card">
-          <h2 class="card-title">Distribuição de Encaminhamento (Mês)</h2>
-          <div class="report-graph-area">
-            <canvas id="graficoDashboard" class="grafico-bola" width="160" height="160"></canvas>
-          </div>
-        </div>
-      </section>
-
-      <!-- 5) RELATÓRIOS -->
-      <section id="reports" class="screen">
-        <div class="page-header">Relatórios</div>
-
-        <div class="card">
-          <div class="report-controls">
-            <button class="report-csv-btn" onclick="exportCSV()">Exportar CSV</button>
-            <div class="report-total-volume">
-              Total (todas inspeções): <span id="total-inspecoes">0</span>
-            </div>
-            <div>
-              <label for="report-month-select" class="label-inline">Selecionar mês:</label>
-              <select id="report-month-select"></select>
-            </div>
-          </div>
-
-          <div class="report-section-title">Volume mensal</div>
-          <div id="volume-mensal-box">
-            <span id="volume-mensal-num">0</span> inspeções
-          </div>
-
-          <div class="report-graph-area">
-            <canvas id="graficoRosca" class="grafico-bola" width="140" height="140"></canvas>
-            <div class="report-graph-legend">
-              <div class="report-graph-legend-item">
-                <span class="legend-color legend-embarcadas"></span>
-                <span>Embarcadas</span>
+            <div class="grid-2">
+              <div class="form-group">
+                <label for="insp-name-input">Nome do inspetor</label>
+                <input type="text" id="insp-name-input" placeholder="Ex: João Silva">
               </div>
-              <div class="report-graph-legend-item">
-                <span class="legend-color legend-retrabalho"></span>
-                <span>Retrabalho</span>
+              <div class="form-group">
+                <label for="insp-photo-input">Foto do inspetor</label>
+                <input type="file" id="insp-photo-input" accept="image/*">
+              </div>
+            </div>
+
+            <button class="btn-primary" id="btn-add-inspector">Adicionar inspetor</button>
+          </div>
+
+          <div class="card mt-16">
+            <h3 class="card-title">Inspetores cadastrados</h3>
+            <div id="inspectors-list" class="inspectors-grid"></div>
+          </div>
+        </section>
+
+        <!-- TELA: PEÇAS & ITENS -->
+        <section id="pieces" class="screen">
+          <div class="card">
+            <h2 class="screen-title">Cadastro de Peças</h2>
+
+            <div class="grid-3">
+              <div class="form-group">
+                <label for="piece-code-input">Código da peça</label>
+                <input type="text" id="piece-code-input" placeholder="597-2445#01">
+              </div>
+              <div class="form-group">
+                <label for="piece-desc-input">Descrição</label>
+                <input type="text" id="piece-desc-input" placeholder="Longarina">
+              </div>
+              <div class="form-group">
+                <label for="piece-image-input">Imagem da peça</label>
+                <input type="file" id="piece-image-input" accept="image/*">
+              </div>
+            </div>
+
+            <button class="btn-primary" id="btn-add-piece">Adicionar peça</button>
+          </div>
+
+          <div class="grid-2 mt-16">
+            <div class="card">
+              <h3 class="card-title">Peças cadastradas</h3>
+              <div id="pieces-list" class="pieces-list"></div>
+            </div>
+
+            <div class="card">
+              <h3 class="card-title">Itens de checklist da peça</h3>
+
+              <div class="form-group">
+                <label for="piece-items-selector">Selecionar peça</label>
+                <select id="piece-items-selector"></select>
+              </div>
+
+              <div id="piece-items-list"></div>
+
+              <div class="divider mt-8 mb-8"></div>
+
+              <div class="form-group">
+                <label for="item-name-input">Novo item</label>
+                <input type="text" id="item-name-input" placeholder="Ex: Dimensão A (Ø)">
+              </div>
+              <div class="form-group">
+                <label for="item-desc-input">Descrição do item</label>
+                <textarea id="item-desc-input" rows="2" placeholder="Descreva o que deve ser verificado"></textarea>
+              </div>
+              <div class="form-group">
+                <label for="item-image-input">Imagem do item</label>
+                <input type="file" id="item-image-input" accept="image/*">
+              </div>
+
+              <button class="btn-primary" id="btn-add-item">Adicionar item</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- TELA: DASHBOARD -->
+        <section id="dashboard" class="screen">
+          <div class="card">
+            <h2 class="screen-title">Dashboard – KPIs de Inspeção</h2>
+
+            <div class="kpi-grid">
+              <div class="kpi-card">
+                <div class="kpi-label">Inspeções no mês</div>
+                <div class="kpi-value" id="kpi-inspecoes-mes">0</div>
+              </div>
+              <div class="kpi-card">
+                <div class="kpi-label">% Itens NÃO OK</div>
+                <div class="kpi-value" id="kpi-percent-nok">0%</div>
+              </div>
+              <div class="kpi-card kpi-large">
+                <div class="kpi-label">Peças com mais reprovações</div>
+                <div class="kpi-list" id="kpi-top-pecas"></div>
               </div>
             </div>
           </div>
 
-          <div class="report-section-title">Histórico</div>
-          <table class="report-history-table">
-            <thead>
-              <tr>
-                <th>Data</th>
-                <th>Inspetor</th>
-                <th>Peça</th>
-                <th>Descrição</th>
-              </tr>
-            </thead>
-            <tbody id="reports-history-body"></tbody>
-          </table>
-        </div>
-      </section>
+          <div class="card mt-16">
+            <h3 class="card-title">Distribuição de status (OK x Retrabalho)</h3>
+            <div class="chart-wrapper">
+              <canvas id="dashboard-chart" width="200" height="200"></canvas>
+            </div>
+          </div>
+        </section>
+
+        <!-- TELA: RELATÓRIOS -->
+        <section id="reports" class="screen">
+          <div class="card">
+            <h2 class="screen-title">Relatórios</h2>
+
+            <div class="report-controls">
+              <button class="btn-secondary" id="btn-export-csv">Exportar CSV</button>
+
+              <div class="form-group small">
+                <label for="report-month-select">Mês:</label>
+                <select id="report-month-select"></select>
+              </div>
+
+              <div class="report-total">
+                Total inspeções: <span id="total-inspecoes">0</span>
+              </div>
+            </div>
+
+            <div class="chart-wrapper">
+              <canvas id="reports-chart" width="200" height="200"></canvas>
+            </div>
+          </div>
+
+          <div class="card mt-16">
+            <h3 class="card-title">Histórico de inspeções</h3>
+            <table class="history-table">
+              <thead>
+                <tr>
+                  <th>Data</th>
+                  <th>Inspetor</th>
+                  <th>Peça</th>
+                  <th>Descrição</th>
+                </tr>
+              </thead>
+              <tbody id="reports-history-body"></tbody>
+            </table>
+          </div>
+        </section>
+
+      </div>
     </main>
   </div>
 
@@ -291,10 +289,5 @@
   <div id="modal-overlay" class="modal-overlay" style="display:none;">
     <div id="modal-box" class="modal-box"></div>
   </div>
-
-  <!-- Firebase (anônimo) expõe window.fbApi -->
-  <script type="module" src="firebase.js"></script>
-  <!-- Lógica principal da aplicação -->
-  <script src="app.js"></script>
 </body>
 </html>
