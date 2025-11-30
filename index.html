@@ -14,9 +14,92 @@
 
   body{
     margin:0;
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    background:#F4F6F9;  /* cinza gelo */
+    font-family:Arial,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    background:#F4F6F9;
     color:#333;
+  }
+
+  /* TELA DE LOGIN */
+  .login-screen{
+    min-height:100vh;
+    background:#051224;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:16px;
+  }
+  .login-card{
+    background:#0b1a33;
+    border-radius:6px;
+    padding:24px 28px 26px;
+    max-width:360px;
+    width:100%;
+    box-shadow:0 8px 24px rgba(0,0,0,.45);
+    color:#fff;
+  }
+  .login-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:16px;
+  }
+  .login-logo{
+    font-weight:800;
+    font-size:24px;
+    letter-spacing:.08em;
+  }
+  .login-sub{
+    font-size:11px;
+    opacity:.8;
+    text-transform:uppercase;
+  }
+  .login-title{
+    font-size:18px;
+    font-weight:700;
+    margin:4px 0 12px;
+  }
+  .login-form-group{
+    margin-bottom:10px;
+  }
+  .login-form-group label{
+    font-size:12px;
+    font-weight:600;
+    display:block;
+    margin-bottom:4px;
+  }
+  .login-form-group input{
+    width:100%;
+    padding:7px 9px;
+    border-radius:4px;
+    border:1px solid #2c3954;
+    background:#020812;
+    color:#fff;
+    font-size:13px;
+  }
+  .login-help{
+    font-size:11px;
+    opacity:.75;
+    margin-bottom:12px;
+  }
+  .login-error{
+    font-size:11px;
+    color:#E81C24;
+    margin-bottom:8px;
+    display:none;
+  }
+  .login-btn{
+    width:100%;
+    border:none;
+    border-radius:4px;
+    padding:8px 14px;
+    font-size:14px;
+    font-weight:600;
+    cursor:pointer;
+    background:#1844F0;
+    color:#fff;
+  }
+  .login-btn:hover{
+    background:#2550ff;
   }
 
   /* LAYOUT PRINCIPAL */
@@ -25,79 +108,99 @@
     min-height:100vh;
   }
 
-  /* SIDEBAR LATERAL */
+  /* SIDEBAR LATERAL (nova identidade) */
   .sidebar{
-    width:230px;
-    background:#051224;            /* azul marinho Magius */
-    color:#FFFFFF;
+    width:220px;
+    background:#051224;
+    color:#fff;
     display:flex;
     flex-direction:column;
     padding:16px 12px;
-    position:fixed;
-    top:0;
-    left:0;
-    bottom:0;
-    box-shadow:2px 0 8px rgba(0,0,0,0.45);
+    box-shadow:4px 0 14px rgba(0,0,0,.35);
   }
+
   .sidebar-logo{
     display:flex;
     align-items:center;
     gap:8px;
-    margin-bottom:20px;
+    margin-bottom:18px;
+    padding:0 4px;
   }
-  .logo-icon{
-    width:36px;
-    height:36px;
+  .sidebar-logo-mark{
+    width:30px;
+    height:30px;
     border-radius:4px;
-    background:#1844F0;            /* azul elétrico */
+    background:#1844F0;
     display:flex;
     align-items:center;
     justify-content:center;
     font-weight:800;
-    font-size:20px;
-    color:#FFFFFF;
+    font-size:18px;
   }
-  .logo-text{line-height:1.1;}
-  .logo-main{font-weight:800;font-size:16px;}
-  .logo-sub{font-size:11px;opacity:0.75;}
+  .sidebar-logo-text{
+    line-height:1.05;
+  }
+  .sidebar-logo-main{
+    font-weight:800;
+    font-size:15px;
+    letter-spacing:.08em;
+  }
+  .sidebar-logo-sub{
+    font-size:10px;
+    text-transform:uppercase;
+    opacity:.75;
+  }
 
   .sidebar-menu{
     display:flex;
     flex-direction:column;
-    gap:4px;
+    gap:2px;
     margin-top:8px;
   }
-
   .sidebar-item{
-    width:100%;
     border:none;
     background:transparent;
-    color:#FFFFFF;
+    color:#f0f4ff;
     display:flex;
     align-items:center;
-    padding:10px 14px;
-    border-radius:4px;
+    gap:10px;
+    padding:8px 10px;
+    border-radius:3px;
     cursor:pointer;
-    font-size:13px;
-    text-align:left;
-    border-left:3px solid transparent;
-    transition:background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+    font-size:14px;
+    position:relative;
+  }
+  .sidebar-item::before{
+    content:"";
+    position:absolute;
+    left:0;
+    top:4px;
+    bottom:4px;
+    width:3px;
+    border-radius:2px;
+    background:transparent;
   }
   .sidebar-item:hover{
-    background:rgba(255,255,255,0.06);
-    border-left-color:rgba(24,68,240,0.7);
+    background:rgba(255,255,255,.05);
   }
   .sidebar-item.active{
-    background:rgba(24,68,240,0.18);
-    border-left-color:#1844F0;
-    font-weight:600;
+    background:rgba(255,255,255,.06);
+    color:#ffffff;
+  }
+  .sidebar-item.active::before{
+    background:#1844F0;
+  }
+  .sidebar-label{
+    flex:1;
+    text-align:left;
   }
 
   .sidebar-footer{
     margin-top:auto;
-    font-size:11px;
+    font-size:10px;
     opacity:0.8;
     padding:8px 4px;
+    line-height:1.4;
   }
 
   /* MAIN / HEADER */
@@ -106,37 +209,45 @@
     flex:1;
     display:flex;
     flex-direction:column;
-    margin-left:230px; /* espaço da sidebar fixa */
     background:#F4F6F9;
   }
   .top-header{
     background:#051224;
-    color:#FFFFFF;
+    color:#fff;
     padding:10px 24px;
     display:flex;
     justify-content:space-between;
     align-items:center;
-    position:sticky;
-    top:0;
-    z-index:40;
-    border-bottom:1px solid rgba(255,255,255,0.08);
   }
   .header-left{
     display:flex;
-    flex-direction:column;
-    gap:4px;
+    align-items:center;
+    gap:10px;
+  }
+  .header-circles{
+    display:flex;
+    gap:6px;
+  }
+  .header-circles span{
+    width:12px;height:12px;border-radius:50%;border:2px solid #fff;
   }
   .header-tagline{
     font-size:11px;
     font-weight:600;
-    letter-spacing:0.06em;
     text-transform:uppercase;
-    color:#FFFFFF;
-    opacity:0.85;
   }
-  .header-brand{text-align:right;}
-  .header-logo{font-size:22px;font-weight:800;letter-spacing:0.08em;}
-  .header-sub{font-size:11px;color:#FFFFFF;opacity:0.75;}
+  .header-brand{
+    text-align:right;
+  }
+  .header-logo{
+    font-size:20px;
+    font-weight:800;
+    letter-spacing:.12em;
+  }
+  .header-sub{
+    font-size:11px;
+    color:#cfe6ff;
+  }
 
   .main-content{
     padding:16px 24px 32px;
@@ -145,11 +256,11 @@
   /* CARDS, FORM, BOTÕES */
 
   .card{
-    background:#FFFFFF;
+    background:#fff;
     border-radius:4px;
     padding:16px 18px 18px;
     box-shadow:0 1px 4px rgba(0,0,0,0.08);
-    margin-bottom:8px;
+    margin-bottom:10px;
   }
   .screen-title{
     margin:0 0 12px;
@@ -176,9 +287,8 @@
     width:100%;
     padding:7px 9px;
     border-radius:4px;
-    border:1px solid #d0d5e6;
+    border:1px solid #cbd3e3;
     font-size:13px;
-    background:#FFFFFF;
   }
   .form-group textarea{resize:vertical;}
   .form-group.small{max-width:200px;}
@@ -195,13 +305,13 @@
     background:#1844F0;
     color:#fff;
   }
-  .btn-primary:hover{background:#1235b6;}
+  .btn-primary:hover{background:#2550ff;}
   .btn-secondary{
-    background:transparent;
+    background:#fff;
     color:#1844F0;
     border:1px solid #1844F0;
   }
-  .btn-secondary:hover{background:rgba(24,68,240,0.06);}
+  .btn-secondary:hover{background:#eef3ff;}
 
   .grid-2{
     display:grid;
@@ -215,19 +325,17 @@
   }
 
   @media (max-width:900px){
+    .grid-2,.grid-3{grid-template-columns:1fr;}
     .layout{flex-direction:column;}
     .sidebar{
-      position:relative;
-      width:100%;
       flex-direction:row;
       align-items:center;
-      box-shadow:0 1px 4px rgba(0,0,0,0.35);
+      width:100%;
+      overflow-x:auto;
     }
-    .main{margin-left:0;}
     .sidebar-menu{
       flex-direction:row;
       margin-left:16px;
-      overflow-x:auto;
     }
     .sidebar-footer{display:none;}
   }
@@ -262,9 +370,9 @@
     align-items:center;
   }
   .checklist-piece-code{
-    font-size:22px;
+    font-size:20px;
     font-weight:700;
-    color:#051224;
+    color:#003366;
   }
   .checklist-piece-desc{
     font-size:13px;
@@ -287,7 +395,7 @@
   }
   .checklist-item.nok{
     background:#ffe6e8;
-    border-color:#E81C24; /* vermelho marca para NOK */
+    border-color:#E81C24;
   }
 
   .checklist-item-thumb{
@@ -316,7 +424,7 @@
     gap:4px;
   }
   .checklist-status-btn{
-    border-radius:4px;
+    border-radius:3px;
     border:none;
     padding:6px 10px;
     font-size:13px;
@@ -416,7 +524,7 @@
     margin-top:4px;
   }
   .btn-icon{
-    border-radius:4px;
+    border-radius:3px;
     border:none;
     padding:4px 8px;
     font-size:12px;
@@ -475,7 +583,7 @@
     gap:6px;
   }
   .piece-item-thumb{
-    width:26px;height:26px;border-radius:4px;
+    width:26px;height:26px;border-radius:3px;
     background:#e0e5f0;
     overflow:hidden;
   }
@@ -505,7 +613,7 @@
   .kpi-value{
     font-size:22px;
     font-weight:800;
-    color:#051224;
+    color:#003366;
   }
   .kpi-list{
     font-size:12px;
@@ -581,15 +689,47 @@
   </style>
 </head>
 <body>
-  <div class="layout">
+
+  <!-- TELA DE LOGIN -->
+  <div id="login-screen" class="login-screen">
+    <div class="login-card">
+      <div class="login-header">
+        <div>
+          <div class="login-logo">MAGIUS</div>
+          <div class="login-sub">Metalúrgica Industrial</div>
+        </div>
+      </div>
+      <div class="login-title">Checklist de Inspeção</div>
+      <div class="login-help">
+        Acesse com o PIN da Qualidade para abrir o sistema de checklist.
+      </div>
+      <div id="login-error" class="login-error">
+        PIN inválido. Tente novamente.
+      </div>
+      <form id="login-form">
+        <div class="login-form-group">
+          <label for="login-user">Usuário</label>
+          <input type="text" id="login-user" value="Administrador" readonly>
+        </div>
+        <div class="login-form-group">
+          <label for="login-pin">PIN</label>
+          <input type="password" id="login-pin" placeholder="Digite o PIN">
+        </div>
+        <button type="submit" class="login-btn">Entrar</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- APLICAÇÃO PRINCIPAL -->
+  <div id="app-root" class="layout" style="display:none;">
 
     <!-- SIDEBAR -->
     <aside class="sidebar">
       <div class="sidebar-logo">
-        <div class="logo-icon">M</div>
-        <div class="logo-text">
-          <div class="logo-main">MAGIUS</div>
-          <div class="logo-sub">Checklist</div>
+        <div class="sidebar-logo-mark">M</div>
+        <div class="sidebar-logo-text">
+          <div class="sidebar-logo-main">MAGIUS</div>
+          <div class="sidebar-logo-sub">Checklist</div>
         </div>
       </div>
 
@@ -601,7 +741,7 @@
           <span class="sidebar-label">Inspetores</span>
         </button>
         <button class="sidebar-item" data-screen="pieces" onclick="selectSidebar('pieces')">
-          <span class="sidebar-label">Peças &amp; Itens</span>
+          <span class="sidebar-label">Peças & Itens</span>
         </button>
         <button class="sidebar-item" data-screen="dashboard" onclick="selectSidebar('dashboard')">
           <span class="sidebar-label">Dashboard</span>
@@ -622,6 +762,7 @@
     <main class="main">
       <header class="top-header">
         <div class="header-left">
+          <div class="header-circles"><span></span><span></span><span></span><span></span></div>
           <div class="header-tagline">
             AJUDANDO A CONSTRUIR, CULTIVAR,<br>TRANSPORTAR E SEGUIR EM FRENTE
           </div>
@@ -851,7 +992,7 @@
       if (!file) return null;
       const ref = sRef(storage, path);
       const metadata = { contentType: file.type || "image/jpeg" };
-      const result = await uploadBytes(ref, file, metadata);
+      await uploadBytes(ref, file, metadata);
       const url = await getDownloadURL(ref);
       return url;
     }
@@ -886,7 +1027,11 @@
         const inspRef = doc(db, "config", "inspectors");
         const inspSnap = await getDoc(inspRef);
         if (inspSnap && inspSnap.exists()) {
-          inspectors = inspSnap.data().list || [];
+          const rawList = inspSnap.data().list || [];
+          // garante array de strings mesmo que tenha sido salvo como objeto
+          inspectors = rawList.map(i =>
+            typeof i === "string" ? i : (i.name || i.nome || String(i))
+          );
         }
       } catch (err) {
         console.warn("Erro load inspectors:", err);
@@ -996,6 +1141,8 @@
 
   <!-- SCRIPT PRINCIPAL (UI) -->
   <script>
+  const ADMIN_PIN = "qualidade2025";
+
   let pieces = [
     {
       code: "597-2445#01",
@@ -1145,7 +1292,7 @@
         </div>
         <div class="checklist-item-actions">
           <button class="checklist-status-btn btn-ok" data-idx="${idx}" data-status="OK">OK</button>
-          <button class="checklist-status-btn btn-nok" data-idx="${idx}" data-status="NÃO OK">NÃO OK</button>
+          <button class="checklist-status-btn btn-nok" data-idx="${idx}" data-status="NOK">NÃO OK</button>
         </div>
       `;
       listDiv.appendChild(wrap);
@@ -1326,28 +1473,17 @@
       alert("Inspeção registrada localmente.");
     }
 
-    // Atualiza dashboards/relatórios
     renderReports();
     renderDashboard();
+    renderChecklistExecution();
 
-    // RESETAR TELA DE CHECKLIST
+    // resetar seleção e voltar ao início do checklist
+    document.getElementById("insp-selector").value = "";
+    document.getElementById("piece-selector").value = "";
     currentChecklistPiece = null;
     checklistItemStates = [];
-
-    const inspSel = document.getElementById("insp-selector");
-    const pieceSel = document.getElementById("piece-selector");
-    if(inspSel) inspSel.selectedIndex = 0;
-    if(pieceSel) pieceSel.selectedIndex = 0;
-
-    document.getElementById("cl-piece-code").textContent = "";
-    document.getElementById("cl-piece-desc").textContent = "";
-    document.getElementById("cl-piece-image-box").textContent = "[Imagem da peça]";
-    document.getElementById("checklist-item-list").innerHTML = "";
     document.getElementById("checklist-execution").classList.add("hide");
-
-    // Garante estado inicial
-    renderChecklistSelectors();
-    selectSidebar("checklist");
+    window.scrollTo({top:0,behavior:"smooth"});
   }
 
   function loadInspectorPhotosFromLocalStorage(){
@@ -1551,7 +1687,7 @@
       </div>
     `);
 
-    document.getElementById("modal-piece-save").addEventListener("click",async()=>{
+    document.getElementById("modal-piece-save").addEventListener("click",()=>{
       const newCode = document.getElementById("modal-piece-code").value.trim();
       const newDesc = document.getElementById("modal-piece-desc").value.trim();
       const file = document.getElementById("modal-piece-img").files[0];
@@ -1596,7 +1732,7 @@
       btn.addEventListener("click",()=>openEditItemModal(Number(btn.dataset.pidx),Number(btn.dataset.idx)));
     });
     box.querySelectorAll(".btn-delete").forEach(btn=>{
-      btn.addEventListener("click",async()=>{
+      btn.addEventListener("click",()=>{
         const pidx = Number(btn.dataset.pidx);
         const idx = Number(btn.dataset.idx);
         const p = pieces[pidx];
@@ -1640,7 +1776,7 @@
       </div>
     `);
 
-    document.getElementById("modal-item-save").addEventListener("click",async()=>{
+    document.getElementById("modal-item-save").addEventListener("click",()=>{
       const name = document.getElementById("modal-item-name").value.trim();
       const desc = document.getElementById("modal-item-desc").value.trim();
       const file = document.getElementById("modal-item-img").files[0];
@@ -1819,7 +1955,7 @@
     }
   }
 
-  document.addEventListener("DOMContentLoaded",async()=>{
+  async function initAppAfterLogin(){
     loadInspectorPhotosFromLocalStorage();
 
     if(window.fbApi && window.fbApi.loadAll){
@@ -1867,7 +2003,7 @@
       renderPieceItemsList(idx);
     });
 
-    document.getElementById("btn-add-piece").addEventListener("click",async()=>{
+    document.getElementById("btn-add-piece").addEventListener("click",()=>{
       const code = document.getElementById("piece-code-input").value.trim();
       const desc = document.getElementById("piece-desc-input").value.trim();
       const file = document.getElementById("piece-image-input").files[0];
@@ -1888,7 +2024,7 @@
       }
     });
 
-    document.getElementById("btn-add-item").addEventListener("click",async()=>{
+    document.getElementById("btn-add-item").addEventListener("click",()=>{
       const pieceIdx = Number(document.getElementById("piece-items-selector").value);
       if(Number.isNaN(pieceIdx) || !pieces[pieceIdx]){
         alert("Selecione uma peça.");
@@ -1920,6 +2056,28 @@
     renderPieces();
     renderReports();
     renderDashboard();
+  }
+
+  document.addEventListener("DOMContentLoaded",()=>{
+    const loginForm = document.getElementById("login-form");
+    const loginPin = document.getElementById("login-pin");
+    const loginError = document.getElementById("login-error");
+
+    loginForm.addEventListener("submit",async (e)=>{
+      e.preventDefault();
+      const pin = loginPin.value.trim();
+      if(pin !== ADMIN_PIN){
+        loginError.style.display="block";
+        loginPin.focus();
+        loginPin.select();
+        return;
+      }
+      loginError.style.display="none";
+      document.getElementById("login-screen").style.display="none";
+      document.getElementById("app-root").style.display="flex";
+
+      await initAppAfterLogin();
+    });
   });
   </script>
 </body>
