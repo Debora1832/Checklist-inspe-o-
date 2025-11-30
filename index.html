@@ -1300,8 +1300,19 @@
     renderDashboard();
     renderChecklistExecution();
     
-    // VOLTAR PARA A PÁGINA INICIAL DO CHECKLIST
+// VOLTAR PARA A TELA INICIAL DO CHECKLIST
 selectSidebar('checklist');
+
+// LIMPAR CAMPOS E RESETAR SELEÇÕES
+document.getElementById("insp-selector").value = "";
+document.getElementById("piece-selector").value = "";
+
+// ESCONDER A ÁREA DE EXECUÇÃO DO CHECKLIST
+document.getElementById("checklist-execution").classList.add("hide");
+
+// LIMPAR ESTADOS INTERNOS
+currentChecklistPiece = null;
+checklistItemStates = [];
   }
 
   function loadInspectorPhotosFromLocalStorage(){
@@ -1878,6 +1889,7 @@ selectSidebar('checklist');
   </script>
 </body>
 </html>
+
 
 
 
