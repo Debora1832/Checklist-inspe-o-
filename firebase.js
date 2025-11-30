@@ -25,7 +25,7 @@ import {
   onAuthStateChanged,
 } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
 
-// ==== CONFIG DO SEU PROJETO (a mesma que você já usava) ====
+// ==== CONFIG DO SEU PROJETO ====
 const firebaseConfig = {
   apiKey: "AIzaSyCAAowsqkoUjIAPhSvq6dUlKMZGdXOO1b0",
   authDomain: "magiuschecklist-9ad0f.firebaseapp.com",
@@ -42,7 +42,7 @@ const db = getFirestore(app);
 const storage = getStorage(app);
 const auth = getAuth(app);
 
-// Auth anônima – importante para as regras do Firestore
+// Auth anônima – importante se suas regras pedem usuário autenticado
 signInAnonymously(auth).catch((err) => {
   console.error("Erro ao autenticar anonimamente:", err);
 });
@@ -55,7 +55,7 @@ onAuthStateChanged(auth, (user) => {
   }
 });
 
-// ==== FUNÇÃO GENÉRICA DE UPLOAD PARA STORAGE ====
+// ===== Upload genérico para Storage =====
 async function uploadFileAndGetUrl(path, file) {
   if (!file) return null;
   const ref = sRef(storage, path);
@@ -65,7 +65,7 @@ async function uploadFileAndGetUrl(path, file) {
   return url;
 }
 
-// ==== CARREGAR PEÇAS / INSPETORES / INSPEÇÕES ====
+// ===== Carregar tudo =====
 async function loadAll() {
   const pieces = [];
   const inspectors = [];
@@ -133,7 +133,7 @@ async function loadAll() {
   return { pieces, inspectors, inspections };
 }
 
-// ==== SALVAR / ATUALIZAR PEÇA ====
+// ===== Salvar / atualizar peça =====
 async function savePiece(piece) {
   if (!piece || !piece.code) return;
 
@@ -167,4 +167,83 @@ async function savePiece(piece) {
   }
 
   const ref = doc(db, "pieces", piece.code);
-  await setDo
+  await setDoc(ref, {
+    code: piece.code,
+    description: piece.description || "",
+    imageUrl,
+    items: itemsToSave,
+  });
+}
+
+// ===== Deletar peça =====
+async function deletePiece(code) {
+  if (!code) return;
+  await deleteDoc(doc(db, "pieces", code));
+}
+
+// ===== Salvar lista de inspetores =====
+async function setInspectors(list) {
+  const ref = doc(db, "config", "inspectors");
+  await setDoc(ref, { list: list || [] });
+}
+
+// ===== Salvar inspeção (com upload de fotos dos NOK) =====
+async function saveInspection(inspec) {
+  const timeStamp = Date.now();
+  const itensToSave = [];
+
+  for (let i = 0; i < (inspec.items || []).length; i++) {
+    const it = inspec.items[i];
+    let fotoUrl = it.fotoUrl || null;
+
+    if (it.fotoFile instanceof File) {
+      const ext =
+        (it.fotoFile.name && it.fotoFile.name.split(".").pop()) || "jpg";
+      fotoUrl = await uploadFileAndGetUrl(
+        `inspections/${inspec.piece}/${timeStamp}_${i}.${ext}`,
+        it.fotoFile
+      );
+    }
+
+    itensToSave.push({
+      status: it.status,
+      motivo: it.motivo || "",
+      encaminhamento: it.encaminhamento || "",
+      nome_terceiro: it.nomeTerceiro || "",
+      fotoUrl,
+    });
+  }
+
+  const docData = {
+    date: inspec.date,
+    inspector: inspec.inspector,
+    piece: inspec.piece,
+    descricao: inspec.description || "",
+    itens: itensToSave,
+  };
+
+  const ref = await addDoc(collection(db, "inspections"), docData);
+  return {
+    id: ref.id,
+    date: docData.date,
+    inspector: docData.inspector,
+    piece: docData.piece,
+    description: docData.descricao,
+    items: itensToSave.map((it) => ({
+      status: it.status,
+      motivo: it.motivo,
+      encaminhamento: it.encaminhamento,
+      nomeTerceiro: it.nome_terceiro,
+      fotoUrl: it.fotoUrl,
+    })),
+  };
+}
+
+// ===== API GLOBAL PARA O app.js =====
+window.fbApi = {
+  loadAll,
+  savePiece,
+  deletePiece,
+  setInspectors,
+  saveInspection,
+};
