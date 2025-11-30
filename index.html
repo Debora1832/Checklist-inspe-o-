@@ -1,19 +1,18 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8" />
+  <meta charset="UTF-8" />
   <title>Magius - Sistema de Checklist de Inspeção</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- CSS externo -->
-  <link rel="stylesheet" href="style.css">
+  <!-- Estilos -->
+  <link rel="stylesheet" href="style.css" />
 
-  <!-- Chart.js para gráficos -->
+  <!-- Chart.js (gráficos) -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
 </head>
 <body>
   <div class="layout">
-
     <!-- SIDEBAR -->
     <aside class="sidebar">
       <div class="sidebar-logo">
@@ -25,31 +24,36 @@
       </div>
 
       <nav class="sidebar-menu">
-        <button class="sidebar-item active" data-screen="checklist" onclick="selectSidebar('checklist')">
-          <span class="sidebar-icon">✅</span><span class="sidebar-label">Checklist</span>
+        <button class="sidebar-item active" data-screen="screen-checklist">
+          <span class="sidebar-icon">✅</span>
+          <span class="sidebar-label">Checklist</span>
         </button>
-        <button class="sidebar-item" data-screen="inspectors" onclick="selectSidebar('inspectors')">
-          <span class="sidebar-icon">👤</span><span class="sidebar-label">Inspetores</span>
+        <button class="sidebar-item" data-screen="screen-inspectors">
+          <span class="sidebar-icon">👤</span>
+          <span class="sidebar-label">Inspetores</span>
         </button>
-        <button class="sidebar-item" data-screen="pieces" onclick="selectSidebar('pieces')">
-          <span class="sidebar-icon">🧩</span><span class="sidebar-label">Peças & Itens</span>
+        <button class="sidebar-item" data-screen="screen-pieces">
+          <span class="sidebar-icon">🧩</span>
+          <span class="sidebar-label">Peças & Itens</span>
         </button>
-        <button class="sidebar-item" data-screen="dashboard" onclick="selectSidebar('dashboard')">
-          <span class="sidebar-icon">📊</span><span class="sidebar-label">Dashboard</span>
+        <button class="sidebar-item" data-screen="screen-dashboard">
+          <span class="sidebar-icon">📊</span>
+          <span class="sidebar-label">Dashboard</span>
         </button>
-        <button class="sidebar-item" data-screen="reports" onclick="selectSidebar('reports')">
-          <span class="sidebar-icon">📑</span><span class="sidebar-label">Relatórios</span>
+        <button class="sidebar-item" data-screen="screen-reports">
+          <span class="sidebar-icon">📑</span>
+          <span class="sidebar-label">Relatórios</span>
         </button>
       </nav>
 
       <div class="sidebar-footer">
-        Ajudando a construir,<br>
-        cultivar, transportar e<br>
-        seguir em frente.
+        Ajudando a construir,<br />
+        cultivar, transportar<br />
+        e seguir em frente.
       </div>
     </aside>
 
-    <!-- MAIN -->
+    <!-- CONTEÚDO PRINCIPAL -->
     <main class="main">
       <header class="top-header">
         <div class="header-left">
@@ -57,7 +61,8 @@
             <span></span><span></span><span></span><span></span>
           </div>
           <div class="header-tagline">
-            AJUDANDO A CONSTRUIR, CULTIVAR,<br>TRANSPORTAR E SEGUIR EM FRENTE
+            AJUDANDO A CONSTRUIR, CULTIVAR,<br />
+            TRANSPORTAR E SEGUIR EM FRENTE
           </div>
         </div>
         <div class="header-brand">
@@ -67,57 +72,76 @@
       </header>
 
       <div class="main-content">
-
-        <!-- TELA: CHECKLIST -->
-        <section id="checklist" class="screen active">
+        <!-- TELA CHECKLIST -->
+        <section id="screen-checklist" class="screen active">
           <div class="card">
             <h2 class="screen-title">Checklist de Inspeção</h2>
             <div class="grid-2">
               <div class="form-group">
                 <label for="insp-selector">Inspetor</label>
                 <select id="insp-selector">
-                  <option value="" disabled selected>Selecionar inspetor</option>
+                  <option value="" disabled selected>Selecione o inspetor</option>
                 </select>
               </div>
               <div class="form-group">
                 <label for="piece-selector">Peça</label>
                 <select id="piece-selector">
-                  <option value="" disabled selected>Selecionar peça</option>
+                  <option value="" disabled selected>Selecione a peça</option>
                 </select>
               </div>
             </div>
-            <button class="btn-primary mt-8" id="btn-start-checklist">Iniciar Checklist</button>
+            <button id="btn-start-checklist" class="btn-primary mt-16">
+              Iniciar Checklist
+            </button>
           </div>
 
           <div id="checklist-execution" class="card mt-16 hide">
             <div class="checklist-piece-header">
               <div>
-                <div class="checklist-piece-code" id="cl-piece-code"></div>
-                <div class="checklist-piece-desc" id="cl-piece-desc"></div>
+                <div id="cl-piece-code" class="checklist-piece-code"></div>
+                <div id="cl-piece-desc" class="checklist-piece-desc"></div>
               </div>
             </div>
-            <div id="cl-piece-image-box" class="piece-image-box">[Imagem da peça]</div>
+            <div id="cl-piece-image-box" class="piece-image-box">
+              [Imagem da peça]
+            </div>
+
             <div id="checklist-item-list"></div>
-            <button class="btn-primary mt-16" id="btn-finish-checklist">Finalizar inspeção</button>
-            <div id="checklist-nok-library" class="checklist-nok-library mt-16"></div>
+
+            <div class="form-group mt-8">
+              <label for="obs-text"
+                >Observações (obrigatório se houver item NÃO OK)</label
+              >
+              <textarea id="obs-text" rows="3"></textarea>
+            </div>
+
+            <button id="btn-finish-checklist" class="btn-primary mt-16">
+              Finalizar inspeção
+            </button>
           </div>
         </section>
 
-        <!-- TELA: INSPETORES -->
-        <section id="inspectors" class="screen">
+        <!-- TELA INSPETORES -->
+        <section id="screen-inspectors" class="screen">
           <div class="card">
-            <h2 class="screen-title">Cadastro de Inspetores</h2>
+            <h2 class="screen-title">Inspetores</h2>
             <div class="grid-2">
               <div class="form-group">
                 <label for="insp-name-input">Nome do inspetor</label>
-                <input type="text" id="insp-name-input" placeholder="Ex: João Silva">
+                <input
+                  type="text"
+                  id="insp-name-input"
+                  placeholder="Ex: João Silva"
+                />
               </div>
               <div class="form-group">
-                <label for="insp-photo-input">Foto do inspetor</label>
-                <input type="file" id="insp-photo-input" accept="image/*">
+                <label for="insp-photo-input">Foto (opcional)</label>
+                <input type="file" id="insp-photo-input" accept="image/*" />
               </div>
             </div>
-            <button class="btn-primary" id="btn-add-inspector">Adicionar inspetor</button>
+            <button id="btn-add-inspector" class="btn-primary mt-8">
+              Adicionar inspetor
+            </button>
           </div>
 
           <div class="card mt-16">
@@ -126,25 +150,35 @@
           </div>
         </section>
 
-        <!-- TELA: PEÇAS & ITENS -->
-        <section id="pieces" class="screen">
+        <!-- TELA PEÇAS & ITENS -->
+        <section id="screen-pieces" class="screen">
           <div class="card">
-            <h2 class="screen-title">Cadastro de Peças</h2>
+            <h2 class="screen-title">Peças</h2>
             <div class="grid-3">
               <div class="form-group">
                 <label for="piece-code-input">Código da peça</label>
-                <input type="text" id="piece-code-input" placeholder="597-2445#01">
+                <input
+                  type="text"
+                  id="piece-code-input"
+                  placeholder="597-2445#01"
+                />
               </div>
               <div class="form-group">
                 <label for="piece-desc-input">Descrição</label>
-                <input type="text" id="piece-desc-input" placeholder="Longarina">
+                <input
+                  type="text"
+                  id="piece-desc-input"
+                  placeholder="Longarina"
+                />
               </div>
               <div class="form-group">
-                <label for="piece-image-input">Imagem da peça</label>
-                <input type="file" id="piece-image-input" accept="image/*">
+                <label for="piece-image-input">Imagem (opcional)</label>
+                <input type="file" id="piece-image-input" accept="image/*" />
               </div>
             </div>
-            <button class="btn-primary" id="btn-add-piece">Adicionar peça</button>
+            <button id="btn-add-piece" class="btn-primary mt-8">
+              Adicionar peça
+            </button>
           </div>
 
           <div class="grid-2 mt-16">
@@ -152,75 +186,94 @@
               <h3 class="card-title">Peças cadastradas</h3>
               <div id="pieces-list" class="pieces-list"></div>
             </div>
+
             <div class="card">
               <h3 class="card-title">Itens de checklist da peça</h3>
               <div class="form-group">
                 <label for="piece-items-selector">Selecionar peça</label>
-                <select id="piece-items-selector"></select>
+                <select id="piece-items-selector">
+                  <option value="" disabled selected>Selecione a peça</option>
+                </select>
               </div>
+
               <div id="piece-items-list"></div>
+
               <div class="divider mt-8 mb-8"></div>
+
               <div class="form-group">
-                <label for="item-name-input">Novo item</label>
-                <input type="text" id="item-name-input" placeholder="Ex: Dimensão A (Ø)">
+                <label for="item-name-input">Nome do item</label>
+                <input
+                  type="text"
+                  id="item-name-input"
+                  placeholder="Dimensão A (Ø)"
+                />
               </div>
               <div class="form-group">
                 <label for="item-desc-input">Descrição do item</label>
-                <textarea id="item-desc-input" rows="2" placeholder="Descreva o que deve ser verificado"></textarea>
+                <textarea
+                  id="item-desc-input"
+                  rows="2"
+                  placeholder="Ex: Verificar diâmetro da furação."
+                ></textarea>
               </div>
               <div class="form-group">
-                <label for="item-image-input">Imagem do item</label>
-                <input type="file" id="item-image-input" accept="image/*">
+                <label for="item-image-input">Imagem (opcional)</label>
+                <input type="file" id="item-image-input" accept="image/*" />
               </div>
-              <button class="btn-primary" id="btn-add-item">Adicionar item</button>
+              <button id="btn-add-item" class="btn-primary mt-8">
+                Adicionar item
+              </button>
             </div>
           </div>
         </section>
 
-        <!-- TELA: DASHBOARD -->
-        <section id="dashboard" class="screen">
+        <!-- TELA DASHBOARD -->
+        <section id="screen-dashboard" class="screen">
           <div class="card">
-            <h2 class="screen-title">Dashboard – KPIs de Inspeção</h2>
+            <h2 class="screen-title">Dashboard</h2>
             <div class="kpi-grid">
               <div class="kpi-card">
                 <div class="kpi-label">Inspeções no mês</div>
-                <div class="kpi-value" id="kpi-inspecoes-mes">0</div>
+                <div id="kpi-inspecoes-mes" class="kpi-value">0</div>
               </div>
               <div class="kpi-card">
                 <div class="kpi-label">% Itens NÃO OK</div>
-                <div class="kpi-value" id="kpi-percent-nok">0%</div>
+                <div id="kpi-percent-nok" class="kpi-value">0%</div>
               </div>
               <div class="kpi-card kpi-large">
                 <div class="kpi-label">Peças com mais reprovações</div>
-                <div class="kpi-list" id="kpi-top-pecas"></div>
+                <div id="kpi-top-pecas" class="kpi-list"></div>
               </div>
             </div>
           </div>
 
           <div class="card mt-16">
-            <h3 class="card-title">Distribuição de status (OK x Retrabalho)</h3>
+            <h3 class="card-title">Status de itens (OK x NÃO OK)</h3>
             <div class="chart-wrapper">
-              <canvas id="dashboard-chart" width="200" height="200"></canvas>
+              <canvas id="dashboard-chart"></canvas>
             </div>
           </div>
         </section>
 
-        <!-- TELA: RELATÓRIOS -->
-        <section id="reports" class="screen">
+        <!-- TELA RELATÓRIOS -->
+        <section id="screen-reports" class="screen">
           <div class="card">
             <h2 class="screen-title">Relatórios</h2>
             <div class="report-controls">
-              <button class="btn-secondary" id="btn-export-csv">Exportar CSV</button>
+              <button id="btn-export-csv" class="btn-secondary">
+                Exportar CSV
+              </button>
               <div class="form-group small">
-                <label for="report-month-select">Mês:</label>
+                <label for="report-month-select">Mês</label>
                 <select id="report-month-select"></select>
               </div>
               <div class="report-total">
                 Total inspeções: <span id="total-inspecoes">0</span>
               </div>
             </div>
+
             <div class="chart-wrapper">
-              <canvas id="reports-chart" width="200" height="200"></canvas>
+              <canvas id="reports-chart"></canvas>
             </div>
           </div>
 
@@ -239,14 +292,8 @@
             </table>
           </div>
         </section>
-
       </div>
     </main>
-  </div>
-
-  <!-- MODAL -->
-  <div id="modal-overlay" class="modal-overlay" style="display:none;">
-    <div id="modal-box" class="modal-box"></div>
   </div>
 
   <!-- SCRIPTS -->
