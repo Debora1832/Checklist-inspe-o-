@@ -785,7 +785,7 @@
     <div id="modal-box" class="modal-box"></div>
   </div>
 
-  <!-- SCRIPT FIREBASE (igual ao seu, expõe window.fbApi) -->
+  <!-- SCRIPT FIREBASE -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
     import {
@@ -800,7 +800,7 @@
       apiKey: "AIzaSyCAAowsqkoUjIAPhSvq6dUlKMZGdXOO1b0",
       authDomain: "magiuschecklist-9ad0f.firebaseapp.com",
       projectId: "magiuschecklist-9ad0f",
-      storageBucket: "magiuschecklist-9ad0f.firebasestorage.app",
+      storageBucket: "magiuschecklist-9ad0f.firebasestorage.app",  // <-- corrigido
       messagingSenderId: "14669686712",
       appId: "1:14669686712:web:1c205b1111cde18379114d",
       measurementId: "G-GQS591WCBD"
@@ -1299,20 +1299,14 @@
     renderReports();
     renderDashboard();
     renderChecklistExecution();
-    
-// VOLTAR PARA A TELA INICIAL DO CHECKLIST
-selectSidebar('checklist');
 
-// LIMPAR CAMPOS E RESETAR SELEÇÕES
-document.getElementById("insp-selector").value = "";
-document.getElementById("piece-selector").value = "";
-
-// ESCONDER A ÁREA DE EXECUÇÃO DO CHECKLIST
-document.getElementById("checklist-execution").classList.add("hide");
-
-// LIMPAR ESTADOS INTERNOS
-currentChecklistPiece = null;
-checklistItemStates = [];
+    // NOVO: voltar para tela inicial e limpar tudo
+    selectSidebar('checklist');                         // volta pra aba Checklist
+    document.getElementById("insp-selector").value = "";   // limpa seleção de inspetor
+    document.getElementById("piece-selector").value = "";  // limpa seleção de peça
+    document.getElementById("checklist-execution").classList.add("hide"); // esconde execução
+    currentChecklistPiece = null;                      // zera estado interno
+    checklistItemStates = [];
   }
 
   function loadInspectorPhotosFromLocalStorage(){
@@ -1889,11 +1883,3 @@ checklistItemStates = [];
   </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
