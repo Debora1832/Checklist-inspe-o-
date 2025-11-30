@@ -19,21 +19,16 @@ let dashboardChart = null;
 // =========================
 
 function selectSidebar(screenId) {
-  document
-    .querySelectorAll(".screen")
-    .forEach((s) => s.classList.remove("active"));
+  document.querySelectorAll(".screen").forEach((s) => s.classList.remove("active"));
   document.getElementById(screenId).classList.add("active");
 
-  document
-    .querySelectorAll(".sidebar-item")
-    .forEach((b) => b.classList.remove("active"));
-  document
-    .querySelector(`.sidebar-item[data-screen="${screenId}"]`)
-    ?.classList.add("active");
+  document.querySelectorAll(".sidebar-item").forEach((b) => b.classList.remove("active"));
+  const btn = document.querySelector(`.sidebar-item[data-screen="${screenId}"]`);
+  if (btn) btn.classList.add("active");
 }
 
 // =========================
-– RENDERIZAÇÃO BÁSICA
+// RENDERIZAÇÃO BÁSICA
 // =========================
 
 function renderInspectorSelect() {
@@ -63,6 +58,7 @@ function renderPieceSelects() {
 
 function renderInspectorsList() {
   const box = document.getElementById("inspectors-list");
+  if (!box) return;
   box.innerHTML = "";
 
   inspectors.forEach((name) => {
@@ -84,6 +80,7 @@ function renderInspectorsList() {
 
 function renderPiecesList() {
   const box = document.getElementById("pieces-list");
+  if (!box) return;
   box.innerHTML = "";
   pieces.forEach((p) => {
     const row = document.createElement("div");
@@ -104,6 +101,7 @@ function renderPieceItemsList() {
   const sel = document.getElementById("piece-items-selector");
   const idx = parseInt(sel.value, 10);
   const box = document.getElementById("piece-items-list");
+  if (!box) return;
   box.innerHTML = "";
 
   const piece = pieces[idx];
@@ -155,17 +153,17 @@ function startChecklist() {
     return;
   }
 
-  // cria estado do checklist com os novos campos
+  // estado do checklist com campos extras
   currentChecklistItems = currentChecklistPiece.items.map((it) => ({
     name: it.name,
     description: it.description,
     imageUrl: it.imageUrl || null, // imagem do item (Storage)
-    status: null,                 // "OK" ou "NOK"
-    motivo: "",                   // descrição da não conformidade
-    encaminhamento: "",           // "retrabalho" ou "aprovado_terceiro"
-    nomeTerceiro: "",             // se aprovado por terceiros
-    fotoFile: null,               // File (para upload)
-    fotoUrl: null                 // URL no Storage (opcional)
+    status: null,                  // "OK" ou "NOK"
+    motivo: "",                    // descrição da não conformidade
+    encaminhamento: "",            // "retrabalho" ou "aprovado_terceiro"
+    nomeTerceiro: "",              // se aprovado por terceiros
+    fotoFile: null,                // File (para upload)
+    fotoUrl: null                  // URL no Storage (opcional)
   }));
 
   document.getElementById("cl-piece-code").textContent =
@@ -205,9 +203,7 @@ function renderChecklistExecution() {
     }">
         <div class="form-group">
           <label>Descrição da não conformidade</label>
-          <textarea data-idx="${idx}" data-field="motivo" rows="2">${
-      it.motivo || ""
-    }</textarea>
+          <textarea data-idx="${idx}" data-field="motivo" rows="2">${it.motivo || ""}</textarea>
         </div>
 
         <div class="form-group">
@@ -261,7 +257,7 @@ function renderChecklistExecution() {
     });
   });
 
-  // Textareas / inputs de texto (motivo, nomeTerceiro)
+  // Textareas / inputs texto
   box.querySelectorAll("textarea[data-idx], input[type='text'][data-idx]")
     .forEach((el) => {
       el.addEventListener("input", (e) => {
@@ -272,7 +268,7 @@ function renderChecklistExecution() {
     });
 
   // Input de arquivo (foto)
-  box.querySelectorAll("input[type='file'][data-idx]").forEach((el) => {
+  box.querySelectorAll("input[type='file'][data-idx']").forEach((el) => {
     el.addEventListener("change", (e) => {
       const idx = parseInt(e.target.dataset.idx, 10);
       const file = e.target.files[0] || null;
@@ -285,14 +281,13 @@ function renderChecklistExecution() {
     el.addEventListener("change", (e) => {
       const idx = parseInt(e.target.name.split("-")[1], 10);
       currentChecklistItems[idx].encaminhamento = e.target.value;
-      renderChecklistExecution(); // re-render para mostrar / esconder nome do terceiro
+      renderChecklistExecution(); // re-render para mostrar/esconder nome do terceiro
     });
   });
 }
 
 function markItem(index, status) {
   currentChecklistItems[index].status = status;
-  // Se colocar OK, limpa dados de NOK
   if (status === "OK") {
     currentChecklistItems[index].motivo = "";
     currentChecklistItems[index].encaminhamento = "";
@@ -312,8 +307,9 @@ async function finishChecklist() {
   const obs = document.getElementById("obs-text").value.trim();
 
   if (currentChecklistItems.some((it) => it.status === null)) {
-    if (!confirm("Existem itens sem responder. Deseja continuar mesmo assim?"))
+    if (!confirm("Existem itens sem responder. Deseja continuar mesmo assim?")) {
       return;
+    }
   }
 
   if (hasNok && !obs) {
@@ -341,4 +337,388 @@ async function finishChecklist() {
 
   if (window.fbApi && window.fbApi.saveInspection) {
     try {
-      co
+      const saved = await window.fbApi.saveInspection(record);
+      if (saved && saved.id) {
+        console.log("Inspeção salva no Firebase:", saved.id);
+      }
+    } catch (e) {
+      console.warn("Falha ao salvar inspeção no Firebase:", e);
+    }
+  }
+
+  alert("Checklist finalizado!");
+  currentChecklistPiece = null;
+  currentChecklistItems = [];
+  document.getElementById("checklist-execution").classList.add("hide");
+  document.getElementById("obs-text").value = "";
+  updateDashboard();
+  updateReports();
+}
+
+// =========================
+// ADIÇÃO DE INSPETORES / PEÇAS / ITENS
+// =========================
+
+function addInspector() {
+  const nameInput = document.getElementById("insp-name-input");
+  const photoInput = document.getElementById("insp-photo-input");
+  const name = nameInput.value.trim();
+  if (!name) {
+    alert("Informe o nome do inspetor.");
+    return;
+  }
+
+  if (!inspectors.includes(name)) inspectors.push(name);
+  nameInput.value = "";
+  photoInput.value = "";
+
+  renderInspectorSelect();
+  renderInspectorsList();
+
+  if (window.fbApi && window.fbApi.setInspectors) {
+    window.fbApi
+      .setInspectors(inspectors)
+      .catch((e) => console.warn("Falha ao salvar inspetores:", e));
+  }
+}
+
+function addPiece() {
+  const code = document.getElementById("piece-code-input").value.trim();
+  const desc = document.getElementById("piece-desc-input").value.trim();
+
+  if (!code) {
+    alert("Informe o código da peça.");
+    return;
+  }
+
+  if (pieces.some((p) => p.code === code)) {
+    alert("Já existe uma peça com esse código.");
+    return;
+  }
+
+  const piece = {
+    code,
+    description: desc,
+    image: null,
+    imageUrl: null,
+    items: [],
+  };
+
+  pieces.push(piece);
+
+  document.getElementById("piece-code-input").value = "";
+  document.getElementById("piece-desc-input").value = "";
+  document.getElementById("piece-image-input").value = "";
+
+  renderPieceSelects();
+  renderPiecesList();
+
+  if (window.fbApi && window.fbApi.savePiece) {
+    window.fbApi
+      .savePiece(piece)
+      .catch((e) => console.warn("Falha ao salvar peça:", e));
+  }
+}
+
+function addItemToPiece() {
+  const sel = document.getElementById("piece-items-selector");
+  const idx = parseInt(sel.value, 10);
+  if (isNaN(idx)) {
+    alert("Selecione a peça para adicionar o item.");
+    return;
+  }
+
+  const piece = pieces[idx];
+  const name = document.getElementById("item-name-input").value.trim();
+  const desc = document.getElementById("item-desc-input").value.trim();
+
+  if (!name) {
+    alert("Informe o nome do item.");
+    return;
+  }
+
+  const item = {
+    name,
+    description: desc,
+    image: null,
+    imageUrl: null,
+  };
+
+  piece.items = piece.items || [];
+  piece.items.push(item);
+
+  document.getElementById("item-name-input").value = "";
+  document.getElementById("item-desc-input").value = "";
+  document.getElementById("item-image-input").value = "";
+
+  renderPiecesList();
+
+  if (window.fbApi && window.fbApi.savePiece) {
+    window.fbApi
+      .savePiece(piece)
+      .catch((e) => console.warn("Falha ao atualizar peça:", e));
+  }
+}
+
+// =========================
+// DASHBOARD / RELATÓRIOS
+// =========================
+
+function updateDashboard() {
+  const now = new Date();
+  const monthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(
+    2,
+    "0"
+  )}`;
+
+  const inspecMes = inspections.filter((i) => i.date.startsWith(monthKey));
+
+  const kpiMes = document.getElementById("kpi-inspecoes-mes");
+  if (kpiMes) kpiMes.textContent = inspecMes.length;
+
+  let totalItens = 0;
+  let totalNok = 0;
+  const mapaPecas = {};
+
+  inspecMes.forEach((ins) => {
+    (ins.items || []).forEach((it) => {
+      totalItens++;
+      if (it.status === "NOK") {
+        totalNok++;
+        mapaPecas[ins.piece] = (mapaPecas[ins.piece] || 0) + 1;
+      }
+    });
+  });
+
+  const percentNok = totalItens ? (100 * totalNok) / totalItens : 0;
+  const kpiNok = document.getElementById("kpi-percent-nok");
+  if (kpiNok) kpiNok.textContent = `${percentNok.toFixed(1)}%`;
+
+  const topPecas = Object.entries(mapaPecas)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3)
+    .map(([pc, qt]) => `${pc}: ${qt} NOK`);
+
+  const topBox = document.getElementById("kpi-top-pecas");
+  if (topBox) topBox.innerHTML = topPecas.join("<br>") || "-";
+
+  const ok = totalItens - totalNok;
+  const data = {
+    labels: ["OK", "NÃO OK"],
+    datasets: [
+      {
+        data: [ok, totalNok],
+      },
+    ],
+  };
+
+  const canvas = document.getElementById("dashboard-chart");
+  if (!canvas) return;
+
+  if (dashboardChart) {
+    dashboardChart.data = data;
+    dashboardChart.update();
+  } else {
+    const ctx = canvas.getContext("2d");
+    dashboardChart = new Chart(ctx, {
+      type: "doughnut",
+      data,
+    });
+  }
+}
+
+function fillReportMonthSelect() {
+  const sel = document.getElementById("report-month-select");
+  if (!sel) return;
+  sel.innerHTML = "";
+  const meses = new Set(inspections.map((i) => i.date.substring(0, 7)));
+  const arr = Array.from(meses).sort().reverse();
+  arr.forEach((m) => {
+    const opt = document.createElement("option");
+    opt.value = m;
+    opt.textContent = m;
+    sel.appendChild(opt);
+  });
+}
+
+function updateReports() {
+  fillReportMonthSelect();
+
+  const sel = document.getElementById("report-month-select");
+  const chosen = sel && (sel.value || sel.options[0]?.value);
+  if (sel && chosen) sel.value = chosen;
+
+  const insMes = inspections.filter((i) =>
+    chosen ? i.date.startsWith(chosen) : true
+  );
+
+  const totalSpan = document.getElementById("total-inspecoes");
+  if (totalSpan) totalSpan.textContent = insMes.length;
+
+  const tb = document.getElementById("reports-history-body");
+  if (tb) {
+    tb.innerHTML = "";
+    insMes.forEach((i) => {
+      const tr = document.createElement("tr");
+      const dt = new Date(i.date);
+      tr.innerHTML = `
+        <td>${dt.toLocaleString()}</td>
+        <td>${i.inspector}</td>
+        <td>${i.piece}</td>
+        <td>${i.description || ""}</td>
+      `;
+      tb.appendChild(tr);
+    });
+  }
+
+  const counts = {};
+  insMes.forEach((i) => {
+    counts[i.piece] = (counts[i.piece] || 0) + 1;
+  });
+
+  const labels = Object.keys(counts);
+  const dataValues = labels.map((l) => counts[l]);
+  const chartData = {
+    labels,
+    datasets: [{ data: dataValues }],
+  };
+
+  const canvas = document.getElementById("reports-chart");
+  if (!canvas) return;
+
+  if (reportsChart) {
+    reportsChart.data = chartData;
+    reportsChart.update();
+  } else {
+    const ctx = canvas.getContext("2d");
+    reportsChart = new Chart(ctx, {
+      type: "bar",
+      data: chartData,
+    });
+  }
+}
+
+function exportCsv() {
+  if (!inspections.length) {
+    alert("Não há inspeções para exportar.");
+    return;
+  }
+  const header = [
+    "data",
+    "inspetor",
+    "peca",
+    "descricao",
+    "total_itens",
+    "total_nok",
+  ];
+  const lines = [header.join(";")];
+
+  inspections.forEach((ins) => {
+    const total = ins.items?.length || 0;
+    const totalNok = (ins.items || []).filter(
+      (it) => it.status === "NOK"
+    ).length;
+    lines.push(
+      [
+        ins.date,
+        ins.inspector,
+        ins.piece,
+        (ins.description || "").replace(/;/g, ","),
+        total,
+        totalNok,
+      ].join(";")
+    );
+  });
+
+  const blob = new Blob([lines.join("\n")], {
+    type: "text/csv;charset=utf-8;",
+  });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "inspecoes.csv";
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// =========================
+// INICIALIZAÇÃO
+// =========================
+
+async function init() {
+  // eventos da sidebar
+  document.querySelectorAll(".sidebar-item").forEach((btn) => {
+    btn.addEventListener("click", () => selectSidebar(btn.dataset.screen));
+  });
+
+  const pieceItemsSelector = document.getElementById("piece-items-selector");
+  if (pieceItemsSelector) {
+    pieceItemsSelector.addEventListener("change", renderPieceItemsList);
+  }
+
+  const btnAddInspector = document.getElementById("btn-add-inspector");
+  if (btnAddInspector) {
+    btnAddInspector.addEventListener("click", addInspector);
+  }
+
+  const btnAddPiece = document.getElementById("btn-add-piece");
+  if (btnAddPiece) {
+    btnAddPiece.addEventListener("click", addPiece);
+  }
+
+  const btnAddItem = document.getElementById("btn-add-item");
+  if (btnAddItem) {
+    btnAddItem.addEventListener("click", addItemToPiece);
+  }
+
+  const btnStart = document.getElementById("btn-start-checklist");
+  if (btnStart) {
+    btnStart.addEventListener("click", startChecklist);
+  }
+
+  const btnFinish = document.getElementById("btn-finish-checklist");
+  if (btnFinish) {
+    btnFinish.addEventListener("click", finishChecklist);
+  }
+
+  const btnExport = document.getElementById("btn-export-csv");
+  if (btnExport) {
+    btnExport.addEventListener("click", exportCsv);
+  }
+
+  // Carrega dados do Firebase se disponível
+  if (window.fbApi && window.fbApi.loadAll) {
+    try {
+      const data = await window.fbApi.loadAll();
+      pieces = data.pieces || [];
+      inspectors = data.inspectors || [];
+      inspections = data.inspections || [];
+    } catch (e) {
+      console.warn("Falha ao carregar dados do Firebase:", e);
+    }
+  } else {
+    // dados de exemplo se Firebase não estiver configurado
+    pieces = [
+      {
+        code: "597-2445#01",
+        description: "Longarina",
+        image: null,
+        imageUrl: null,
+        items: [
+          { name: "Dimensão A (Ø)", description: "Verificar diâmetro da furação." },
+          { name: "Furo B posição", description: "Conferir posição do furo de encaixe." },
+        ],
+      },
+    ];
+    inspectors = ["João Silva", "Maria Santos"];
+  }
+
+  renderInspectorSelect();
+  renderInspectorsList();
+  renderPieceSelects();
+  renderPiecesList();
+  updateDashboard();
+  updateReports();
+}
+
+document.addEventListener("DOMContentLoaded", init);
