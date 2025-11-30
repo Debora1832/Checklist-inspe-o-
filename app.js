@@ -267,16 +267,16 @@ function renderChecklistExecution() {
       });
     });
 
-   // Input de arquivo (foto)
+     // Input de arquivo (foto)
   box.querySelectorAll("input[data-idx]").forEach((el) => {
-    if (el.type !== "file") return; // garante que é input de arquivo
+    // garante que só trata inputs de arquivo
+    if (el.type !== "file") return;
     el.addEventListener("change", (e) => {
       const idx = parseInt(e.target.dataset.idx, 10);
       const file = e.target.files[0] || null;
       currentChecklistItems[idx].fotoFile = file;
     });
   });
-
 
   // Radios de encaminhamento
   box.querySelectorAll("input[type='radio'][name^='enc-']").forEach((el) => {
@@ -724,4 +724,5 @@ async function init() {
 }
 
 document.addEventListener("DOMContentLoaded", init);
+
 
