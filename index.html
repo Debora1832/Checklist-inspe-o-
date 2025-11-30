@@ -2,555 +2,314 @@
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8" />
-  <title>Magius - Cadastro de Inspetores</title>
+  <title>Magius - Portal de Inspeção</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <style>
-    /* ======= RESET/BASE ======= */
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
+    *{
+      box-sizing:border-box;
+      margin:0;
+      padding:0;
     }
-    body {
-      font-family: Arial, sans-serif;
-      background: #f4f6fb;
-      color: #333;
+    body{
+      font-family:Arial, sans-serif;
+      background:#f4f6fb;
+      color:#111827;
     }
-    a { color: inherit; text-decoration: none; }
+    a{ text-decoration:none; color:inherit;}
 
-    /* ======= HEADER ======= */
-    .topbar {
-      background: #003366;
-      color: #fff;
-      padding: 10px 24px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-    }
-    .brand-left {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-    }
-    .brand-circles span {
-      display: inline-block;
-      width: 16px;
-      height: 16px;
-      border-radius: 50%;
-      border: 2px solid #fff;
-      margin-right: 4px;
-    }
-    .brand-tagline {
-      font-size: 11px;
-      font-weight: 600;
-      line-height: 1.2;
-    }
-    .brand-right {
-      text-align: right;
-    }
-    .brand-logo {
-      font-size: 22px;
-      font-weight: 800;
-    }
-    .brand-sub {
-      font-size: 11px;
-      color: #d3e6ff;
-      font-weight: 600;
+    .app{
+      display:flex;
+      min-height:100vh;
     }
 
-    /* ======= CONTAINER GERAL ======= */
-    .page {
-      max-width: 1200px;
-      margin: 24px auto;
-      padding: 0 16px 32px;
+    /* ====== SIDEBAR ====== */
+    .sidebar{
+      width:220px;
+      background:#093762;
+      color:#fff;
+      display:flex;
+      flex-direction:column;
+      padding:16px 12px;
+      box-shadow:2px 0 8px rgba(0,0,0,0.25);
+    }
+    .sidebar-logo{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:6px;
+      margin-bottom:24px;
+    }
+    .sidebar-logo-main{
+      font-weight:800;
+      font-size:20px;
+    }
+    .sidebar-logo-sub{
+      font-size:10px;
+      text-align:center;
+      color:#cfe6ff;
+    }
+    .sidebar-menu{
+      list-style:none;
+      margin-top:10px;
+      flex:1;
+    }
+    .sidebar-item{
+      margin-bottom:6px;
+    }
+    .sidebar-link{
+      display:flex;
+      align-items:center;
+      padding:8px 10px;
+      border-radius:6px;
+      font-size:13px;
+      cursor:pointer;
+      transition:background .15s;
+    }
+    .sidebar-link:hover{
+      background:#11527f;
+    }
+    .sidebar-link span.icon{
+      display:inline-flex;
+      width:18px;
+      justify-content:center;
+      margin-right:8px;
+      font-size:14px;
+    }
+    .sidebar-footer{
+      font-size:10px;
+      color:#9fb9dd;
+      margin-top:10px;
     }
 
-    .card {
-      background: #fff;
-      border-radius: 10px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-      padding: 18px 20px 20px;
-      margin-bottom: 20px;
+    /* ====== MAIN AREA ====== */
+    .main{
+      flex:1;
+      padding:20px 28px;
     }
-    .card-title {
-      font-size: 20px;
-      font-weight: 700;
-      margin-bottom: 14px;
-      color: #003366;
+    .topbar{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      margin-bottom:20px;
     }
-
-    /* ======= FORMULÁRIO CADASTRO ======= */
-    .form-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 14px;
-      align-items: flex-end;
+    .topbar-left{
+      font-size:11px;
+      font-weight:600;
+      color:#374151;
+      line-height:1.3;
     }
-    .form-group {
-      flex: 1;
-      min-width: 220px;
+    .topbar-left strong{
+      color:#111827;
     }
-    .form-group label {
-      display: block;
-      font-size: 14px;
-      font-weight: 600;
-      margin-bottom: 5px;
+    .topbar-right{
+      text-align:right;
     }
-    .form-group input[type="text"],
-    .form-group input[type="file"] {
-      width: 100%;
-      padding: 8px 10px;
-      border-radius: 6px;
-      border: 1px solid #c7d2e2;
-      font-size: 14px;
-      background: #fdfefe;
+    .topbar-title{
+      font-size:22px;
+      font-weight:700;
+      color:#003366;
     }
-    .btn {
-      border: none;
-      border-radius: 8px;
-      padding: 9px 18px;
-      background: #003366;
-      color: #fff;
-      font-weight: 600;
-      font-size: 14px;
-      cursor: pointer;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.12);
-      transition: background .2s, transform .1s;
-    }
-    .btn:hover {
-      background: #0052a5;
-      transform: translateY(-1px);
-    }
-    .btn-secondary {
-      background: #e0e5f2;
-      color: #003366;
-    }
-    .btn-secondary:hover {
-      background: #c7d2e2;
+    .topbar-sub{
+      font-size:12px;
+      color:#6b7280;
     }
 
-    /* ======= LISTA DE INSPETORES ======= */
-    .inspectors-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
-      gap: 16px;
-      margin-top: 10px;
+    .cards-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
+      gap:18px;
+      margin-top:10px;
     }
-    .inspector-card {
-      background: #f9fbff;
-      border-radius: 10px;
-      border: 1px solid #dde5f5;
-      padding: 12px 14px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      position: relative;
+    .nav-card{
+      background:#fff;
+      border-radius:12px;
+      box-shadow:0 2px 8px rgba(0,0,0,0.08);
+      padding:16px 18px;
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
+      border:1px solid #e5e7eb;
     }
-    .inspector-card-header {
-      display: flex;
-      align-items: center;
-      gap: 10px;
+    .nav-card-title{
+      font-size:17px;
+      font-weight:700;
+      color:#003366;
+      margin-bottom:4px;
     }
-    .inspector-avatar {
-      width: 44px;
-      height: 44px;
-      border-radius: 50%;
-      background: #003366;
-      color: #fff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 700;
-      font-size: 16px;
-      overflow: hidden;
-      flex-shrink: 0;
+    .nav-card-text{
+      font-size:13px;
+      color:#6b7280;
+      margin-bottom:10px;
     }
-    .inspector-avatar img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
+    .nav-card-footer{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-top:10px;
     }
-    .inspector-name {
-      font-size: 15px;
-      font-weight: 700;
-      color: #003366;
+    .nav-card-tag{
+      font-size:11px;
+      padding:3px 8px;
+      border-radius:999px;
+      background:#eff6ff;
+      color:#1d4ed8;
+      font-weight:600;
     }
-    .inspector-meta {
-      font-size: 12px;
-      color: #6b7280;
+    .nav-card-btn{
+      padding:8px 14px;
+      font-size:13px;
+      border-radius:8px;
+      border:none;
+      cursor:pointer;
+      background:#003366;
+      color:#fff;
+      font-weight:600;
+      box-shadow:0 1px 4px rgba(0,0,0,0.15);
     }
-    .inspector-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 6px;
-      margin-top: 6px;
-    }
-    .btn-icon {
-      padding: 4px 8px;
-      font-size: 11px;
-      border-radius: 999px;
-      box-shadow: none;
-    }
-    .btn-edit {
-      background: #e0ecff;
-      color: #003366;
-    }
-    .btn-photo {
-      background: #fef3c7;
-      color: #92400e;
-    }
-    .btn-delete {
-      background: #fee2e2;
-      color: #b91c1c;
-    }
-    .empty-msg {
-      font-size: 14px;
-      color: #6b7280;
-      margin-top: 8px;
+    .nav-card-btn:hover{
+      background:#0753a4;
     }
 
-    /* ======= FOOTER INFO ======= */
-    .footer-note {
-      font-size: 11px;
-      color: #9ca3af;
-      margin-top: 4px;
-    }
-
-    /* ======= RESPONSIVO ======= */
-    @media(max-width: 700px){
-      .form-row {
-        flex-direction: column;
-        align-items: stretch;
+    @media(max-width:800px){
+      .app{ flex-direction:column; }
+      .sidebar{
+        width:100%;
+        flex-direction:row;
+        align-items:center;
+        padding:10px 12px;
       }
-      .topbar {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 8px;
+      .sidebar-logo{
+        align-items:flex-start;
+        margin-bottom:0;
+        margin-right:12px;
       }
-      .brand-right {
-        text-align: left;
+      .sidebar-menu{
+        display:flex;
+        flex-direction:row;
+        overflow-x:auto;
       }
+      .sidebar-item{ margin-right:4px; }
+      .sidebar-footer{ display:none; }
     }
   </style>
 </head>
 <body>
-  <!-- TOPO MAGIUS -->
-  <header class="topbar">
-    <div class="brand-left">
-      <div class="brand-circles">
-        <span></span><span></span><span></span><span></span>
-      </div>
-      <div class="brand-tagline">
-        AJUDANDO A CONSTRUIR, CULTIVAR,<br>
-        TRANSPORTAR E SEGUIR EM FRENTE
-      </div>
-    </div>
-    <div class="brand-right">
-      <div class="brand-logo">MAGIUS</div>
-      <div class="brand-sub">METALÚRGICA INDUSTRIAL</div>
-    </div>
-  </header>
+<div class="app">
 
-  <main class="page">
-    <!-- CARD DE CADASTRO -->
-    <section class="card">
-      <div class="card-title">Cadastro de Inspetores</div>
-      <div class="form-row">
-        <div class="form-group">
-          <label for="insp-name-input">Nome do inspetor</label>
-          <input type="text" id="insp-name-input" placeholder="Ex.: Débora Cristina">
-        </div>
-        <div class="form-group">
-          <label for="insp-photo-input">Foto do inspetor (opcional)</label>
-          <input type="file" id="insp-photo-input" accept="image/*">
-        </div>
-        <button class="btn" id="btn-add-inspector">Adicionar inspetor</button>
-      </div>
-      <div class="footer-note">
-        Os nomes são salvos no Firestore. As fotos são salvas localmente neste computador (localStorage).
-      </div>
-    </section>
+  <!-- MENU LATERAL -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-main">MAGIUS</div>
+      <div class="sidebar-logo-sub">SISTEMA DE INSPEÇÃO</div>
+    </div>
+    <ul class="sidebar-menu">
+      <li class="sidebar-item">
+        <a class="sidebar-link" href="index.html">
+          <span class="icon">🏠</span> Início
+        </a>
+      </li>
+      <li class="sidebar-item">
+        <a class="sidebar-link" href="checklist.html">
+          <span class="icon">✅</span> Checklist
+        </a>
+      </li>
+      <li class="sidebar-item">
+        <a class="sidebar-link" href="inspetores.html">
+          <span class="icon">👤</span> Inspetores
+        </a>
+      </li>
+      <li class="sidebar-item">
+        <a class="sidebar-link" href="relatorios.html">
+          <span class="icon">📑</span> Relatórios
+        </a>
+      </li>
+      <li class="sidebar-item">
+        <a class="sidebar-link" href="dashboard.html">
+          <span class="icon">📊</span> Dashboards
+        </a>
+      </li>
+    </ul>
+    <div class="sidebar-footer">
+      Ajudando a construir, cultivar,<br>transportar e seguir em frente.
+    </div>
+  </aside>
 
-    <!-- CARD LISTA -->
-    <section class="card">
-      <div class="card-title">Inspetores cadastrados</div>
-      <div id="inspectors-list" class="inspectors-grid"></div>
-      <div id="inspectors-empty" class="empty-msg" style="display:none;">
-        Nenhum inspetor cadastrado ainda.
+  <!-- CONTEÚDO PRINCIPAL -->
+  <main class="main">
+    <header class="topbar">
+      <div class="topbar-left">
+        <strong>Portal de Inspeção da Magius</strong><br>
+        Selecione abaixo a área que você deseja acessar.
       </div>
+      <div class="topbar-right">
+        <div class="topbar-title">Bem-vindo(a)</div>
+        <div class="topbar-sub">Checklist • Inspetores • Relatórios • KPIs</div>
+      </div>
+    </header>
+
+    <section class="cards-grid">
+      <article class="nav-card">
+        <div>
+          <div class="nav-card-title">Checklist de Inspeção</div>
+          <div class="nav-card-text">
+            Executar inspeções, registrar OK / Não OK, fotos e justificativas.
+          </div>
+        </div>
+        <div class="nav-card-footer">
+          <span class="nav-card-tag">Uso diário na linha</span>
+          <a href="checklist.html">
+            <button class="nav-card-btn">Abrir checklist</button>
+          </a>
+        </div>
+      </article>
+
+      <article class="nav-card">
+        <div>
+          <div class="nav-card-title">Cadastro de Inspetores</div>
+          <div class="nav-card-text">
+            Cadastrar, editar e remover inspetores, incluindo foto de cada um.
+          </div>
+        </div>
+        <div class="nav-card-footer">
+          <span class="nav-card-tag">Base de usuários</span>
+          <a href="inspetores.html">
+            <button class="nav-card-btn">Gerenciar inspetores</button>
+          </a>
+        </div>
+      </article>
+
+      <article class="nav-card">
+        <div>
+          <div class="nav-card-title">Relatórios</div>
+          <div class="nav-card-text">
+            Visualizar histórico de inspeções em formato de planilha.
+          </div>
+        </div>
+        <div class="nav-card-footer">
+          <span class="nav-card-tag">Visão analítica</span>
+          <a href="relatorios.html">
+            <button class="nav-card-btn">Abrir relatórios</button>
+          </a>
+        </div>
+      </article>
+
+      <article class="nav-card">
+        <div>
+          <div class="nav-card-title">Dashboards de KPIs</div>
+          <div class="nav-card-text">
+            Acompanhar indicadores de retrabalho, volume inspecionado e mais.
+          </div>
+        </div>
+        <div class="nav-card-footer">
+          <span class="nav-card-tag">Em evolução</span>
+          <a href="dashboard.html">
+            <button class="nav-card-btn">Ver dashboards</button>
+          </a>
+        </div>
+      </article>
     </section>
   </main>
-
-  <!-- input oculto para alterar foto de um inspetor existente -->
-  <input type="file" id="change-photo-input" accept="image/*" style="display:none">
-
-  <!-- =============== SCRIPT - FIREBASE + LÓGICA DA PÁGINA =============== -->
-  <script type="module">
-    // Import Firebase (v9 modular - CDN)
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
-    import { 
-      getFirestore, doc, getDoc, setDoc 
-    } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
-
-    // --- CONFIG DO SEU PROJETO (MESMA QUE VOCÊ JÁ USA) ---
-    const firebaseConfig = {
-      apiKey: "AIzaSyCAAowsqkoUjIAPhSvq6dUlKMZGdXOO1b0",
-      authDomain: "magiuschecklist-9ad0f.firebaseapp.com",
-      projectId: "magiuschecklist-9ad0f",
-      storageBucket: "magiuschecklist-9ad0f.appspot.com",
-      messagingSenderId: "14669686712",
-      appId: "1:14669686712:web:1c205b1111cde18379114d",
-      measurementId: "G-GQS591WCBD"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db  = getFirestore(app);
-
-    // ====== ESTADO EM MEMÓRIA ======
-    let inspectors = [];            // nomes
-    let inspectorPhotos = {};       // { nome: dataURL }
-
-    const LS_PHOTOS_KEY = "magius_inspector_photos";
-
-    // ====== FUNÇÕES AUXILIARES ======
-    function initialsFromName(name){
-      if(!name) return "?";
-      const parts = name.trim().split(/\s+/);
-      if(parts.length === 1) return parts[0].slice(0,2).toUpperCase();
-      return (parts[0][0] + parts[parts.length-1][0]).toUpperCase();
-    }
-
-    function loadPhotosFromLocalStorage(){
-      try{
-        const raw = localStorage.getItem(LS_PHOTOS_KEY);
-        inspectorPhotos = raw ? JSON.parse(raw) : {};
-      }catch(e){
-        inspectorPhotos = {};
-      }
-    }
-    function savePhotosToLocalStorage(){
-      try{
-        localStorage.setItem(LS_PHOTOS_KEY, JSON.stringify(inspectorPhotos));
-      }catch(e){
-        console.warn("Não foi possível salvar fotos no localStorage", e);
-      }
-    }
-
-    function fileToDataUrl(file){
-      return new Promise((resolve, reject)=>{
-        const reader = new FileReader();
-        reader.onload = e => resolve(e.target.result);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
-    }
-
-    async function loadInspectorsFromFirestore(){
-      try{
-        const ref = doc(db, "config", "inspectors");
-        const snap = await getDoc(ref);
-        if(snap.exists()){
-          const data = snap.data().list;
-
-          // pode vir array OU objeto -> convertemos pra array
-          if(Array.isArray(data)){
-            inspectors = data;
-          }else if(data && typeof data === "object"){
-            inspectors = Object.values(data);
-          }else{
-            inspectors = [];
-          }
-        }else{
-          inspectors = [];
-        }
-      }catch(e){
-        console.error("Erro ao carregar inspetores do Firestore:", e);
-        inspectors = [];
-      }
-    }
-
-    async function saveInspectorsToFirestore(){
-      try{
-        const ref = doc(db, "config", "inspectors");
-        await setDoc(ref, { list: inspectors });
-      }catch(e){
-        console.error("Erro ao salvar inspetores no Firestore:", e);
-        alert("Erro ao salvar no servidor (Firestore). Veja o console para detalhes.");
-      }
-    }
-
-    function renderInspectors(){
-      const listDiv  = document.getElementById("inspectors-list");
-      const emptyDiv = document.getElementById("inspectors-empty");
-      listDiv.innerHTML = "";
-
-      if(!inspectors || inspectors.length === 0){
-        emptyDiv.style.display = "block";
-        return;
-      }
-      emptyDiv.style.display = "none";
-
-      inspectors.forEach((name, index)=>{
-        const card = document.createElement("div");
-        card.className = "inspector-card";
-
-        const avatar = document.createElement("div");
-        avatar.className = "inspector-avatar";
-
-        const photo = inspectorPhotos[name];
-        if(photo){
-          avatar.innerHTML = `<img src="${photo}">`;
-        }else{
-          avatar.textContent = initialsFromName(name);
-        }
-
-        const header = document.createElement("div");
-        header.className = "inspector-card-header";
-
-        const infoBox = document.createElement("div");
-        const nameEl = document.createElement("div");
-        nameEl.className = "inspector-name";
-        nameEl.textContent = name;
-
-        const metaEl = document.createElement("div");
-        metaEl.className = "inspector-meta";
-        metaEl.textContent = "Inspetor cadastrado para uso no checklist.";
-
-        infoBox.appendChild(nameEl);
-        infoBox.appendChild(metaEl);
-        header.appendChild(avatar);
-        header.appendChild(infoBox);
-
-        // Ações
-        const actions = document.createElement("div");
-        actions.className = "inspector-actions";
-
-        const btnEdit = document.createElement("button");
-        btnEdit.className = "btn btn-icon btn-edit";
-        btnEdit.textContent = "Editar nome";
-        btnEdit.addEventListener("click", ()=>{
-          const novo = prompt("Novo nome para o inspetor:", name);
-          if(!novo) return;
-          const trimmed = novo.trim();
-          if(!trimmed) return;
-
-          // atualiza nome
-          inspectors[index] = trimmed;
-
-          // move foto, se tiver
-          if(inspectorPhotos[name]){
-            inspectorPhotos[trimmed] = inspectorPhotos[name];
-            delete inspectorPhotos[name];
-            savePhotosToLocalStorage();
-          }
-
-          saveInspectorsToFirestore();
-          renderInspectors();
-        });
-
-        const btnPhoto = document.createElement("button");
-        btnPhoto.className = "btn btn-icon btn-photo";
-        btnPhoto.textContent = "Alterar foto";
-        btnPhoto.addEventListener("click", ()=>{
-          currentPhotoTargetName = name;
-          document.getElementById("change-photo-input").click();
-        });
-
-        const btnDelete = document.createElement("button");
-        btnDelete.className = "btn btn-icon btn-delete";
-        btnDelete.textContent = "Remover";
-        btnDelete.addEventListener("click", ()=>{
-          if(!confirm(`Remover inspetor "${name}"?`)) return;
-          inspectors.splice(index, 1);
-          if(inspectorPhotos[name]){
-            delete inspectorPhotos[name];
-            savePhotosToLocalStorage();
-          }
-          saveInspectorsToFirestore();
-          renderInspectors();
-        });
-
-        actions.appendChild(btnEdit);
-        actions.appendChild(btnPhoto);
-        actions.appendChild(btnDelete);
-
-        card.appendChild(header);
-        card.appendChild(actions);
-        listDiv.appendChild(card);
-      });
-    }
-
-    // ====== HANDLERS ======
-    const nameInput  = document.getElementById("insp-name-input");
-    const photoInput = document.getElementById("insp-photo-input");
-    const btnAdd     = document.getElementById("btn-add-inspector");
-    const changePhotoInput = document.getElementById("change-photo-input");
-
-    let currentPhotoTargetName = null;
-
-    btnAdd.addEventListener("click", async ()=>{
-      const name = (nameInput.value || "").trim();
-      if(!name){
-        alert("Digite o nome do inspetor.");
-        return;
-      }
-
-      // se já existe, pergunta se quer sobrescrever
-      if(inspectors.includes(name)){
-        const ok = confirm("Já existe um inspetor com esse nome.\nDeseja atualizar a foto dele?");
-        if(!ok) return;
-      }else{
-        inspectors.push(name);
-      }
-
-      // foto opcional
-      const file = photoInput.files[0];
-      if(file){
-        try{
-          const dataUrl = await fileToDataUrl(file);
-          inspectorPhotos[name] = dataUrl;
-          savePhotosToLocalStorage();
-        }catch(e){
-          console.warn("Falha ao ler foto:", e);
-          alert("Não foi possível carregar a foto (arquivo inválido?).");
-        }
-      }
-
-      await saveInspectorsToFirestore();
-      nameInput.value = "";
-      photoInput.value = "";
-      renderInspectors();
-    });
-
-    changePhotoInput.addEventListener("change", async (e)=>{
-      const file = e.target.files[0];
-      if(!file || !currentPhotoTargetName){
-        e.target.value = "";
-        return;
-      }
-      try{
-        const dataUrl = await fileToDataUrl(file);
-        inspectorPhotos[currentPhotoTargetName] = dataUrl;
-        savePhotosToLocalStorage();
-        renderInspectors();
-      }catch(err){
-        console.error("Erro ao alterar foto:", err);
-        alert("Não foi possível alterar a foto.");
-      }
-      e.target.value = "";
-      currentPhotoTargetName = null;
-    });
-
-    // ====== INICIALIZAÇÃO ======
-    async function init(){
-      loadPhotosFromLocalStorage();
-      await loadInspectorsFromFirestore();
-      renderInspectors();
-    }
-
-    init();
-  </script>
+</div>
 </body>
 </html>
