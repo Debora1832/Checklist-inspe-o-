@@ -33,7 +33,7 @@ function selectSidebar(screenId) {
 }
 
 // =========================
-// RENDERIZAÇÃO BÁSICA
+– RENDERIZAÇÃO BÁSICA
 // =========================
 
 function renderInspectorSelect() {
@@ -155,10 +155,17 @@ function startChecklist() {
     return;
   }
 
+  // cria estado do checklist com os novos campos
   currentChecklistItems = currentChecklistPiece.items.map((it) => ({
     name: it.name,
     description: it.description,
-    status: null, // "OK" ou "NOK"
+    imageUrl: it.imageUrl || null, // imagem do item (Storage)
+    status: null,                 // "OK" ou "NOK"
+    motivo: "",                   // descrição da não conformidade
+    encaminhamento: "",           // "retrabalho" ou "aprovado_terceiro"
+    nomeTerceiro: "",             // se aprovado por terceiros
+    fotoFile: null,               // File (para upload)
+    fotoUrl: null                 // URL no Storage (opcional)
   }));
 
   document.getElementById("cl-piece-code").textContent =
@@ -176,36 +183,122 @@ function renderChecklistExecution() {
   box.innerHTML = "";
 
   currentChecklistItems.forEach((it, idx) => {
-    const div = document.createElement("div");
-    div.className = "check-item";
-    div.innerHTML = `
-      <div class="check-item-left">
-        <div class="check-item-title">${it.name}</div>
-        <div class="check-item-desc">${it.description || ""}</div>
+    const html = `
+      <div class="check-item">
+        <div class="check-item-left">
+          <div class="check-item-title">${it.name}</div>
+          <div class="check-item-desc">${it.description || ""}</div>
+          ${
+            it.imageUrl
+              ? `<img src="${it.imageUrl}" class="check-item-img" alt="Imagem do item" />`
+              : ""
+          }
+        </div>
+        <div class="check-item-actions">
+          <button class="btn-ok" data-idx="${idx}">OK</button>
+          <button class="btn-nok" data-idx="${idx}">NÃO OK</button>
+        </div>
       </div>
-      <div class="check-item-actions">
-        <button class="btn-ok">OK</button>
-        <button class="btn-nok">NÃO OK</button>
+
+      <div class="nok-extra" id="nok-extra-${idx}" style="${
+      it.status === "NOK" ? "" : "display:none"
+    }">
+        <div class="form-group">
+          <label>Descrição da não conformidade</label>
+          <textarea data-idx="${idx}" data-field="motivo" rows="2">${
+      it.motivo || ""
+    }</textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Foto da não conformidade</label>
+          <input type="file" accept="image/*" data-idx="${idx}" data-field="fotoFile">
+        </div>
+
+        <div class="form-group">
+          <label>Encaminhamento</label>
+          <div class="nok-options">
+            <label>
+              <input type="radio" name="enc-${idx}" value="retrabalho" ${
+      it.encaminhamento === "retrabalho" ? "checked" : ""
+    }>
+              Encaminhar para retrabalho
+            </label>
+            <label>
+              <input type="radio" name="enc-${idx}" value="aprovado_terceiro" ${
+      it.encaminhamento === "aprovado_terceiro" ? "checked" : ""
+    }>
+              Aprovado por terceiros
+            </label>
+          </div>
+        </div>
+
+        <div class="form-group" id="terceiro-box-${idx}" style="${
+      it.encaminhamento === "aprovado_terceiro" ? "" : "display:none"
+    }">
+          <label>Nome do aprovador</label>
+          <input type="text" data-idx="${idx}" data-field="nomeTerceiro" value="${
+      it.nomeTerceiro || ""
+    }">
+        </div>
       </div>
     `;
-    const [okBtn, nokBtn] = div.querySelectorAll("button");
-    okBtn.addEventListener("click", () => markItem(idx, "OK"));
-    nokBtn.addEventListener("click", () => markItem(idx, "NOK"));
+    box.insertAdjacentHTML("beforeend", html);
+  });
 
-    if (it.status === "OK") {
-      okBtn.style.opacity = "1";
-      nokBtn.style.opacity = "0.4";
-    } else if (it.status === "NOK") {
-      okBtn.style.opacity = "0.4";
-      nokBtn.style.opacity = "1";
-    }
+  // Botões OK / NÃO OK
+  box.querySelectorAll(".btn-ok").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const idx = parseInt(btn.dataset.idx, 10);
+      markItem(idx, "OK");
+    });
+  });
 
-    box.appendChild(div);
+  box.querySelectorAll(".btn-nok").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const idx = parseInt(btn.dataset.idx, 10);
+      markItem(idx, "NOK");
+    });
+  });
+
+  // Textareas / inputs de texto (motivo, nomeTerceiro)
+  box.querySelectorAll("textarea[data-idx], input[type='text'][data-idx]")
+    .forEach((el) => {
+      el.addEventListener("input", (e) => {
+        const idx = parseInt(e.target.dataset.idx, 10);
+        const field = e.target.dataset.field;
+        currentChecklistItems[idx][field] = e.target.value;
+      });
+    });
+
+  // Input de arquivo (foto)
+  box.querySelectorAll("input[type='file'][data-idx]").forEach((el) => {
+    el.addEventListener("change", (e) => {
+      const idx = parseInt(e.target.dataset.idx, 10);
+      const file = e.target.files[0] || null;
+      currentChecklistItems[idx].fotoFile = file;
+    });
+  });
+
+  // Radios de encaminhamento
+  box.querySelectorAll("input[type='radio'][name^='enc-']").forEach((el) => {
+    el.addEventListener("change", (e) => {
+      const idx = parseInt(e.target.name.split("-")[1], 10);
+      currentChecklistItems[idx].encaminhamento = e.target.value;
+      renderChecklistExecution(); // re-render para mostrar / esconder nome do terceiro
+    });
   });
 }
 
 function markItem(index, status) {
   currentChecklistItems[index].status = status;
+  // Se colocar OK, limpa dados de NOK
+  if (status === "OK") {
+    currentChecklistItems[index].motivo = "";
+    currentChecklistItems[index].encaminhamento = "";
+    currentChecklistItems[index].nomeTerceiro = "";
+    currentChecklistItems[index].fotoFile = null;
+  }
   renderChecklistExecution();
 }
 
@@ -236,7 +329,11 @@ async function finishChecklist() {
     description: obs || "Checklist concluído.",
     items: currentChecklistItems.map((it) => ({
       status: it.status,
-      motivo: it.status === "NOK" ? "NOK registrado" : "",
+      motivo: it.motivo || "",
+      encaminhamento: it.encaminhamento || "",
+      nomeTerceiro: it.nomeTerceiro || "",
+      fotoFile: it.fotoFile || null,
+      fotoUrl: it.fotoUrl || null,
     })),
   };
 
@@ -244,382 +341,4 @@ async function finishChecklist() {
 
   if (window.fbApi && window.fbApi.saveInspection) {
     try {
-      const saved = await window.fbApi.saveInspection(record);
-      if (saved && saved.id) console.log("Inspeção salva:", saved.id);
-    } catch (e) {
-      console.warn("Falha ao salvar inspeção no Firebase:", e);
-    }
-  }
-
-  alert("Checklist finalizado!");
-  currentChecklistPiece = null;
-  currentChecklistItems = [];
-  document.getElementById("checklist-execution").classList.add("hide");
-  document.getElementById("obs-text").value = "";
-  updateDashboard();
-  updateReports();
-}
-
-// =========================
-// ADIÇÃO DE INSPETORES / PEÇAS / ITENS
-// =========================
-
-function addInspector() {
-  const nameInput = document.getElementById("insp-name-input");
-  const photoInput = document.getElementById("insp-photo-input");
-  const name = nameInput.value.trim();
-  if (!name) {
-    alert("Informe o nome do inspetor.");
-    return;
-  }
-
-  if (!inspectors.includes(name)) inspectors.push(name);
-  nameInput.value = "";
-  photoInput.value = "";
-
-  renderInspectorSelect();
-  renderInspectorsList();
-
-  if (window.fbApi && window.fbApi.setInspectors) {
-    window.fbApi
-      .setInspectors(inspectors)
-      .catch((e) => console.warn("Falha ao salvar inspetores:", e));
-  }
-}
-
-function addPiece() {
-  const code = document.getElementById("piece-code-input").value.trim();
-  const desc = document.getElementById("piece-desc-input").value.trim();
-
-  if (!code) {
-    alert("Informe o código da peça.");
-    return;
-  }
-
-  if (pieces.some((p) => p.code === code)) {
-    alert("Já existe uma peça com esse código.");
-    return;
-  }
-
-  const piece = {
-    code,
-    description: desc,
-    image: null,
-    imageUrl: null,
-    items: [],
-  };
-
-  pieces.push(piece);
-
-  document.getElementById("piece-code-input").value = "";
-  document.getElementById("piece-desc-input").value = "";
-  document.getElementById("piece-image-input").value = "";
-
-  renderPieceSelects();
-  renderPiecesList();
-
-  if (window.fbApi && window.fbApi.savePiece) {
-    window.fbApi
-      .savePiece(piece)
-      .catch((e) => console.warn("Falha ao salvar peça:", e));
-  }
-}
-
-function addItemToPiece() {
-  const sel = document.getElementById("piece-items-selector");
-  const idx = parseInt(sel.value, 10);
-  if (isNaN(idx)) {
-    alert("Selecione a peça para adicionar o item.");
-    return;
-  }
-
-  const piece = pieces[idx];
-  const name = document.getElementById("item-name-input").value.trim();
-  const desc = document.getElementById("item-desc-input").value.trim();
-
-  if (!name) {
-    alert("Informe o nome do item.");
-    return;
-  }
-
-  const item = {
-    name,
-    description: desc,
-    image: null,
-    imageUrl: null,
-  };
-
-  piece.items = piece.items || [];
-  piece.items.push(item);
-
-  document.getElementById("item-name-input").value = "";
-  document.getElementById("item-desc-input").value = "";
-  document.getElementById("item-image-input").value = "";
-
-  renderPiecesList();
-
-  if (window.fbApi && window.fbApi.savePiece) {
-    window.fbApi
-      .savePiece(piece)
-      .catch((e) => console.warn("Falha ao atualizar peça:", e));
-  }
-}
-
-// =========================
-// RELATÓRIOS / DASHBOARD
-// =========================
-
-function updateDashboard() {
-  const now = new Date();
-  const monthKey = `${now.getFullYear()}-${String(
-    now.getMonth() + 1
-  ).padStart(2, "0")}`;
-
-  const inspecMes = inspections.filter((i) =>
-    i.date.startsWith(monthKey)
-  );
-
-  document.getElementById("kpi-inspecoes-mes").textContent =
-    inspecMes.length;
-
-  let totalItens = 0;
-  let totalNok = 0;
-  const mapaPecas = {};
-
-  inspecMes.forEach((ins) => {
-    (ins.items || []).forEach((it) => {
-      totalItens++;
-      if (it.status === "NOK") {
-        totalNok++;
-        mapaPecas[ins.piece] = (mapaPecas[ins.piece] || 0) + 1;
-      }
-    });
-  });
-
-  const percentNok = totalItens ? (100 * totalNok) / totalItens : 0;
-  document.getElementById(
-    "kpi-percent-nok"
-  ).textContent = `${percentNok.toFixed(1)}%`;
-
-  const topPecas = Object.entries(mapaPecas)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 3)
-    .map(([pc, qt]) => `${pc}: ${qt} NOK`);
-
-  document.getElementById("kpi-top-pecas").innerHTML =
-    topPecas.join("<br>") || "-";
-
-  // Gráfico
-  const ok = totalItens - totalNok;
-  const data = {
-    labels: ["OK", "NÃO OK"],
-    datasets: [
-      {
-        data: [ok, totalNok],
-      },
-    ],
-  };
-
-  if (dashboardChart) {
-    dashboardChart.data = data;
-    dashboardChart.update();
-  } else {
-    const ctx = document.getElementById("dashboard-chart").getContext("2d");
-    dashboardChart = new Chart(ctx, {
-      type: "doughnut",
-      data,
-    });
-  }
-}
-
-function fillReportMonthSelect() {
-  const sel = document.getElementById("report-month-select");
-  sel.innerHTML = "";
-  const meses = new Set(
-    inspections.map((i) => i.date.substring(0, 7)) // YYYY-MM
-  );
-  const arr = Array.from(meses).sort().reverse();
-  arr.forEach((m) => {
-    const opt = document.createElement("option");
-    opt.value = m;
-    opt.textContent = m;
-    sel.appendChild(opt);
-  });
-}
-
-function updateReports() {
-  fillReportMonthSelect();
-
-  const sel = document.getElementById("report-month-select");
-  const chosen = sel.value || sel.options[0]?.value;
-  if (chosen) sel.value = chosen;
-
-  const insMes = inspections.filter((i) => i.date.startsWith(chosen || ""));
-  document.getElementById("total-inspecoes").textContent = insMes.length;
-
-  // preencher tabela
-  const tb = document.getElementById("reports-history-body");
-  tb.innerHTML = "";
-  insMes.forEach((i) => {
-    const tr = document.createElement("tr");
-    const dt = new Date(i.date);
-    tr.innerHTML = `
-      <td>${dt.toLocaleString()}</td>
-      <td>${i.inspector}</td>
-      <td>${i.piece}</td>
-      <td>${i.description || ""}</td>
-    `;
-    tb.appendChild(tr);
-  });
-
-  // gráfico (por peça)
-  const counts = {};
-  insMes.forEach((i) => {
-    counts[i.piece] = (counts[i.piece] || 0) + 1;
-  });
-
-  const labels = Object.keys(counts);
-  const data = labels.map((l) => counts[l]);
-
-  const chartData = {
-    labels,
-    datasets: [{ data }],
-  };
-
-  if (reportsChart) {
-    reportsChart.data = chartData;
-    reportsChart.update();
-  } else {
-    const ctx = document.getElementById("reports-chart").getContext("2d");
-    reportsChart = new Chart(ctx, {
-      type: "bar",
-      data: chartData,
-    });
-  }
-}
-
-function exportCsv() {
-  if (!inspections.length) {
-    alert("Não há inspeções para exportar.");
-    return;
-  }
-  const header = [
-    "data",
-    "inspetor",
-    "peca",
-    "descricao",
-    "total_itens",
-    "total_nok",
-  ];
-  const lines = [header.join(";")];
-
-  inspections.forEach((ins) => {
-    const total = ins.items?.length || 0;
-    const totalNok = (ins.items || []).filter(
-      (it) => it.status === "NOK"
-    ).length;
-    lines.push(
-      [
-        ins.date,
-        ins.inspector,
-        ins.piece,
-        (ins.description || "").replace(/;/g, ","),
-        total,
-        totalNok,
-      ].join(";")
-    );
-  });
-
-  const blob = new Blob([lines.join("\n")], {
-    type: "text/csv;charset=utf-8;",
-  });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "inspecoes.csv";
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
-// =========================
-// INICIALIZAÇÃO
-// =========================
-
-async function init() {
-  // Eventos sidebar
-  document.querySelectorAll(".sidebar-item").forEach((btn) => {
-    btn.addEventListener("click", () =>
-      selectSidebar(btn.dataset.screen)
-    );
-  });
-
-  document
-    .getElementById("piece-items-selector")
-    .addEventListener("change", renderPieceItemsList);
-
-  document
-    .getElementById("btn-add-inspector")
-    .addEventListener("click", addInspector);
-
-  document
-    .getElementById("btn-add-piece")
-    .addEventListener("click", addPiece);
-
-  document
-    .getElementById("btn-add-item")
-    .addEventListener("click", addItemToPiece);
-
-  document
-    .getElementById("btn-start-checklist")
-    .addEventListener("click", startChecklist);
-
-  document
-    .getElementById("btn-finish-checklist")
-    .addEventListener("click", finishChecklist);
-
-  document
-    .getElementById("btn-export-csv")
-    .addEventListener("click", exportCsv);
-
-  // Carregar dados do Firebase se disponível
-  if (window.fbApi && window.fbApi.loadAll) {
-    try {
-      const data = await window.fbApi.loadAll();
-      pieces = data.pieces || [];
-      inspectors = data.inspectors || [];
-      inspections = data.inspections || [];
-    } catch (e) {
-      console.warn("Falha ao carregar dados do Firebase:", e);
-    }
-  } else {
-    // Dados de exemplo mínimo
-    pieces = [
-      {
-        code: "597-2445#01",
-        description: "Longarina",
-        image: null,
-        imageUrl: null,
-        items: [
-          {
-            name: "Dimensão A (Ø)",
-            description: "Verificar diâmetro da furação.",
-          },
-          {
-            name: "Furo B posição",
-            description: "Conferir posição do furo de encaixe.",
-          },
-        ],
-      },
-    ];
-    inspectors = ["João Silva", "Maria Santos"];
-  }
-
-  renderInspectorSelect();
-  renderInspectorsList();
-  renderPieceSelects();
-  renderPiecesList();
-  updateDashboard();
-  updateReports();
-}
-
-document.addEventListener("DOMContentLoaded", init);
+      co
