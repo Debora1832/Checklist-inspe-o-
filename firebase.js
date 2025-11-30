@@ -1,5 +1,6 @@
 // firebase.js
-// Integração com Firestore + Storage e API global window.fbApi
+// Integração com Firebase (Auth anônima, Firestore e Storage)
+// Expondo API global window.fbApi para o app.js
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
 import {
@@ -18,22 +19,43 @@ import {
   uploadBytes,
   getDownloadURL,
 } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-storage.js";
+import {
+  getAuth,
+  signInAnonymously,
+  onAuthStateChanged,
+} from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
 
-/* ===== CONFIGURE AQUI SEU PROJETO ===== */
+// ==== CONFIG DO SEU PROJETO (a mesma que você já usava) ====
 const firebaseConfig = {
-  apiKey: "SUA_API_KEY",
-  authDomain: "SEU_DOMINIO.firebaseapp.com",
-  projectId: "SEU_PROJECT_ID",
-  storageBucket: "SEU_BUCKET.appspot.com",
-  messagingSenderId: "ID",
-  appId: "APP_ID",
+  apiKey: "AIzaSyCAAowsqkoUjIAPhSvq6dUlKMZGdXOO1b0",
+  authDomain: "magiuschecklist-9ad0f.firebaseapp.com",
+  projectId: "magiuschecklist-9ad0f",
+  storageBucket: "magiuschecklist-9ad0f.appspot.com",
+  messagingSenderId: "14669686712",
+  appId: "1:14669686712:web:1c205b1111cde18379114d",
+  measurementId: "G-GQS591WCBD",
 };
 
+// ==== INICIALIZAÇÃO ====
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const storage = getStorage(app);
+const auth = getAuth(app);
 
-// ===== Upload genérico para Storage =====
+// Auth anônima – importante para as regras do Firestore
+signInAnonymously(auth).catch((err) => {
+  console.error("Erro ao autenticar anonimamente:", err);
+});
+
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    console.log("Firebase auth OK, uid:", user.uid);
+  } else {
+    console.warn("Sem usuário autenticado.");
+  }
+});
+
+// ==== FUNÇÃO GENÉRICA DE UPLOAD PARA STORAGE ====
 async function uploadFileAndGetUrl(path, file) {
   if (!file) return null;
   const ref = sRef(storage, path);
@@ -43,7 +65,7 @@ async function uploadFileAndGetUrl(path, file) {
   return url;
 }
 
-// ===== Carregar tudo =====
+// ==== CARREGAR PEÇAS / INSPETORES / INSPEÇÕES ====
 async function loadAll() {
   const pieces = [];
   const inspectors = [];
@@ -68,7 +90,7 @@ async function loadAll() {
       });
     });
   } catch (e) {
-    console.warn("Erro ao carregar peças:", e);
+    console.error("Erro ao carregar peças:", e);
   }
 
   // Inspetores
@@ -82,7 +104,7 @@ async function loadAll() {
       });
     }
   } catch (e) {
-    console.warn("Erro ao carregar inspetores:", e);
+    console.error("Erro ao carregar inspetores:", e);
   }
 
   // Inspeções
@@ -105,13 +127,13 @@ async function loadAll() {
       });
     });
   } catch (e) {
-    console.warn("Erro ao carregar inspeções:", e);
+    console.error("Erro ao carregar inspeções:", e);
   }
 
   return { pieces, inspectors, inspections };
 }
 
-// ===== Salvar / atualizar peça =====
+// ==== SALVAR / ATUALIZAR PEÇA ====
 async function savePiece(piece) {
   if (!piece || !piece.code) return;
 
@@ -145,83 +167,4 @@ async function savePiece(piece) {
   }
 
   const ref = doc(db, "pieces", piece.code);
-  await setDoc(ref, {
-    code: piece.code,
-    description: piece.description || "",
-    imageUrl,
-    items: itemsToSave,
-  });
-}
-
-// ===== Deletar peça =====
-async function deletePiece(code) {
-  if (!code) return;
-  await deleteDoc(doc(db, "pieces", code));
-}
-
-// ===== Salvar inspetores (array de nomes) =====
-async function setInspectors(list) {
-  const ref = doc(db, "config", "inspectors");
-  await setDoc(ref, { list: list || [] });
-}
-
-// ===== Salvar inspeção (com upload da foto) =====
-async function saveInspection(inspec) {
-  const timeStamp = Date.now();
-  const itensToSave = [];
-
-  for (let i = 0; i < (inspec.items || []).length; i++) {
-    const it = inspec.items[i];
-    let fotoUrl = it.fotoUrl || null;
-
-    if (it.fotoFile instanceof File) {
-      const ext =
-        (it.fotoFile.name && it.fotoFile.name.split(".").pop()) || "jpg";
-      fotoUrl = await uploadFileAndGetUrl(
-        `inspections/${inspec.piece}/${timeStamp}_${i}.${ext}`,
-        it.fotoFile
-      );
-    }
-
-    itensToSave.push({
-      status: it.status,
-      motivo: it.motivo || "",
-      encaminhamento: it.encaminhamento || "",
-      nome_terceiro: it.nomeTerceiro || "",
-      fotoUrl,
-    });
-  }
-
-  const docData = {
-    date: inspec.date,
-    inspector: inspec.inspector,
-    piece: inspec.piece,
-    descricao: inspec.description || "",
-    itens: itensToSave,
-  };
-
-  const ref = await addDoc(collection(db, "inspections"), docData);
-  return {
-    id: ref.id,
-    date: docData.date,
-    inspector: docData.inspector,
-    piece: docData.piece,
-    description: docData.descricao,
-    items: itensToSave.map((it) => ({
-      status: it.status,
-      motivo: it.motivo,
-      encaminhamento: it.encaminhamento,
-      nomeTerceiro: it.nome_terceiro,
-      fotoUrl: it.fotoUrl,
-    })),
-  };
-}
-
-// ===== Expor API global =====
-window.fbApi = {
-  loadAll,
-  savePiece,
-  deletePiece,
-  setInspectors,
-  saveInspection,
-};
+  await setDo
