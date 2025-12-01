@@ -32,7 +32,7 @@
     background:#0b1a33;
     border-radius:6px;
     padding:24px 28px 26px;
-    max-width:360px;
+    max-width:380px;
     width:100%;
     box-shadow:0 8px 24px rgba(0,0,0,.45);
     color:#fff;
@@ -41,7 +41,7 @@
     display:flex;
     align-items:center;
     justify-content:space-between;
-    margin-bottom:16px;
+    margin-bottom:10px;
   }
   .login-logo{
     font-weight:800;
@@ -56,7 +56,26 @@
   .login-title{
     font-size:18px;
     font-weight:700;
-    margin:4px 0 12px;
+    margin:4px 0 10px;
+  }
+  .login-mode-toggle{
+    display:flex;
+    gap:8px;
+    margin-bottom:12px;
+  }
+  .login-mode-btn{
+    flex:1;
+    border:none;
+    border-radius:20px;
+    padding:6px 10px;
+    font-size:12px;
+    font-weight:600;
+    cursor:pointer;
+    background:rgba(255,255,255,.05);
+    color:#fff;
+  }
+  .login-mode-btn.active{
+    background:#1844F0;
   }
   .login-form-group{
     margin-bottom:10px;
@@ -79,7 +98,7 @@
   .login-help{
     font-size:11px;
     opacity:.75;
-    margin-bottom:12px;
+    margin-bottom:8px;
   }
   .login-error{
     font-size:11px;
@@ -108,7 +127,7 @@
     min-height:100vh;
   }
 
-  /* SIDEBAR LATERAL (nova identidade) */
+  /* SIDEBAR LATERAL (identidade Magius) */
   .sidebar{
     width:220px;
     background:#051224;
@@ -247,6 +266,40 @@
   .header-sub{
     font-size:11px;
     color:#cfe6ff;
+  }
+  .header-right-wrap{
+    display:flex;
+    align-items:center;
+    gap:24px;
+  }
+  .header-user{
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .header-user-avatar{
+    width:32px;
+    height:32px;
+    border-radius:50%;
+    background:#1844F0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:13px;
+    font-weight:700;
+  }
+  .header-user-info{
+    display:flex;
+    flex-direction:column;
+    font-size:11px;
+  }
+  .header-user-info span:nth-child(2){
+    font-size:13px;
+    font-weight:600;
+  }
+  .header-user-actions button{
+    padding:4px 8px;
+    font-size:11px;
   }
 
   .main-content{
@@ -493,14 +546,14 @@
     gap:10px;
   }
   .inspector-card{
-    width:190px;
+    width:210px;
     border-radius:4px;
     border:1px solid #d6ddeb;
     padding:10px;
     background:#f9fbff;
     display:flex;
     flex-direction:column;
-    align-items:center;
+    align-items:flex-start;
     gap:6px;
   }
   .inspector-avatar{
@@ -516,10 +569,14 @@
   .inspector-name{
     font-size:14px;
     font-weight:700;
-    text-align:center;
+  }
+  .inspector-pin-status{
+    font-size:11px;
+    color:#555;
   }
   .inspector-actions{
     display:flex;
+    flex-wrap:wrap;
     gap:6px;
     margin-top:4px;
   }
@@ -532,6 +589,7 @@
   }
   .btn-edit{background:#1844F0;color:#fff;}
   .btn-delete{background:#E81C24;color:#fff;}
+  .btn-reset-pin{background:#f0ad4e;color:#fff;}
 
   /* PEÇAS & ITENS */
 
@@ -701,20 +759,35 @@
       </div>
       <div class="login-title">Checklist de Inspeção</div>
       <div class="login-help">
-        Acesse com o PIN da Qualidade para abrir o sistema de checklist.
+        Acesse como <strong>Inspetor</strong> (PIN) ou <strong>Admin</strong> (senha da Qualidade).
       </div>
-      <div id="login-error" class="login-error">
-        PIN inválido. Tente novamente.
+
+      <div id="login-error" class="login-error"></div>
+
+      <div class="login-mode-toggle">
+        <button type="button" class="login-mode-btn active" data-mode="inspector">Inspetor</button>
+        <button type="button" class="login-mode-btn" data-mode="admin">Admin</button>
       </div>
+
       <form id="login-form">
-        <div class="login-form-group">
-          <label for="login-user">Usuário</label>
-          <input type="text" id="login-user" value="Administrador" readonly>
+        <div id="login-inspector-fields">
+          <div class="login-form-group">
+            <label for="login-insp-name">Nome do inspetor</label>
+            <input type="text" id="login-insp-name" placeholder="Ex: João Silva">
+          </div>
+          <div class="login-form-group">
+            <label for="login-insp-pin">PIN (4 dígitos)</label>
+            <input type="password" id="login-insp-pin" maxlength="4" inputmode="numeric" placeholder="••••">
+          </div>
         </div>
-        <div class="login-form-group">
-          <label for="login-pin">PIN</label>
-          <input type="password" id="login-pin" placeholder="Digite o PIN">
+
+        <div id="login-admin-fields" style="display:none;">
+          <div class="login-form-group">
+            <label for="login-admin-pin">Senha do administrador</label>
+            <input type="password" id="login-admin-pin" placeholder="Digite a senha">
+          </div>
         </div>
+
         <button type="submit" class="login-btn">Entrar</button>
       </form>
     </div>
@@ -767,9 +840,12 @@
             AJUDANDO A CONSTRUIR, CULTIVAR,<br>TRANSPORTAR E SEGUIR EM FRENTE
           </div>
         </div>
-        <div class="header-brand">
-          <div class="header-logo">MAGIUS</div>
-          <div class="header-sub">METALÚRGICA INDUSTRIAL</div>
+        <div class="header-right-wrap">
+          <div class="header-brand">
+            <div class="header-logo">MAGIUS</div>
+            <div class="header-sub">METALÚRGICA INDUSTRIAL</div>
+          </div>
+          <div id="header-user" class="header-user"></div>
         </div>
       </header>
 
@@ -780,12 +856,6 @@
           <div class="card">
             <h2 class="screen-title">Checklist de Inspeção</h2>
             <div class="grid-2">
-              <div class="form-group">
-                <label for="insp-selector">Inspetor</label>
-                <select id="insp-selector">
-                  <option value="" disabled selected>Selecionar inspetor</option>
-                </select>
-              </div>
               <div class="form-group">
                 <label for="piece-selector">Peça</label>
                 <select id="piece-selector">
@@ -1028,10 +1098,19 @@
         const inspSnap = await getDoc(inspRef);
         if (inspSnap && inspSnap.exists()) {
           const rawList = inspSnap.data().list || [];
-          // garante array de strings mesmo que tenha sido salvo como objeto
-          inspectors = rawList.map(i =>
-            typeof i === "string" ? i : (i.name || i.nome || String(i))
-          );
+          inspectors = rawList
+            .map(i => {
+              if (typeof i === "string") {
+                return { name: i, pinHash: "" };
+              } else {
+                return {
+                  name: i.name || "",
+                  pinHash: i.pinHash || "",
+                  photoUrl: i.photoUrl || ""
+                };
+              }
+            })
+            .filter(i => i.name);
         }
       } catch (err) {
         console.warn("Erro load inspectors:", err);
@@ -1143,21 +1222,11 @@
   <script>
   const ADMIN_PIN = "qualidade2025";
 
-  let pieces = [
-    {
-      code: "597-2445#01",
-      description: "Longarina",
-      image: null,
-      imageUrl: null,
-      items: [
-        { name: "Dimensão A (Ø)", description: "Verificar diâmetro da furação.", image: null, imageUrl: null },
-        { name: "Furo B posição", description: "Conferir posição do furo de encaixe.", image: null, imageUrl: null }
-      ]
-    }
-  ];
-  let inspectors = ["João Silva","Maria Santos"];
-  let inspectorPhotos = {};
+  // Estado principal
+  let pieces = [];
+  let inspectors = []; // { name, pinHash, photoUrl? }
   let inspections = [];
+  let inspectorPhotos = {}; // nome -> base64 local
 
   let currentChecklistPiece = null;
   let checklistItemStates = [];
@@ -1165,6 +1234,19 @@
   let reportsChart = null;
   let dashboardChart = null;
 
+  let currentUser = null; // { role: "admin"|"inspector", name: string }
+  window._appDataLoaded = false;
+
+  // Util: hash SHA-256 para PIN
+  async function hashString(str){
+    const enc = new TextEncoder();
+    const data = enc.encode(str);
+    const digest = await crypto.subtle.digest("SHA-256", data);
+    const bytes = Array.from(new Uint8Array(digest));
+    return bytes.map(b=>b.toString(16).padStart(2,"0")).join("");
+  }
+
+  // Navegação entre telas
   function selectSidebar(screenId){
     document.querySelectorAll(".sidebar-item").forEach(btn=>{
       btn.classList.toggle("active", btn.dataset.screen===screenId);
@@ -1181,6 +1263,7 @@
   }
   window.selectSidebar = selectSidebar;
 
+  // Modal
   function showModal(html){
     const overlay = document.getElementById("modal-overlay");
     const box = document.getElementById("modal-box");
@@ -1209,38 +1292,124 @@
     `);
   }
 
-  function renderChecklistSelectors(){
-    const inspSel = document.getElementById("insp-selector");
-    inspSel.innerHTML = '<option value="" disabled selected>Selecionar inspetor</option>' +
-      inspectors.map(n=>`<option value="${n}">${n}</option>`).join("");
-
-    const pieceSel = document.getElementById("piece-selector");
-    pieceSel.innerHTML = '<option value="" disabled selected>Selecionar peça</option>' +
-      pieces.map(p=>`<option value="${p.code}">${p.code}</option>`).join("");
-
-    document.getElementById("checklist-execution").classList.add("hide");
-  }
-
-  function startChecklist(){
-    const insp = document.getElementById("insp-selector").value;
-    const pieceCode = document.getElementById("piece-selector").value;
-    if(!insp || !pieceCode){
-      alert("Selecione inspetor e peça.");
+  // Header - usuário logado
+  function updateHeaderUser(){
+    const container = document.getElementById("header-user");
+    if(!container){ return; }
+    if(!currentUser){
+      container.innerHTML = "";
       return;
     }
-    currentChecklistPiece = pieces.find(p=>p.code===pieceCode);
-    if(!currentChecklistPiece){
-      alert("Peça não encontrada.");
-      return;
+    const initials = currentUser.name
+      .split(" ")
+      .map(p=>p[0])
+      .join("")
+      .slice(0,2)
+      .toUpperCase();
+    const roleLabel = currentUser.role === "admin" ? "Admin" : "Inspetor";
+
+    container.innerHTML = `
+      <div class="header-user-avatar">${initials}</div>
+      <div class="header-user-info">
+        <span>${roleLabel}</span>
+        <span>${currentUser.name}</span>
+      </div>
+      <div class="header-user-actions">
+        <button class="btn-secondary" id="btn-change-pin">Alterar PIN</button>
+        <button class="btn-secondary" id="btn-logout">Sair</button>
+      </div>
+    `;
+
+    const btnLogout = document.getElementById("btn-logout");
+    if(btnLogout) btnLogout.onclick = logout;
+
+    const btnChange = document.getElementById("btn-change-pin");
+    if(btnChange){
+      if(currentUser.role === "inspector"){
+        btnChange.style.display="inline-block";
+        btnChange.onclick = openChangePinModal;
+      }else{
+        btnChange.style.display="none";
+      }
     }
-    checklistItemStates = (currentChecklistPiece.items||[]).map(()=>({
-      status:null,motivo:"",encaminhamento:"",nomeTerceiro:"",
-      fotoFile:null,fotoUrl:null
-    }));
-    renderChecklistExecution();
-    document.getElementById("checklist-execution").classList.remove("hide");
   }
 
+  function logout(){
+    currentUser = null;
+    updateHeaderUser();
+    document.getElementById("app-root").style.display="none";
+    document.getElementById("login-screen").style.display="flex";
+
+    const loginError = document.getElementById("login-error");
+    if(loginError) loginError.style.display="none";
+  }
+
+  function openChangePinModal(){
+    if(!currentUser || currentUser.role!=="inspector") return;
+    const insp = inspectors.find(i=>i.name===currentUser.name);
+    if(!insp){
+      alert("Inspetor não encontrado.");
+      return;
+    }
+    showModal(`
+      <div class="modal-header">
+        <div class="modal-title">Alterar PIN</div>
+        <button class="modal-close-btn">&times;</button>
+      </div>
+      <div class="form-group" style="margin-top:10px;">
+        <label>PIN atual</label>
+        <input type="password" id="pin-current">
+      </div>
+      <div class="form-group">
+        <label>Novo PIN (4 dígitos)</label>
+        <input type="password" id="pin-new" maxlength="4">
+      </div>
+      <div class="form-group">
+        <label>Confirmar novo PIN</label>
+        <input type="password" id="pin-confirm" maxlength="4">
+      </div>
+      <div style="margin-top:12px;text-align:right;">
+        <button class="btn-secondary" onclick="closeModal()">Cancelar</button>
+        <button class="btn-primary" id="btn-save-pin">Salvar</button>
+      </div>
+    `);
+
+    document.getElementById("btn-save-pin").addEventListener("click",async()=>{
+      const current = document.getElementById("pin-current").value.trim();
+      const n1 = document.getElementById("pin-new").value.trim();
+      const n2 = document.getElementById("pin-confirm").value.trim();
+      if(!current || !n1 || !n2){
+        alert("Preencha todos os campos.");
+        return;
+      }
+      if(n1 !== n2){
+        alert("Novo PIN e confirmação não conferem.");
+        return;
+      }
+      if(n1.length !== 4){
+        alert("O PIN deve ter 4 dígitos.");
+        return;
+      }
+      const currentHash = await hashString(current);
+      if(insp.pinHash && insp.pinHash !== currentHash){
+        alert("PIN atual incorreto.");
+        return;
+      }
+      insp.pinHash = await hashString(n1);
+      if(window.fbApi && window.fbApi.setInspectors){
+        try{
+          await window.fbApi.setInspectors(inspectors);
+        }catch(e){
+          console.error("Erro salvar PIN:",e);
+        }
+      }
+      alert("PIN alterado com sucesso.");
+      closeModal();
+      renderInspectors();
+    });
+  }
+
+  // Helpers de imagem
   function getPieceImageSrc(piece){
     if(!piece) return null;
     if(piece.image instanceof File) return URL.createObjectURL(piece.image);
@@ -1255,6 +1424,38 @@
     if(!st) return null;
     if(st.fotoFile instanceof File) return URL.createObjectURL(st.fotoFile);
     return st.fotoUrl || null;
+  }
+
+  // Checklist
+  function renderChecklistSelectors(){
+    const pieceSel = document.getElementById("piece-selector");
+    pieceSel.innerHTML = '<option value="" disabled selected>Selecionar peça</option>' +
+      pieces.map(p=>`<option value="${p.code}">${p.code}</option>`).join("");
+
+    document.getElementById("checklist-execution").classList.add("hide");
+  }
+
+  function startChecklist(){
+    if(!currentUser || !currentUser.name){
+      alert("Nenhum usuário logado.");
+      return;
+    }
+    const pieceCode = document.getElementById("piece-selector").value;
+    if(!pieceCode){
+      alert("Selecione a peça.");
+      return;
+    }
+    currentChecklistPiece = pieces.find(p=>p.code===pieceCode);
+    if(!currentChecklistPiece){
+      alert("Peça não encontrada.");
+      return;
+    }
+    checklistItemStates = (currentChecklistPiece.items||[]).map(()=>({
+      status:null,motivo:"",encaminhamento:"",nomeTerceiro:"",
+      fotoFile:null,fotoUrl:null
+    }));
+    renderChecklistExecution();
+    document.getElementById("checklist-execution").classList.remove("hide");
   }
 
   function renderChecklistExecution(){
@@ -1436,10 +1637,11 @@
     }
 
     const now = new Date();
-    const insp = document.getElementById("insp-selector").value;
+    const inspName = currentUser ? currentUser.name : "";
+
     const inspecToSave = {
       date: now.toLocaleDateString("pt-BR"),
-      inspector: insp,
+      inspector: inspName,
       piece: currentChecklistPiece.code,
       descricao: "Inspeção realizada",
       itens: checklistItemStates.map(s=>({
@@ -1478,7 +1680,6 @@
     renderChecklistExecution();
 
     // resetar seleção e voltar ao início do checklist
-    document.getElementById("insp-selector").value = "";
     document.getElementById("piece-selector").value = "";
     currentChecklistPiece = null;
     checklistItemStates = [];
@@ -1486,6 +1687,7 @@
     window.scrollTo({top:0,behavior:"smooth"});
   }
 
+  // Inspetores (fotos locais)
   function loadInspectorPhotosFromLocalStorage(){
     try{
       const raw = localStorage.getItem("inspPhotos");
@@ -1500,8 +1702,11 @@
 
   function renderInspectors(){
     const listDiv = document.getElementById("inspectors-list");
+    if(!listDiv) return;
     listDiv.innerHTML = "";
-    inspectors.forEach(name=>{
+    inspectors.forEach(insp=>{
+      const name = insp.name;
+      const hasPin = !!insp.pinHash;
       const card = document.createElement("div");
       card.className="inspector-card";
       const photoSrc = inspectorPhotos[name] || "";
@@ -1511,9 +1716,13 @@
             name.split(" ").map(p=>p[0]).join("")}
         </div>
         <div class="inspector-name">${name}</div>
+        <div class="inspector-pin-status">PIN: ${hasPin ? "Cadastrado" : "Não definido"}</div>
         <div class="inspector-actions">
           <button class="btn-icon btn-edit" data-name="${name}">Editar</button>
           <button class="btn-icon btn-delete" data-name="${name}">Remover</button>
+          ${currentUser && currentUser.role==="admin"
+            ? `<button class="btn-icon btn-reset-pin" data-name="${name}" data-action="reset-pin">Resetar PIN</button>`
+            : ""}
         </div>
       `;
       listDiv.appendChild(card);
@@ -1528,7 +1737,7 @@
       btn.addEventListener("click",()=>{
         const name = btn.dataset.name;
         if(!confirm(`Remover inspetor "${name}"?`)) return;
-        inspectors = inspectors.filter(n=>n!==name);
+        inspectors = inspectors.filter(i=>i.name!==name);
         delete inspectorPhotos[name];
         saveInspectorPhotosToLocalStorage();
         renderInspectors();
@@ -1538,12 +1747,34 @@
         }
       });
     });
+    listDiv.querySelectorAll("button[data-action='reset-pin']").forEach(btn=>{
+      btn.addEventListener("click",async()=>{
+        const name = btn.dataset.name;
+        const insp = inspectors.find(i=>i.name===name);
+        if(!insp) return;
+        if(!confirm(`Resetar PIN do inspetor "${name}"?`)) return;
+        insp.pinHash = "";
+        if(window.fbApi && window.fbApi.setInspectors){
+          try{
+            await window.fbApi.setInspectors(inspectors);
+          }catch(e){
+            console.error("Erro ao resetar PIN:",e);
+          }
+        }
+        renderInspectors();
+        alert("PIN resetado. O próximo login deste inspetor irá cadastrar um novo PIN.");
+      });
+    });
 
-    document.getElementById("insp-name-input").value="";
-    document.getElementById("insp-photo-input").value="";
+    const nameInput = document.getElementById("insp-name-input");
+    const photoInput = document.getElementById("insp-photo-input");
+    if(nameInput) nameInput.value="";
+    if(photoInput) photoInput.value="";
   }
 
   function openEditInspectorModal(name){
+    const insp = inspectors.find(i=>i.name===name);
+    if(!insp) return;
     const currentPhoto = inspectorPhotos[name] || "";
     showModal(`
       <div class="modal-header">
@@ -1552,7 +1783,7 @@
       </div>
       <div class="form-group" style="margin-top:10px;">
         <label>Nome</label>
-        <input type="text" id="modal-insp-name" value="${name}">
+        <input type="text" id="modal-insp-name" value="${insp.name}">
       </div>
       <div class="form-group">
         <label>Foto</label>
@@ -1573,12 +1804,12 @@
       const file = document.getElementById("modal-insp-photo").files[0];
       if(!newName){ alert("Nome não pode ser vazio."); return; }
 
-      const idx = inspectors.indexOf(name);
-      if(idx>=0) inspectors[idx] = newName;
+      const oldName = insp.name;
+      insp.name = newName;
 
-      if(newName!==name){
-        inspectorPhotos[newName] = inspectorPhotos[name];
-        delete inspectorPhotos[name];
+      if(newName!==oldName){
+        inspectorPhotos[newName] = inspectorPhotos[oldName];
+        delete inspectorPhotos[oldName];
       }
 
       const finalize = ()=>{
@@ -1588,6 +1819,10 @@
         renderChecklistSelectors();
         if(window.fbApi && window.fbApi.setInspectors){
           window.fbApi.setInspectors(inspectors).catch(e=>console.error("Erro salvar insp Firebase",e));
+        }
+        if(currentUser && currentUser.role==="inspector" && currentUser.name===oldName){
+          currentUser.name = newName;
+          updateHeaderUser();
         }
       };
 
@@ -1604,9 +1839,11 @@
     });
   }
 
+  // Peças & itens
   function renderPieces(){
     const listDiv = document.getElementById("pieces-list");
     const selectItems = document.getElementById("piece-items-selector");
+    if(!listDiv || !selectItems) return;
     listDiv.innerHTML=""; selectItems.innerHTML="";
 
     pieces.forEach((p,idx)=>{
@@ -1705,6 +1942,7 @@
 
   function renderPieceItemsList(pieceIdx){
     const box = document.getElementById("piece-items-list");
+    if(!box) return;
     box.innerHTML="";
     const p = pieces[pieceIdx];
     if(!p) return;
@@ -1791,6 +2029,7 @@
     });
   }
 
+  // Gráficos / Relatórios
   function ensureReportsChart(){
     const ctx = document.getElementById("reports-chart")?.getContext("2d");
     if(!ctx) return;
@@ -1958,12 +2197,13 @@
   async function initAppAfterLogin(){
     loadInspectorPhotosFromLocalStorage();
 
-    if(window.fbApi && window.fbApi.loadAll){
+    if(window.fbApi && window.fbApi.loadAll && !window._appDataLoaded){
       try{
         const data = await window.fbApi.loadAll();
         if(data.pieces && data.pieces.length) pieces = data.pieces;
         if(data.inspectors && data.inspectors.length) inspectors = data.inspectors;
         if(data.inspections && data.inspections.length) inspections = data.inspections;
+        window._appDataLoaded = true;
       }catch(err){
         console.error("Erro carregar Firebase:",err);
       }
@@ -1976,10 +2216,13 @@
       const name = document.getElementById("insp-name-input").value.trim();
       const file = document.getElementById("insp-photo-input").files[0];
       if(!name){ alert("Informe o nome do inspetor."); return; }
-      if(inspectors.includes(name)){ alert("Já existe um inspetor com esse nome."); return; }
+      if(inspectors.some(i=>i.name.toLowerCase()===name.toLowerCase())){
+        alert("Já existe um inspetor com esse nome.");
+        return;
+      }
 
       const addInspector = (photoDataUrl)=>{
-        inspectors.push(name);
+        inspectors.push({ name, pinHash:"" });
         if(photoDataUrl) inspectorPhotos[name]=photoDataUrl;
         saveInspectorPhotosToLocalStorage();
         renderInspectors();
@@ -2058,25 +2301,104 @@
     renderDashboard();
   }
 
+  // Login
   document.addEventListener("DOMContentLoaded",()=>{
     const loginForm = document.getElementById("login-form");
-    const loginPin = document.getElementById("login-pin");
     const loginError = document.getElementById("login-error");
+    const modeButtons = document.querySelectorAll(".login-mode-btn");
+    let loginMode = "inspector";
+
+    modeButtons.forEach(btn=>{
+      btn.addEventListener("click",()=>{
+        loginMode = btn.dataset.mode;
+        modeButtons.forEach(b=>b.classList.toggle("active", b===btn));
+        document.getElementById("login-inspector-fields").style.display =
+          (loginMode==="inspector"?"block":"none");
+        document.getElementById("login-admin-fields").style.display =
+          (loginMode==="admin"?"block":"none");
+        loginError.style.display="none";
+      });
+    });
 
     loginForm.addEventListener("submit",async (e)=>{
       e.preventDefault();
-      const pin = loginPin.value.trim();
-      if(pin !== ADMIN_PIN){
-        loginError.style.display="block";
-        loginPin.focus();
-        loginPin.select();
-        return;
-      }
       loginError.style.display="none";
-      document.getElementById("login-screen").style.display="none";
-      document.getElementById("app-root").style.display="flex";
+      loginError.textContent = "";
 
-      await initAppAfterLogin();
+      if(loginMode==="admin"){
+        const pin = document.getElementById("login-admin-pin").value.trim();
+        if(pin !== ADMIN_PIN){
+          loginError.textContent="Senha de administrador inválida.";
+          loginError.style.display="block";
+          return;
+        }
+        currentUser = { role:"admin", name:"Administrador" };
+        document.getElementById("login-screen").style.display="none";
+        document.getElementById("app-root").style.display="flex";
+        updateHeaderUser();
+        await initAppAfterLogin();
+      }else{
+        const name = document.getElementById("login-insp-name").value.trim();
+        const pin = document.getElementById("login-insp-pin").value.trim();
+        if(!name || !pin){
+          loginError.textContent="Informe nome e PIN.";
+          loginError.style.display="block";
+          return;
+        }
+        if(pin.length !== 4){
+          loginError.textContent="O PIN deve ter 4 dígitos.";
+          loginError.style.display="block";
+          return;
+        }
+
+        try{
+          // carregar dados se ainda não carregou
+          if(window.fbApi && window.fbApi.loadAll && !window._appDataLoaded){
+            const data = await window.fbApi.loadAll();
+            if(data.pieces && data.pieces.length) pieces = data.pieces;
+            if(data.inspectors && data.inspectors.length) inspectors = data.inspectors;
+            if(data.inspections && data.inspections.length) inspections = data.inspections;
+            window._appDataLoaded = true;
+          }
+
+          let insp = inspectors.find(i=>i.name.toLowerCase()===name.toLowerCase());
+          if(!insp){
+            loginError.textContent = "Inspetor não encontrado. Solicite cadastro à Qualidade.";
+            loginError.style.display="block";
+            return;
+          }
+
+          const pinHash = await hashString(pin);
+          if(!insp.pinHash){
+            if(!confirm(`Nenhum PIN cadastrado para "${insp.name}". Deseja cadastrar este PIN agora?`)){
+              return;
+            }
+            insp.pinHash = pinHash;
+            if(window.fbApi && window.fbApi.setInspectors){
+              try{
+                await window.fbApi.setInspectors(inspectors);
+              }catch(err){
+                console.error("Erro salvar PIN:",err);
+              }
+            }
+          }else if(insp.pinHash !== pinHash){
+            loginError.textContent="PIN inválido.";
+            loginError.style.display="block";
+            return;
+          }
+
+          currentUser = { role:"inspector", name: insp.name };
+          document.getElementById("login-screen").style.display="none";
+          document.getElementById("app-root").style.display="flex";
+          updateHeaderUser();
+          await initAppAfterLogin();
+
+        }catch(err){
+          console.error("Erro login inspetor:",err);
+          loginError.textContent="Erro ao validar PIN. Tente novamente.";
+          loginError.style.display="block";
+        }
+      }
     });
   });
   </script>
