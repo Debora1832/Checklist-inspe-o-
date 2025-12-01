@@ -31,8 +31,8 @@
   .login-card{
     background:#0b1a33;
     border-radius:6px;
-    padding:24px 28px 26px;
-    max-width:380px;
+    padding:28px 32px 30px;
+    max-width:460px;
     width:100%;
     box-shadow:0 8px 24px rgba(0,0,0,.45);
     color:#fff;
@@ -86,7 +86,8 @@
     display:block;
     margin-bottom:4px;
   }
-  .login-form-group input{
+  .login-form-group input,
+  .login-form-group select{
     width:100%;
     padding:7px 9px;
     border-radius:4px;
@@ -772,8 +773,10 @@
       <form id="login-form">
         <div id="login-inspector-fields">
           <div class="login-form-group">
-            <label for="login-insp-name">Nome do inspetor</label>
-            <input type="text" id="login-insp-name" placeholder="Ex: João Silva">
+            <label for="login-insp-select">Inspetor</label>
+            <select id="login-insp-select">
+              <option value="" disabled selected>Selecione o inspetor</option>
+            </select>
           </div>
           <div class="login-form-group">
             <label for="login-insp-pin">PIN (4 dígitos)</label>
@@ -1246,6 +1249,17 @@
     return bytes.map(b=>b.toString(16).padStart(2,"0")).join("");
   }
 
+  // Render select de inspetores no login
+  function renderLoginInspectorSelect(){
+    const sel = document.getElementById("login-insp-select");
+    if(!sel) return;
+    sel.innerHTML =
+      '<option value="" disabled selected>Selecione o inspetor</option>' +
+      inspectors
+        .map(i=>`<option value="${i.name}">${i.name}</option>`)
+        .join("");
+  }
+
   // Navegação entre telas
   function selectSidebar(screenId){
     document.querySelectorAll(".sidebar-item").forEach(btn=>{
@@ -1429,10 +1443,12 @@
   // Checklist
   function renderChecklistSelectors(){
     const pieceSel = document.getElementById("piece-selector");
+    if(!pieceSel) return;
     pieceSel.innerHTML = '<option value="" disabled selected>Selecionar peça</option>' +
       pieces.map(p=>`<option value="${p.code}">${p.code}</option>`).join("");
 
-    document.getElementById("checklist-execution").classList.add("hide");
+    const exec = document.getElementById("checklist-execution");
+    if(exec) exec.classList.add("hide");
   }
 
   function startChecklist(){
@@ -1680,10 +1696,12 @@
     renderChecklistExecution();
 
     // resetar seleção e voltar ao início do checklist
-    document.getElementById("piece-selector").value = "";
+    const pieceSel = document.getElementById("piece-selector");
+    if(pieceSel) pieceSel.value = "";
     currentChecklistPiece = null;
     checklistItemStates = [];
-    document.getElementById("checklist-execution").classList.add("hide");
+    const exec = document.getElementById("checklist-execution");
+    if(exec) exec.classList.add("hide");
     window.scrollTo({top:0,behavior:"smooth"});
   }
 
@@ -1742,6 +1760,7 @@
         saveInspectorPhotosToLocalStorage();
         renderInspectors();
         renderChecklistSelectors();
+        renderLoginInspectorSelect();
         if(window.fbApi && window.fbApi.setInspectors){
           window.fbApi.setInspectors(inspectors).catch(e=>console.error("Erro salvar insp Firebase",e));
         }
@@ -1770,6 +1789,9 @@
     const photoInput = document.getElementById("insp-photo-input");
     if(nameInput) nameInput.value="";
     if(photoInput) photoInput.value="";
+
+    // Atualiza também o select da tela de login
+    renderLoginInspectorSelect();
   }
 
   function openEditInspectorModal(name){
@@ -2204,6 +2226,7 @@
         if(data.inspectors && data.inspectors.length) inspectors = data.inspectors;
         if(data.inspections && data.inspections.length) inspections = data.inspections;
         window._appDataLoaded = true;
+        renderLoginInspectorSelect();
       }catch(err){
         console.error("Erro carregar Firebase:",err);
       }
@@ -2320,6 +2343,22 @@
       });
     });
 
+    // pré-carrega dados (inclui inspetores) para preencher o select do login
+    (async ()=>{
+      if(window.fbApi && window.fbApi.loadAll && !window._appDataLoaded){
+        try{
+          const data = await window.fbApi.loadAll();
+          if(data.pieces && data.pieces.length) pieces = data.pieces;
+          if(data.inspectors && data.inspectors.length) inspectors = data.inspectors;
+          if(data.inspections && data.inspections.length) inspections = data.inspections;
+          window._appDataLoaded = true;
+          renderLoginInspectorSelect();
+        }catch(err){
+          console.error("Erro carregar dados iniciais:",err);
+        }
+      }
+    })();
+
     loginForm.addEventListener("submit",async (e)=>{
       e.preventDefault();
       loginError.style.display="none";
@@ -2338,10 +2377,11 @@
         updateHeaderUser();
         await initAppAfterLogin();
       }else{
-        const name = document.getElementById("login-insp-name").value.trim();
+        const sel = document.getElementById("login-insp-select");
+        const name = (sel && sel.value) ? sel.value.trim() : "";
         const pin = document.getElementById("login-insp-pin").value.trim();
         if(!name || !pin){
-          loginError.textContent="Informe nome e PIN.";
+          loginError.textContent="Selecione o inspetor e informe o PIN.";
           loginError.style.display="block";
           return;
         }
@@ -2352,18 +2392,19 @@
         }
 
         try{
-          // carregar dados se ainda não carregou
+          // garantir que dados foram carregados
           if(window.fbApi && window.fbApi.loadAll && !window._appDataLoaded){
             const data = await window.fbApi.loadAll();
             if(data.pieces && data.pieces.length) pieces = data.pieces;
             if(data.inspectors && data.inspectors.length) inspectors = data.inspectors;
             if(data.inspections && data.inspections.length) inspections = data.inspections;
             window._appDataLoaded = true;
+            renderLoginInspectorSelect();
           }
 
-          let insp = inspectors.find(i=>i.name.toLowerCase()===name.toLowerCase());
+          let insp = inspectors.find(i=>i.name === name);
           if(!insp){
-            loginError.textContent = "Inspetor não encontrado. Solicite cadastro à Qualidade.";
+            loginError.textContent = "Inspetor não encontrado.";
             loginError.style.display="block";
             return;
           }
