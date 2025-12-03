@@ -4,325 +4,68 @@
   <meta charset="utf-8" />
   <title>Magius - Sistema de Checklist de Inspeção</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <!-- Chart.js para gráficos -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
-
-  <!-- ESTILOS (CSS) -->
   <style>
   *{box-sizing:border-box;}
+  body{margin:0;font-family:Arial,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#051224;color:#fff;}
+  .login-screen{min-height:100vh;background:#051224;display:flex;align-items:center;justify-content:center;padding:16px;}
+  .login-card{background:linear-gradient(180deg,#07162a,#0b1a33);border-radius:12px;padding:34px 40px;width:720px;max-width:96%;box-shadow:0 30px 80px rgba(3,10,20,0.7), 0 8px 28px rgba(24,68,240,0.12);color:#fff;border:1px solid rgba(255,255,255,0.03);}
+  .login-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+  .login-logo{font-weight:900;font-size:26px;letter-spacing:.08em;}
+  .login-sub{font-size:12px;opacity:.85;text-transform:uppercase;}
+  .login-title{font-size:20px;font-weight:700;margin:6px 0 12px;}
+  .login-mode-toggle{display:flex;gap:10px;margin-bottom:14px;}
+  .login-mode-btn{flex:1;border:none;border-radius:22px;padding:10px 12px;font-size:13px;font-weight:700;cursor:pointer;background:rgba(255,255,255,.03);color:#cfe6ff;transition:all .18s ease;}
+  .login-mode-btn.active{background:#1844F0;color:#fff;box-shadow:0 8px 20px rgba(24,68,240,0.18);}
+  .login-form-group{margin-bottom:12px;}
+  .login-form-group label{font-size:13px;font-weight:700;display:block;margin-bottom:6px;color:rgba(255,255,255,0.9);}
+  .login-form-group input,.login-form-group select{width:100%;padding:12px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);background:rgba(0,0,0,0.28);color:#fff;font-size:15px;outline:none;}
+  .login-form-group select{appearance:none;background-image: linear-gradient(45deg, transparent 50%, rgba(255,255,255,0.9) 50%), linear-gradient(135deg, rgba(255,255,255,0.9) 50%, transparent 50%);background-position: calc(100% - 18px) calc(1em + 2px), calc(100% - 13px) calc(1em + 2px);background-size: 8px 8px,8px 8px;background-repeat: no-repeat,no-repeat;}
+  .login-help{font-size:13px;opacity:.85;margin-bottom:10px;color:rgba(255,255,255,0.85);}
+  .login-error{font-size:13px;color:#ffb3b3;margin-bottom:8px;display:none;}
+  .login-btn{width:100%;border:none;border-radius:8px;padding:12px 14px;font-size:16px;font-weight:800;cursor:pointer;background:#1844F0;color:#fff;box-shadow:0 12px 28px rgba(24,68,240,0.18);}
+  .login-btn:hover{background:#2550ff;}
 
-  body{
-    margin:0;
-    font-family:Arial,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-    background:#051224; /* deixei o fundo mais escuro para destacar o card */
-    color:#fff;
-  }
-
-  /* TELA DE LOGIN */
-  .login-screen{
-    min-height:100vh;
-    background:#051224;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    padding:16px;
-  }
-  /* === ALTERAÇÃO PRINCIPAL: card maior e mais visível === */
-  .login-card{
-    background:linear-gradient(180deg,#07162a,#0b1a33);
-    border-radius:12px;
-    padding:34px 40px;
-    width:720px;            /* aumentado para o tamanho desejado */
-    max-width:96%;
-    box-shadow:0 30px 80px rgba(3,10,20,0.7), 0 8px 28px rgba(24,68,240,0.12);
-    color:#fff;
-    border:1px solid rgba(255,255,255,0.03);
-  }
-  .login-header{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    margin-bottom:10px;
-  }
-  .login-logo{
-    font-weight:900;
-    font-size:26px;
-    letter-spacing:.08em;
-  }
-  .login-sub{
-    font-size:12px;
-    opacity:.85;
-    text-transform:uppercase;
-  }
-  .login-title{
-    font-size:20px;
-    font-weight:700;
-    margin:6px 0 12px;
-  }
-  .login-mode-toggle{
-    display:flex;
-    gap:10px;
-    margin-bottom:14px;
-  }
-  .login-mode-btn{
-    flex:1;
-    border:none;
-    border-radius:22px;
-    padding:10px 12px;
-    font-size:13px;
-    font-weight:700;
-    cursor:pointer;
-    background:rgba(255,255,255,.03);
-    color:#cfe6ff;
-    transition:all .18s ease;
-  }
-  .login-mode-btn.active{
-    background:#1844F0;
-    color:#fff;
-    box-shadow:0 8px 20px rgba(24,68,240,0.18);
-  }
-  .login-form-group{
-    margin-bottom:12px;
-  }
-  .login-form-group label{
-    font-size:13px;
-    font-weight:700;
-    display:block;
-    margin-bottom:6px;
-    color:rgba(255,255,255,0.9);
-  }
-  /* deixei o select mais alto e visível */
-  .login-form-group input,
-  .login-form-group select{
-    width:100%;
-    padding:12px 12px;
-    border-radius:8px;
-    border:1px solid rgba(255,255,255,0.06);
-    background:rgba(0,0,0,0.28);
-    color:#fff;
-    font-size:15px;
-    outline:none;
-  }
-  .login-form-group select{
-    appearance:none;
-    background-image: linear-gradient(45deg, transparent 50%, rgba(255,255,255,0.9) 50%),
-                      linear-gradient(135deg, rgba(255,255,255,0.9) 50%, transparent 50%);
-    background-position: calc(100% - 18px) calc(1em + 2px), calc(100% - 13px) calc(1em + 2px);
-    background-size: 8px 8px,8px 8px;
-    background-repeat: no-repeat,no-repeat;
-  }
-  .login-help{
-    font-size:13px;
-    opacity:.85;
-    margin-bottom:10px;
-    color:rgba(255,255,255,0.85);
-  }
-  .login-error{
-    font-size:13px;
-    color:#ffb3b3;
-    margin-bottom:8px;
-    display:none;
-  }
-  .login-btn{
-    width:100%;
-    border:none;
-    border-radius:8px;
-    padding:12px 14px;
-    font-size:16px;
-    font-weight:800;
-    cursor:pointer;
-    background:#1844F0;
-    color:#fff;
-    box-shadow:0 12px 28px rgba(24,68,240,0.18);
-  }
-  .login-btn:hover{
-    background:#2550ff;
-  }
-
-  /* LAYOUT PRINCIPAL - escondido até login */
-  .layout{
-    display:flex;
-    min-height:100vh;
-  }
-
-  /* SIDEBAR LATERAL (identidade Magius) */
-  .sidebar{
-    width:220px;
-    background:#051224;
-    color:#fff;
-    display:flex;
-    flex-direction:column;
-    padding:16px 12px;
-    box-shadow:4px 0 14px rgba(0,0,0,.35);
-  }
-
-  .sidebar-logo{
-    display:flex;
-    align-items:center;
-    gap:8px;
-    margin-bottom:18px;
-    padding:0 4px;
-  }
-  .sidebar-logo-mark{
-    width:30px;
-    height:30px;
-    border-radius:4px;
-    background:#1844F0;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-weight:800;
-    font-size:18px;
-  }
-  .sidebar-logo-text{
-    line-height:1.05;
-  }
-  .sidebar-logo-main{
-    font-weight:800;
-    font-size:15px;
-    letter-spacing:.08em;
-  }
-  .sidebar-logo-sub{
-    font-size:10px;
-    text-transform:uppercase;
-    opacity:.75;
-  }
-
-  .sidebar-menu{
-    display:flex;
-    flex-direction:column;
-    gap:2px;
-    margin-top:8px;
-  }
-  .sidebar-item{
-    border:none;
-    background:transparent;
-    color:#f0f4ff;
-    display:flex;
-    align-items:center;
-    gap:10px;
-    padding:8px 10px;
-    border-radius:3px;
-    cursor:pointer;
-    font-size:14px;
-    position:relative;
-  }
-  .sidebar-item::before{
-    content:"";
-    position:absolute;
-    left:0;
-    top:4px;
-    bottom:4px;
-    width:3px;
-    border-radius:2px;
-    background:transparent;
-  }
-  .sidebar-item:hover{
-    background:rgba(255,255,255,.05);
-  }
-  .sidebar-item.active{
-    background:rgba(255,255,255,.06);
-    color:#ffffff;
-  }
-  .sidebar-item.active::before{
-    background:#1844F0;
-  }
-  .sidebar-label{
-    flex:1;
-    text-align:left;
-  }
-
-  .sidebar-footer{
-    margin-top:auto;
-    font-size:10px;
-    opacity:0.8;
-    padding:8px 4px;
-    line-height:1.4;
-  }
-
-  /* MAIN / HEADER */
-
-  .main{
-    flex:1;
-    display:flex;
-    flex-direction:column;
-    background:#F4F6F9;
-    color:#333;
-  }
-  .top-header{
-    background:#051224;
-    color:#fff;
-    padding:10px 24px;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-  }
-  .header-left{
-    display:flex;
-    align-items:center;
-    gap:10px;
-  }
-  .header-circles{
-    display:flex;
-    gap:6px;
-  }
-  .header-circles span{
-    width:12px;height:12px;border-radius:50%;border:2px solid #fff;
-  }
-  .header-tagline{
-    font-size:11px;
-    font-weight:600;
-    text-transform:uppercase;
-  }
-  .header-brand{
-    text-align:right;
-  }
-  .header-logo{
-    font-size:20px;
-    font-weight:800;
-    letter-spacing:.12em;
-  }
-  .header-sub{
-    font-size:11px;
-    color:#cfe6ff;
-  }
-  .header-right-wrap{
-    display:flex;
-    align-items:center;
-    gap:24px;
-  }
-  .header-user{
-    display:flex;
-    align-items:center;
-    gap:8px;
-  }
-
-  .main-content{
-    padding:16px 24px 32px;
-  }
-
-  /* conteúdo (mantive seu CSS original para o restante, apenas cores ajustadas onde necessário) */
-  .card{
-    background:#fff;
-    border-radius:4px;
-    padding:16px 18px 18px;
-    box-shadow:0 1px 4px rgba(0,0,0,0.08);
-    margin-bottom:10px;
-    color:#111;
-  }
-  .screen-title{
-    margin:0 0 12px;
-    font-size:18px;
-    font-weight:700;
-  }
-
-  /* demais estilos mantidos (copiados / reduzidos para não deixar o arquivo muito longo novamente) */
+  .layout{display:flex;min-height:100vh;}
+  .sidebar{width:220px;background:#051224;color:#fff;display:flex;flex-direction:column;padding:16px 12px;box-shadow:4px 0 14px rgba(0,0,0,.35);}
+  .sidebar-logo{display:flex;align-items:center;gap:8px;margin-bottom:18px;padding:0 4px;}
+  .sidebar-logo-mark{width:30px;height:30px;border-radius:4px;background:#1844F0;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;}
+  .sidebar-logo-text{line-height:1.05;}
+  .sidebar-logo-main{font-weight:800;font-size:15px;letter-spacing:.08em;}
+  .sidebar-logo-sub{font-size:10px;text-transform:uppercase;opacity:.75;}
+  .sidebar-menu{display:flex;flex-direction:column;gap:2px;margin-top:8px;}
+  .sidebar-item{border:none;background:transparent;color:#f0f4ff;display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:3px;cursor:pointer;font-size:14px;position:relative;}
+  .sidebar-item::before{content:"";position:absolute;left:0;top:4px;bottom:4px;width:3px;border-radius:2px;background:transparent;}
+  .sidebar-item:hover{background:rgba(255,255,255,.05);}
+  .sidebar-item.active{background:rgba(255,255,255,.06);color:#ffffff;}
+  .sidebar-item.active::before{background:#1844F0;}
+  .sidebar-label{flex:1;text-align:left;}
+  .sidebar-footer{margin-top:auto;font-size:10px;opacity:0.8;padding:8px 4px;line-height:1.4;}
+  .main{flex:1;display:flex;flex-direction:column;background:#F4F6F9;color:#333;}
+  .top-header{background:#051224;color:#fff;padding:10px 24px;display:flex;justify-content:space-between;align-items:center;}
+  .main-content{padding:16px 24px 32px;}
+  .card{background:#fff;border-radius:4px;padding:16px 18px 18px;box-shadow:0 1px 4px rgba(0,0,0,0.08);margin-bottom:10px;color:#111;}
+  .screen-title{margin:0 0 12px;font-size:18px;font-weight:700;}
   .grid-2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 16px;}
+  .grid-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px 16px;}
   .mt-8{margin-top:8px;}
   .mt-16{margin-top:16px;}
   .hide{display:none!important;}
-  /* fim dos estilos */
+
+  /* elementos de checklist / listas (mantidos) */
+  .piece-image-box{height:220px;border-radius:4px;background:#f0f5fa;display:flex;align-items:center;justify-content:center;margin-top:8px;overflow:hidden;}
+  .inspectors-grid{display:flex;flex-wrap:wrap;gap:10px;}
+  .inspector-card{width:210px;border-radius:4px;border:1px solid #d6ddeb;padding:10px;background:#f9fbff;display:flex;flex-direction:column;align-items:flex-start;gap:6px;}
+  .inspector-avatar{width:72px;height:72px;border-radius:50%;background:#dce3f4;overflow:hidden;display:flex;align-items:center;justify-content:center;font-weight:700;color:#4b5a80;font-size:26px;}
+  .btn-primary,.btn-secondary{border:none;border-radius:4px;padding:8px 18px;font-size:14px;cursor:pointer;font-weight:600;}
+  .btn-primary{background:#1844F0;color:#fff;}
+  .btn-secondary{background:#fff;color:#1844F0;border:1px solid #1844F0;}
+  .btn-icon{border-radius:3px;border:none;padding:4px 8px;font-size:12px;cursor:pointer;}
+  .btn-edit{background:#1844F0;color:#fff;}
+  .btn-delete{background:#E81C24;color:#fff;}
+  .btn-reset-pin{background:#f0ad4e;color:#fff;}
+  .piece-row{display:flex;align-items:center;justify-content:space-between;border-radius:4px;padding:6px 8px;background:#f8faff;border:1px solid #dde3f3;margin-bottom:6px;}
+  .piece-row-left{display:flex;align-items:center;gap:8px;}
   </style>
 </head>
 <body>
@@ -354,7 +97,6 @@
         <div id="login-inspector-fields">
           <div class="login-form-group">
             <label for="login-insp-select">Inspetor</label>
-            <!-- select já presente: popula com renderLoginInspectorSelect() -->
             <select id="login-insp-select" required>
               <option value="" disabled selected>Carregando inspetores...</option>
             </select>
@@ -394,10 +136,10 @@
         <button class="sidebar-item active" data-screen="checklist" onclick="selectSidebar('checklist')">
           <span class="sidebar-label">Checklist</span>
         </button>
-        <button class="sidebar-item" data-screen="inspectors" onclick="selectSidebar('inspectors')">
+        <button class="sidebar-item" data-screen="inspectors" onclick="selectSidebar('inspectors')" data-admin-only>
           <span class="sidebar-label">Inspetores</span>
         </button>
-        <button class="sidebar-item" data-screen="pieces" onclick="selectSidebar('pieces')">
+        <button class="sidebar-item" data-screen="pieces" onclick="selectSidebar('pieces')" data-admin-only>
           <span class="sidebar-label">Peças & Itens</span>
         </button>
         <button class="sidebar-item" data-screen="dashboard" onclick="selectSidebar('dashboard')">
@@ -478,7 +220,8 @@
                 <input type="file" id="insp-photo-input" accept="image/*">
               </div>
             </div>
-            <button class="btn-primary" id="btn-add-inspector">Adicionar inspetor</button>
+            <!-- botão admin-only -->
+            <button class="btn-primary" id="btn-add-inspector" data-admin-only>Adicionar inspetor</button>
           </div>
 
           <div class="card mt-16">
@@ -505,7 +248,8 @@
                 <input type="file" id="piece-image-input" accept="image/*">
               </div>
             </div>
-            <button class="btn-primary" id="btn-add-piece">Adicionar peça</button>
+            <!-- botão admin-only -->
+            <button class="btn-primary" id="btn-add-piece" data-admin-only>Adicionar peça</button>
           </div>
 
           <div class="grid-2 mt-16">
@@ -533,7 +277,8 @@
                 <label for="item-image-input">Imagem do item</label>
                 <input type="file" id="item-image-input" accept="image/*">
               </div>
-              <button class="btn-primary" id="btn-add-item">Adicionar item</button>
+              <!-- botão admin-only -->
+              <button class="btn-primary" id="btn-add-item" data-admin-only>Adicionar item</button>
             </div>
           </div>
         </section>
@@ -589,12 +334,7 @@
             <h3 class="card-title">Histórico de inspeções</h3>
             <table class="history-table">
               <thead>
-                <tr>
-                  <th>Data</th>
-                  <th>Inspetor</th>
-                  <th>Peça</th>
-                  <th>Descrição</th>
-                </tr>
+                <tr><th>Data</th><th>Inspetor</th><th>Peça</th><th>Descrição</th></tr>
               </thead>
               <tbody id="reports-history-body"></tbody>
             </table>
@@ -613,12 +353,8 @@
   <!-- SCRIPT FIREBASE -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
-    import {
-      getFirestore, collection, doc, setDoc, addDoc, getDocs, getDoc, deleteDoc
-    } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
-    import {
-      getStorage, ref as sRef, uploadBytes, getDownloadURL
-    } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-storage.js";
+    import { getFirestore, collection, doc, setDoc, addDoc, getDocs, getDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
+    import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-storage.js";
     import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
 
     const firebaseConfig = {
@@ -665,64 +401,33 @@
             description: data.description,
             image: null,
             imageUrl: data.imageUrl || null,
-            items: (data.items || []).map(it => ({
-              name: it.name,
-              description: it.description,
-              image: null,
-              imageUrl: it.imageUrl || null
-            }))
+            items: (data.items || []).map(it => ({ name: it.name, description: it.description, image: null, imageUrl: it.imageUrl || null }))
           });
         });
-      } catch (err) {
-        console.warn("Erro load pieces:", err);
-      }
+      } catch (err) { console.warn("Erro load pieces:", err); }
 
       try {
         const inspRef = doc(db, "config", "inspectors");
         const inspSnap = await getDoc(inspRef);
         if (inspSnap && inspSnap.exists()) {
           const rawList = inspSnap.data().list || [];
-          inspectors = rawList
-            .map(i => {
-              if (typeof i === "string") {
-                return { name: i, pinHash: "" };
-              } else {
-                return {
-                  name: i.name || "",
-                  pinHash: i.pinHash || "",
-                  photoUrl: i.photoUrl || ""
-                };
-              }
-            })
-            .filter(i => i.name);
+          inspectors = rawList.map(i => {
+            if (typeof i === "string") return { name: i, pinHash: "" };
+            else return { name: i.name || "", pinHash: i.pinHash || "", photoUrl: i.photoUrl || "" };
+          }).filter(i => i.name);
         }
-      } catch (err) {
-        console.warn("Erro load inspectors:", err);
-      }
+      } catch (err) { console.warn("Erro load inspectors:", err); }
 
       try {
         const inspecSnap = await getDocs(collection(db, "inspections"));
         inspecSnap.docs.forEach(d => {
           const data = d.data();
           inspections.push({
-            id: d.id,
-            date: data.date,
-            inspector: data.inspector,
-            piece: data.piece,
-            descricao: data.descricao || "",
-            itens: (data.itens || []).map(it => ({
-              status: it.status,
-              motivo: it.motivo,
-              encaminhamento: it.encaminhamento,
-              nome_terceiro: it.nome_terceiro || "",
-              foto: null,
-              fotoUrl: it.fotoUrl || null
-            }))
+            id: d.id, date: data.date, inspector: data.inspector, piece: data.piece, descricao: data.descricao || "",
+            itens: (data.itens || []).map(it => ({ status: it.status, motivo: it.motivo, encaminhamento: it.encaminhamento, nome_terceiro: it.nome_terceiro || "", foto: null, fotoUrl: it.fotoUrl || null }))
           });
         });
-      } catch (err) {
-        console.warn("Erro load inspections:", err);
-      }
+      } catch (err) { console.warn("Erro load inspections:", err); }
 
       return { pieces, inspectors, inspections };
     }
@@ -742,30 +447,14 @@
           const ext = (it.image.name && it.image.name.split(".").pop()) || "jpg";
           itemImageUrl = await uploadFileAndGetUrl(`pieces/${piece.code}/items/${idx}_${Date.now()}.${ext}`, it.image);
         }
-        itemsToSave.push({
-          name: it.name,
-          description: it.description,
-          imageUrl: itemImageUrl
-        });
+        itemsToSave.push({ name: it.name, description: it.description, imageUrl: itemImageUrl });
       }
       const ref = doc(db, "pieces", piece.code);
-      await setDoc(ref, {
-        code: piece.code,
-        description: piece.description,
-        imageUrl,
-        items: itemsToSave
-      });
+      await setDoc(ref, { code: piece.code, description: piece.description, imageUrl, items: itemsToSave });
     }
 
-    async function deletePiece(code) {
-      if (!code) return;
-      await deleteDoc(doc(db, "pieces", code));
-    }
-
-    async function setInspectors(list) {
-      const ref = doc(db, "config", "inspectors");
-      await setDoc(ref, { list: list || [] });
-    }
+    async function deletePiece(code) { if (!code) return; await deleteDoc(doc(db, "pieces", code)); }
+    async function setInspectors(list) { const ref = doc(db, "config", "inspectors"); await setDoc(ref, { list: list || [] }); }
 
     async function saveInspection(inspec) {
       const timeStamp = Date.now();
@@ -775,26 +464,11 @@
         let fotoUrl = it.fotoUrl || null;
         if (it.foto instanceof File) {
           const ext = (it.foto.name && it.foto.name.split(".").pop()) || "jpg";
-          fotoUrl = await uploadFileAndGetUrl(
-            `inspections/${inspec.piece}/${timeStamp}_${idx}.${ext}`,
-            it.foto
-          );
+          fotoUrl = await uploadFileAndGetUrl(`inspections/${inspec.piece}/${timeStamp}_${idx}.${ext}`, it.foto);
         }
-        itensToSave.push({
-          status: it.status,
-          motivo: it.motivo,
-          encaminhamento: it.encaminhamento,
-          nome_terceiro: it.nome_terceiro || "",
-          fotoUrl
-        });
+        itensToSave.push({ status: it.status, motivo: it.motivo, encaminhamento: it.encaminhamento, nome_terceiro: it.nome_terceiro || "", fotoUrl });
       }
-      const docData = {
-        date: inspec.date,
-        inspector: inspec.inspector,
-        piece: inspec.piece,
-        descricao: inspec.descricao || "",
-        itens: itensToSave
-      };
+      const docData = { date: inspec.date, inspector: inspec.inspector, piece: inspec.piece, descricao: inspec.descricao || "", itens: itensToSave };
       const ref = await addDoc(collection(db, "inspections"), docData);
       return { id: ref.id, ...docData };
     }
@@ -805,51 +479,40 @@
   <!-- SCRIPT PRINCIPAL (UI) -->
   <script>
   const ADMIN_PIN = "qualidade2025";
+  let pieces = []; let inspectors = []; let inspections = []; let inspectorPhotos = {};
+  let currentChecklistPiece = null; let checklistItemStates = [];
+  let reportsChart = null; let dashboardChart = null;
+  let currentUser = null; window._appDataLoaded = false;
 
-  // Estado principal
-  let pieces = [];
-  let inspectors = []; // { name, pinHash, photoUrl? }
-  let inspections = [];
-  let inspectorPhotos = {}; // nome -> base64 local
-
-  let currentChecklistPiece = null;
-  let checklistItemStates = [];
-
-  let reportsChart = null;
-  let dashboardChart = null;
-
-  let currentUser = null; // { role: "admin"|"inspector", name: string }
-  window._appDataLoaded = false;
-
-  // Util: hash SHA-256 para PIN
   async function hashString(str){
-    const enc = new TextEncoder();
-    const data = enc.encode(str);
+    const enc = new TextEncoder(); const data = enc.encode(str);
     const digest = await crypto.subtle.digest("SHA-256", data);
     const bytes = Array.from(new Uint8Array(digest));
     return bytes.map(b=>b.toString(16).padStart(2,"0")).join("");
   }
 
-  // Render select de inspetores no login
-  function renderLoginInspectorSelect(){
-    const sel = document.getElementById("login-insp-select");
-    if(!sel) return;
-    sel.innerHTML =
-      '<option value="" disabled selected>Selecione o inspetor</option>' +
-      inspectors
-        .map(i=>`<option value="${i.name}">${i.name}</option>`)
-        .join("");
+  // Aplica permissões na UI (esconder elementos admin-only)
+  function applyPermissions(){
+    const adminOnly = document.querySelectorAll('[data-admin-only]');
+    const isAdmin = currentUser && currentUser.role === "admin";
+    adminOnly.forEach(el=>{
+      el.style.display = isAdmin ? "" : "none";
+    });
+
+    // Também esconder botões de editar/excluir gerados dinamicamente se não for admin
+    // Re-renderizar as áreas para garantir que botões gerados condicionalmente respeitem a permissão:
+    renderInspectors();
+    renderPieces();
   }
 
-  // Navegação entre telas
-  function selectSidebar(screenId){
-    document.querySelectorAll(".sidebar-item").forEach(btn=>{
-      btn.classList.toggle("active", btn.dataset.screen===screenId);
-    });
-    document.querySelectorAll(".screen").forEach(s=>{
-      s.classList.toggle("active", s.id===screenId);
-    });
+  function renderLoginInspectorSelect(){
+    const sel = document.getElementById("login-insp-select"); if(!sel) return;
+    sel.innerHTML = '<option value="" disabled selected>Selecione o inspetor</option>' + inspectors.map(i=>`<option value="${i.name}">${i.name}</option>`).join("");
+  }
 
+  function selectSidebar(screenId){
+    document.querySelectorAll(".sidebar-item").forEach(btn=>{ btn.classList.toggle("active", btn.dataset.screen===screenId); });
+    document.querySelectorAll(".screen").forEach(s=>{ s.classList.toggle("active", s.id===screenId); });
     if(screenId==="checklist") renderChecklistSelectors();
     if(screenId==="inspectors") renderInspectors();
     if(screenId==="pieces") renderPieces();
@@ -858,1019 +521,327 @@
   }
   window.selectSidebar = selectSidebar;
 
-  // Modal
   function showModal(html){
-    const overlay = document.getElementById("modal-overlay");
-    const box = document.getElementById("modal-box");
-    box.innerHTML = html;
-    overlay.style.display = "flex";
-    const closeBtn = box.querySelector(".modal-close-btn");
-    if(closeBtn) closeBtn.onclick = closeModal;
+    const overlay = document.getElementById("modal-overlay"); const box = document.getElementById("modal-box");
+    box.innerHTML = html; overlay.style.display = "flex";
+    const closeBtn = box.querySelector(".modal-close-btn"); if(closeBtn) closeBtn.onclick = closeModal;
     overlay.onclick = e=>{ if(e.target===overlay) closeModal(); };
   }
-  function closeModal(){
-    const overlay = document.getElementById("modal-overlay");
-    const box = document.getElementById("modal-box");
-    overlay.style.display="none";
-    box.innerHTML="";
-  }
-  function showImageModal(src){
-    if(!src) return;
-    showModal(`
-      <div class="modal-header">
-        <div class="modal-title">Visualizar imagem</div>
-        <button class="modal-close-btn">&times;</button>
-      </div>
-      <div style="margin-top:8px;text-align:center;">
-        <img src="${src}" style="max-width:100%;max-height:70vh;border-radius:6px;">
-      </div>
-    `);
-  }
+  function closeModal(){ document.getElementById("modal-overlay").style.display="none"; document.getElementById("modal-box").innerHTML=""; }
+  function showImageModal(src){ if(!src) return; showModal(`<div class="modal-header"><div class="modal-title">Visualizar imagem</div><button class="modal-close-btn">&times;</button></div><div style="margin-top:8px;text-align:center;"><img src="${src}" style="max-width:100%;max-height:70vh;border-radius:6px;"></div>`); }
 
-  // Header - usuário logado
   function updateHeaderUser(){
-    const container = document.getElementById("header-user");
-    if(!container){ return; }
-    if(!currentUser){
-      container.innerHTML = "";
-      return;
-    }
-    const initials = currentUser.name
-      .split(" ")
-      .map(p=>p[0])
-      .join("")
-      .slice(0,2)
-      .toUpperCase();
+    const container = document.getElementById("header-user"); if(!container) return;
+    if(!currentUser){ container.innerHTML=""; return; }
+    const initials = currentUser.name.split(" ").map(p=>p[0]).join("").slice(0,2).toUpperCase();
     const roleLabel = currentUser.role === "admin" ? "Admin" : "Inspetor";
-
-    container.innerHTML = `
-      <div class="header-user-avatar" style="background:#1844F0;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-weight:800">${initials}</div>
-      <div class="header-user-info" style="color:#fff;margin-left:8px;">
-        <span style="font-size:11px;opacity:0.85">${roleLabel}</span>
-        <span style="font-weight:700">${currentUser.name}</span>
-      </div>
-      <div style="margin-left:12px;">
-        <button class="btn-secondary" id="btn-change-pin">Alterar PIN</button>
-        <button class="btn-secondary" id="btn-logout">Sair</button>
-      </div>
-    `;
-
-    const btnLogout = document.getElementById("btn-logout");
-    if(btnLogout) btnLogout.onclick = logout;
-
+    container.innerHTML = `<div class="header-user-avatar" style="background:#1844F0;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-weight:800">${initials}</div>
+      <div class="header-user-info" style="color:#fff;margin-left:8px;"><span style="font-size:11px;opacity:0.85">${roleLabel}</span><span style="font-weight:700">${currentUser.name}</span></div>
+      <div style="margin-left:12px;"><button class="btn-secondary" id="btn-change-pin">Alterar PIN</button><button class="btn-secondary" id="btn-logout">Sair</button></div>`;
+    const btnLogout = document.getElementById("btn-logout"); if(btnLogout) btnLogout.onclick = logout;
     const btnChange = document.getElementById("btn-change-pin");
     if(btnChange){
-      if(currentUser.role === "inspector"){
-        btnChange.style.display="inline-block";
-        btnChange.onclick = openChangePinModal;
-      }else{
-        btnChange.style.display="none";
-      }
+      if(currentUser.role === "inspector"){ btnChange.style.display="inline-block"; btnChange.onclick = openChangePinModal; }
+      else btnChange.style.display="none";
     }
   }
 
-  function logout(){
-    currentUser = null;
-    updateHeaderUser();
-    document.getElementById("app-root").style.display="none";
-    document.getElementById("login-screen").style.display="flex";
-
-    const loginError = document.getElementById("login-error");
-    if(loginError) loginError.style.display="none";
-  }
+  function logout(){ currentUser = null; updateHeaderUser(); document.getElementById("app-root").style.display="none"; document.getElementById("login-screen").style.display="flex"; const loginError = document.getElementById("login-error"); if(loginError) loginError.style.display="none"; }
 
   function openChangePinModal(){
     if(!currentUser || currentUser.role!=="inspector") return;
-    const insp = inspectors.find(i=>i.name===currentUser.name);
-    if(!insp){
-      alert("Inspetor não encontrado.");
-      return;
-    }
-    showModal(`
-      <div class="modal-header">
-        <div class="modal-title">Alterar PIN</div>
-        <button class="modal-close-btn">&times;</button>
-      </div>
-      <div class="form-group" style="margin-top:10px;">
-        <label>PIN atual</label>
-        <input type="password" id="pin-current">
-      </div>
-      <div class="form-group">
-        <label>Novo PIN (4 dígitos)</label>
-        <input type="password" id="pin-new" maxlength="4">
-      </div>
-      <div class="form-group">
-        <label>Confirmar novo PIN</label>
-        <input type="password" id="pin-confirm" maxlength="4">
-      </div>
-      <div style="margin-top:12px;text-align:right;">
-        <button class="btn-secondary" onclick="closeModal()">Cancelar</button>
-        <button class="btn-primary" id="btn-save-pin">Salvar</button>
-      </div>
-    `);
-
+    const insp = inspectors.find(i=>i.name===currentUser.name); if(!insp){ alert("Inspetor não encontrado."); return; }
+    showModal(`<div class="modal-header"><div class="modal-title">Alterar PIN</div><button class="modal-close-btn">&times;</button></div>
+      <div class="form-group" style="margin-top:10px;"><label>PIN atual</label><input type="password" id="pin-current"></div>
+      <div class="form-group"><label>Novo PIN (4 dígitos)</label><input type="password" id="pin-new" maxlength="4"></div>
+      <div class="form-group"><label>Confirmar novo PIN</label><input type="password" id="pin-confirm" maxlength="4"></div>
+      <div style="margin-top:12px;text-align:right;"><button class="btn-secondary" onclick="closeModal()">Cancelar</button><button class="btn-primary" id="btn-save-pin">Salvar</button></div>`);
     document.getElementById("btn-save-pin").addEventListener("click",async()=>{
-      const current = document.getElementById("pin-current").value.trim();
-      const n1 = document.getElementById("pin-new").value.trim();
-      const n2 = document.getElementById("pin-confirm").value.trim();
-      if(!current || !n1 || !n2){
-        alert("Preencha todos os campos.");
-        return;
-      }
-      if(n1 !== n2){
-        alert("Novo PIN e confirmação não conferem.");
-        return;
-      }
-      if(n1.length !== 4){
-        alert("O PIN deve ter 4 dígitos.");
-        return;
-      }
+      const current = document.getElementById("pin-current").value.trim(); const n1 = document.getElementById("pin-new").value.trim(); const n2 = document.getElementById("pin-confirm").value.trim();
+      if(!current || !n1 || !n2){ alert("Preencha todos os campos."); return; }
+      if(n1 !== n2){ alert("Novo PIN e confirmação não conferem."); return; }
+      if(n1.length !== 4){ alert("O PIN deve ter 4 dígitos."); return; }
       const currentHash = await hashString(current);
-      if(insp.pinHash && insp.pinHash !== currentHash){
-        alert("PIN atual incorreto.");
-        return;
-      }
+      if(insp.pinHash && insp.pinHash !== currentHash){ alert("PIN atual incorreto."); return; }
       insp.pinHash = await hashString(n1);
-      if(window.fbApi && window.fbApi.setInspectors){
-        try{
-          await window.fbApi.setInspectors(inspectors);
-        }catch(e){
-          console.error("Erro salvar PIN:",e);
-        }
-      }
-      alert("PIN alterado com sucesso.");
-      closeModal();
-      renderInspectors();
+      if(window.fbApi && window.fbApi.setInspectors){ try{ await window.fbApi.setInspectors(inspectors); }catch(e){ console.error("Erro salvar PIN:",e); } }
+      alert("PIN alterado com sucesso."); closeModal(); renderInspectors();
     });
   }
 
-  // Helpers de imagem
-  function getPieceImageSrc(piece){
-    if(!piece) return null;
-    if(piece.image instanceof File) return URL.createObjectURL(piece.image);
-    return piece.imageUrl || null;
-  }
-  function getItemImageSrc(item){
-    if(!item) return null;
-    if(item.image instanceof File) return URL.createObjectURL(item.image);
-    return item.imageUrl || null;
-  }
-  function getStatePhotoSrc(st){
-    if(!st) return null;
-    if(st.fotoFile instanceof File) return URL.createObjectURL(st.fotoFile);
-    return st.fotoUrl || null;
-  }
+  function getPieceImageSrc(piece){ if(!piece) return null; if(piece.image instanceof File) return URL.createObjectURL(piece.image); return piece.imageUrl || null; }
+  function getItemImageSrc(item){ if(!item) return null; if(item.image instanceof File) return URL.createObjectURL(item.image); return item.imageUrl || null; }
+  function getStatePhotoSrc(st){ if(!st) return null; if(st.fotoFile instanceof File) return URL.createObjectURL(st.fotoFile); return st.fotoUrl || null; }
 
-  // Checklist
   function renderChecklistSelectors(){
-    const pieceSel = document.getElementById("piece-selector");
-    if(!pieceSel) return;
-    pieceSel.innerHTML = '<option value="" disabled selected>Selecionar peça</option>' +
-      pieces.map(p=>`<option value="${p.code}">${p.code}</option>`).join("");
-
-    const exec = document.getElementById("checklist-execution");
-    if(exec) exec.classList.add("hide");
+    const pieceSel = document.getElementById("piece-selector"); if(!pieceSel) return;
+    pieceSel.innerHTML = '<option value="" disabled selected>Selecionar peça</option>' + pieces.map(p=>`<option value="${p.code}">${p.code}</option>`).join("");
+    const exec = document.getElementById("checklist-execution"); if(exec) exec.classList.add("hide");
   }
 
   function startChecklist(){
-    if(!currentUser || !currentUser.name){
-      alert("Nenhum usuário logado.");
-      return;
-    }
-    const pieceCode = document.getElementById("piece-selector").value;
-    if(!pieceCode){
-      alert("Selecione a peça.");
-      return;
-    }
-    currentChecklistPiece = pieces.find(p=>p.code===pieceCode);
-    if(!currentChecklistPiece){
-      alert("Peça não encontrada.");
-      return;
-    }
-    checklistItemStates = (currentChecklistPiece.items||[]).map(()=>({
-      status:null,motivo:"",encaminhamento:"",nomeTerceiro:"",
-      fotoFile:null,fotoUrl:null
-    }));
-    renderChecklistExecution();
-    document.getElementById("checklist-execution").classList.remove("hide");
+    if(!currentUser || !currentUser.name){ alert("Nenhum usuário logado."); return; }
+    const pieceCode = document.getElementById("piece-selector").value; if(!pieceCode){ alert("Selecione a peça."); return; }
+    currentChecklistPiece = pieces.find(p=>p.code===pieceCode); if(!currentChecklistPiece){ alert("Peça não encontrada."); return; }
+    checklistItemStates = (currentChecklistPiece.items||[]).map(()=>({ status:null,motivo:"",encaminhamento:"",nomeTerceiro:"", fotoFile:null,fotoUrl:null }));
+    renderChecklistExecution(); document.getElementById("checklist-execution").classList.remove("hide");
   }
 
   function renderChecklistExecution(){
-    const piece = currentChecklistPiece;
-    if(!piece) return;
-
+    const piece = currentChecklistPiece; if(!piece) return;
     document.getElementById("cl-piece-code").textContent = piece.code;
     document.getElementById("cl-piece-desc").textContent = piece.description || "";
-
-    const imgBox = document.getElementById("cl-piece-image-box");
-    const mainSrc = getPieceImageSrc(piece);
-    if(mainSrc){
-      imgBox.innerHTML = `<img src="${mainSrc}" onclick="showImageModal('${mainSrc}')">`;
-    }else{
-      imgBox.textContent = "[Imagem da peça]";
-    }
-
-    const listDiv = document.getElementById("checklist-item-list");
-    listDiv.innerHTML = "";
-
+    const imgBox = document.getElementById("cl-piece-image-box"); const mainSrc = getPieceImageSrc(piece);
+    if(mainSrc){ imgBox.innerHTML = `<img src="${mainSrc}" onclick="showImageModal('${mainSrc}')">`; } else { imgBox.textContent = "[Imagem da peça]"; }
+    const listDiv = document.getElementById("checklist-item-list"); listDiv.innerHTML = "";
     (piece.items||[]).forEach((item,idx)=>{
-      const st = checklistItemStates[idx] || {};
-      const statusClass = st.status==="OK" ? "ok" : st.status==="NOK" ? "nok" : "";
+      const st = checklistItemStates[idx] || {}; const statusClass = st.status==="OK" ? "ok" : st.status==="NOK" ? "nok" : "";
       const itemSrc = getItemImageSrc(item);
-      const wrap = document.createElement("div");
-      wrap.className = `checklist-item ${statusClass}`;
-      wrap.innerHTML = `
-        <div class="checklist-item-thumb">
-          ${itemSrc?`<img src="${itemSrc}" onclick="showImageModal('${itemSrc}')">`:``}
-        </div>
-        <div class="checklist-item-body">
-          <div class="checklist-item-title">${item.name}</div>
-          <div class="checklist-item-desc">${item.description||""}</div>
-          <div class="checklist-item-extra" id="extra-${idx}"></div>
-        </div>
-        <div class="checklist-item-actions">
-          <button class="checklist-status-btn btn-ok" data-idx="${idx}" data-status="OK">OK</button>
-          <button class="checklist-status-btn btn-nok" data-idx="${idx}" data-status="NOK">NÃO OK</button>
-        </div>
-      `;
+      const wrap = document.createElement("div"); wrap.className = `checklist-item ${statusClass}`;
+      wrap.innerHTML = `<div class="checklist-item-thumb">${itemSrc?`<img src="${itemSrc}" onclick="showImageModal('${itemSrc}')">`:``}</div>
+        <div class="checklist-item-body"><div class="checklist-item-title">${item.name}</div><div class="checklist-item-desc">${item.description||""}</div><div class="checklist-item-extra" id="extra-${idx}"></div></div>
+        <div class="checklist-item-actions"><button class="checklist-status-btn btn-ok" data-idx="${idx}" data-status="OK">OK</button><button class="checklist-status-btn btn-nok" data-idx="${idx}" data-status="NOK">NÃO OK</button></div>`;
       listDiv.appendChild(wrap);
 
       if(st.status==="NOK"){
         const extraDiv = wrap.querySelector(`#extra-${idx}`);
-        extraDiv.innerHTML = `
-          <div class="checklist-extra">
-            <label>Descrição da não conformidade (obrigatório):</label>
-            <textarea id="motivo-${idx}">${st.motivo||""}</textarea>
-
-            <label>Foto (obrigatório):</label>
-            <input type="file" id="foto-${idx}" accept="image/*">
-
-            <div style="margin-top:6px;">
-              <label><input type="radio" name="enc-${idx}" value="retrabalho" ${st.encaminhamento==="retrabalho"?"checked":""}> Encaminhar para retrabalho</label><br>
-              <label><input type="radio" name="enc-${idx}" value="terceiro" ${st.encaminhamento==="terceiro"?"checked":""}> Aprovado por terceiro</label>
-            </div>
-            ${st.encaminhamento==="terceiro" ? `
-              <div style="margin-top:6px;">
-                <label>Nome / matrícula do aprovador:</label>
-                <input type="text" id="terceiro-${idx}" value="${st.nomeTerceiro||""}">
-              </div>
-            `:""}
-            ${getStatePhotoSrc(st)?`
-              <div style="margin-top:6px;">
-                <img src="${getStatePhotoSrc(st)}" style="width:80px;height:80px;object-fit:cover;border-radius:4px;cursor:pointer;" onclick="showImageModal('${getStatePhotoSrc(st)}')">
-              </div>
-            `:""}
-          </div>
-        `;
-        const motivo = extraDiv.querySelector(`#motivo-${idx}`);
-        const fotoInput = extraDiv.querySelector(`#foto-${idx}`);
-        const radios = extraDiv.querySelectorAll(`input[name="enc-${idx}"]`);
-        const terceiro = extraDiv.querySelector(`#terceiro-${idx}`);
-
-        motivo.addEventListener("input",()=>{
-          checklistItemStates[idx].motivo = motivo.value;
-        });
-        fotoInput.addEventListener("change",()=>{
-          const f = fotoInput.files[0]||null;
-          checklistItemStates[idx].fotoFile = f;
-          checklistItemStates[idx].fotoUrl = null;
-          renderChecklistExecution();
-        });
-        radios.forEach(r=>r.addEventListener("change",()=>{
-          checklistItemStates[idx].encaminhamento = r.value;
-          renderChecklistExecution();
-        }));
-        if(terceiro){
-          terceiro.addEventListener("input",()=>{
-            checklistItemStates[idx].nomeTerceiro = terceiro.value;
-          });
-        }
+        extraDiv.innerHTML = `<div class="checklist-extra"><label>Descrição da não conformidade (obrigatório):</label><textarea id="motivo-${idx}">${st.motivo||""}</textarea>
+            <label>Foto (obrigatório):</label><input type="file" id="foto-${idx}" accept="image/*">
+            <div style="margin-top:6px;"><label><input type="radio" name="enc-${idx}" value="retrabalho" ${st.encaminhamento==="retrabalho"?"checked":""}> Encaminhar para retrabalho</label><br>
+            <label><input type="radio" name="enc-${idx}" value="terceiro" ${st.encaminhamento==="terceiro"?"checked":""}> Aprovado por terceiro</label></div>
+            ${st.encaminhamento==="terceiro" ? `<div style="margin-top:6px;"><label>Nome / matrícula do aprovador:</label><input type="text" id="terceiro-${idx}" value="${st.nomeTerceiro||""}"></div>`:""}
+            ${getStatePhotoSrc(st)?`<div style="margin-top:6px;"><img src="${getStatePhotoSrc(st)}" style="width:80px;height:80px;object-fit:cover;border-radius:4px;cursor:pointer;" onclick="showImageModal('${getStatePhotoSrc(st)}')"></div>`:""}
+          </div>`;
+        const motivo = extraDiv.querySelector(`#motivo-${idx}`); const fotoInput = extraDiv.querySelector(`#foto-${idx}`); const radios = extraDiv.querySelectorAll(`input[name="enc-${idx}"]`); const terceiro = extraDiv.querySelector(`#terceiro-${idx}`);
+        motivo.addEventListener("input",()=>{ checklistItemStates[idx].motivo = motivo.value; });
+        fotoInput.addEventListener("change",()=>{ const f = fotoInput.files[0]||null; checklistItemStates[idx].fotoFile = f; checklistItemStates[idx].fotoUrl = null; renderChecklistExecution(); });
+        radios.forEach(r=>r.addEventListener("change",()=>{ checklistItemStates[idx].encaminhamento = r.value; renderChecklistExecution(); }));
+        if(terceiro){ terceiro.addEventListener("input",()=>{ checklistItemStates[idx].nomeTerceiro = terceiro.value; }); }
       }
     });
 
-    document.querySelectorAll(".checklist-status-btn").forEach(btn=>{
-      btn.addEventListener("click",()=>{
-        const idx = Number(btn.dataset.idx);
-        const status = btn.dataset.status;
-        checklistItemStates[idx].status = status;
-        if(status==="OK"){
-          checklistItemStates[idx].motivo="";
-          checklistItemStates[idx].fotoFile=null;
-          checklistItemStates[idx].fotoUrl=null;
-          checklistItemStates[idx].encaminhamento="";
-          checklistItemStates[idx].nomeTerceiro="";
-        }
-        renderChecklistExecution();
-      });
-    });
+    document.querySelectorAll(".checklist-status-btn").forEach(btn=>{ btn.addEventListener("click",()=>{ const idx = Number(btn.dataset.idx); const status = btn.dataset.status; checklistItemStates[idx].status = status; if(status==="OK"){ checklistItemStates[idx].motivo=""; checklistItemStates[idx].fotoFile=null; checklistItemStates[idx].fotoUrl=null; checklistItemStates[idx].encaminhamento=""; checklistItemStates[idx].nomeTerceiro=""; } renderChecklistExecution(); }); });
 
     renderNokLibrary();
   }
 
   function renderNokLibrary(){
-    const div = document.getElementById("checklist-nok-library");
-    const pieceCode = currentChecklistPiece?.code;
-    if(!pieceCode){ div.innerHTML=""; return; }
-
-    const nokCases = inspections
-      .filter(i=>i.piece===pieceCode)
-      .flatMap(ins => (ins.itens||[])
-        .map(it=>({...it, ins}))
-        .filter(it=>it.status==="NOK")
-      );
-
-    if(!nokCases.length){
-      div.innerHTML = '<div style="font-size:12px;color:#555;">Nenhuma reprovação registrada para esta peça.</div>';
-      return;
-    }
-
-    div.innerHTML = `
-      <div class="checklist-nok-title">Histórico de reprovações (${nokCases.length})</div>
-      <div class="checklist-nok-grid">
-        ${nokCases.map(c=>{
-          const src = c.fotoUrl || "";
-          return `
-            <div class="checklist-nok-card">
-              <div><strong>${c.ins.date}</strong></div>
-              <div>Inspetor: ${c.inspector || c.ins.inspector}</div>
-              <div style="margin-top:4px;">${c.motivo||""}</div>
-              ${src?`<img src="${src}" onclick="showImageModal('${src}')">`:""}
-            </div>
-          `;
-        }).join("")}
-      </div>
-    `;
+    const div = document.getElementById("checklist-nok-library"); const pieceCode = currentChecklistPiece?.code; if(!pieceCode){ div.innerHTML=""; return; }
+    const nokCases = inspections.filter(i=>i.piece===pieceCode).flatMap(ins => (ins.itens||[]).map(it=>({...it, ins})).filter(it=>it.status==="NOK"));
+    if(!nokCases.length){ div.innerHTML = '<div style="font-size:12px;color:#555;">Nenhuma reprovação registrada para esta peça.</div>'; return; }
+    div.innerHTML = `<div class="checklist-nok-title">Histórico de reprovações (${nokCases.length})</div><div class="checklist-nok-grid">${nokCases.map(c=>{ const src = c.fotoUrl || ""; return `<div class="checklist-nok-card"><div><strong>${c.ins.date}</strong></div><div>Inspetor: ${c.inspector || c.ins.inspector}</div><div style="margin-top:4px;">${c.motivo||""}</div>${src?`<img src="${src}" onclick="showImageModal('${src}')">`:""}</div>`; }).join("")}</div>`;
   }
 
   async function finishChecklist(){
-    if(!currentChecklistPiece){
-      alert("Nenhuma peça selecionada.");
-      return;
-    }
-    for(let i=0;i<checklistItemStates.length;i++){
-      const st = checklistItemStates[i];
-      if(!st.status){
-        alert("Responda todos os itens do checklist.");
-        return;
-      }
-      if(st.status==="NOK"){
-        if(!st.motivo?.trim()){
-          alert("Preencha o motivo em todos os itens NÃO OK.");
-          return;
-        }
-        if(!st.fotoFile && !st.fotoUrl){
-          alert("Adicione foto em todos os itens NÃO OK.");
-          return;
-        }
-        if(!st.encaminhamento){
-          alert("Selecione o encaminhamento em todos os itens NÃO OK.");
-          return;
-        }
-        if(st.encaminhamento==="terceiro" && !st.nomeTerceiro?.trim()){
-          alert("Informe o aprovador em todos os itens aprovados por terceiro.");
-          return;
-        }
-      }
-    }
-
-    const now = new Date();
-    const inspName = currentUser ? currentUser.name : "";
-
-    const inspecToSave = {
-      date: now.toLocaleDateString("pt-BR"),
-      inspector: inspName,
-      piece: currentChecklistPiece.code,
-      descricao: "Inspeção realizada",
-      itens: checklistItemStates.map(s=>({
-        status: s.status,
-        motivo: s.motivo,
-        encaminhamento: s.encaminhamento,
-        nome_terceiro: s.nomeTerceiro,
-        foto: s.fotoFile,
-        fotoUrl: s.fotoUrl
-      }))
-    };
+    if(!currentChecklistPiece){ alert("Nenhuma peça selecionada."); return; }
+    for(let i=0;i<checklistItemStates.length;i++){ const st = checklistItemStates[i]; if(!st.status){ alert("Responda todos os itens do checklist."); return; } if(st.status==="NOK"){ if(!st.motivo?.trim()){ alert("Preencha o motivo em todos os itens NÃO OK."); return; } if(!st.fotoFile && !st.fotoUrl){ alert("Adicione foto em todos os itens NÃO OK."); return; } if(!st.encaminhamento){ alert("Selecione o encaminhamento em todos os itens NÃO OK."); return; } if(st.encaminhamento==="terceiro" && !st.nomeTerceiro?.trim()){ alert("Informe o aprovador em todos os itens aprovados por terceiro."); return; } } }
+    const now = new Date(); const inspName = currentUser ? currentUser.name : "";
+    const inspecToSave = { date: now.toLocaleDateString("pt-BR"), inspector: inspName, piece: currentChecklistPiece.code, descricao: "Inspeção realizada", itens: checklistItemStates.map(s=>({ status: s.status, motivo: s.motivo, encaminhamento: s.encaminhamento, nome_terceiro: s.nomeTerceiro, foto: s.fotoFile, fotoUrl: s.fotoUrl })) };
 
     if(window.fbApi && window.fbApi.saveInspection){
-      try{
-        const saved = await window.fbApi.saveInspection(inspecToSave);
-        inspections.push(saved);
-        alert("Inspeção salva no servidor.");
-      }catch(err){
-        console.error("Erro salvar inspeção Firebase:", err);
-        inspections.push({
-          ...inspecToSave,
-          itens: inspecToSave.itens.map(i=>({...i, foto:null, fotoUrl:null}))
-        });
-        alert("Erro ao salvar no servidor. Inspeção registrada apenas neste navegador.");
-      }
-    }else{
-      inspections.push({
-        ...inspecToSave,
-        itens: inspecToSave.itens.map(i=>({...i, foto:null, fotoUrl:null}))
-      });
-      alert("Inspeção registrada localmente.");
-    }
+      try{ const saved = await window.fbApi.saveInspection(inspecToSave); inspections.push(saved); alert("Inspeção salva no servidor."); }catch(err){ console.error("Erro salvar inspeção Firebase:", err); inspections.push({...inspecToSave, itens: inspecToSave.itens.map(i=>({...i, foto:null, fotoUrl:null}))}); alert("Erro ao salvar no servidor. Inspeção registrada apenas neste navegador."); }
+    } else { inspections.push({...inspecToSave, itens: inspecToSave.itens.map(i=>({...i, foto:null, fotoUrl:null}))}); alert("Inspeção registrada localmente."); }
 
-    renderReports();
-    renderDashboard();
-    renderChecklistExecution();
-
-    // resetar seleção e voltar ao início do checklist
-    const pieceSel = document.getElementById("piece-selector");
-    if(pieceSel) pieceSel.value = "";
-    currentChecklistPiece = null;
-    checklistItemStates = [];
-    const exec = document.getElementById("checklist-execution");
-    if(exec) exec.classList.add("hide");
-    window.scrollTo({top:0,behavior:"smooth"});
+    renderReports(); renderDashboard(); renderChecklistExecution();
+    const pieceSel = document.getElementById("piece-selector"); if(pieceSel) pieceSel.value = ""; currentChecklistPiece = null; checklistItemStates = []; const exec = document.getElementById("checklist-execution"); if(exec) exec.classList.add("hide"); window.scrollTo({top:0,behavior:"smooth"});
   }
 
-  // Inspetores (fotos locais)
-  function loadInspectorPhotosFromLocalStorage(){
-    try{
-      const raw = localStorage.getItem("inspPhotos");
-      inspectorPhotos = raw ? JSON.parse(raw) : {};
-    }catch{ inspectorPhotos = {}; }
-  }
-  function saveInspectorPhotosToLocalStorage(){
-    try{
-      localStorage.setItem("inspPhotos", JSON.stringify(inspectorPhotos||{}));
-    }catch(e){ console.warn("Erro salvar fotos localStorage",e); }
-  }
+  function loadInspectorPhotosFromLocalStorage(){ try{ const raw = localStorage.getItem("inspPhotos"); inspectorPhotos = raw ? JSON.parse(raw) : {}; }catch{ inspectorPhotos = {}; } }
+  function saveInspectorPhotosToLocalStorage(){ try{ localStorage.setItem("inspPhotos", JSON.stringify(inspectorPhotos||{})); }catch(e){ console.warn("Erro salvar fotos localStorage",e); } }
 
+  // Render inspectores: botões Edit/Remove/Reset só aparecem para admin (condicional)
   function renderInspectors(){
-    const listDiv = document.getElementById("inspectors-list");
-    if(!listDiv) return;
+    const listDiv = document.getElementById("inspectors-list"); if(!listDiv) return;
     listDiv.innerHTML = "";
     inspectors.forEach(insp=>{
-      const name = insp.name;
-      const hasPin = !!insp.pinHash;
-      const card = document.createElement("div");
-      card.className="inspector-card";
+      const name = insp.name; const hasPin = !!insp.pinHash; const card = document.createElement("div"); card.className="inspector-card";
       const photoSrc = inspectorPhotos[name] || "";
-      card.innerHTML = `
-        <div class="inspector-avatar">
-          ${photoSrc?`<img src="${photoSrc}" onclick="showImageModal('${photoSrc}')">`:
-            name.split(" ").map(p=>p[0]).join("")}
-        </div>
+      const isAdmin = currentUser && currentUser.role === "admin";
+      card.innerHTML = `<div class="inspector-avatar">${photoSrc?`<img src="${photoSrc}" onclick="showImageModal('${photoSrc}')">`:name.split(" ").map(p=>p[0]).join("")}</div>
         <div class="inspector-name">${name}</div>
         <div class="inspector-pin-status">PIN: ${hasPin ? "Cadastrado" : "Não definido"}</div>
         <div class="inspector-actions">
-          <button class="btn-icon btn-edit" data-name="${name}">Editar</button>
-          <button class="btn-icon btn-delete" data-name="${name}">Remover</button>
-          ${currentUser && currentUser.role==="admin"
-            ? `<button class="btn-icon btn-reset-pin" data-name="${name}" data-action="reset-pin">Resetar PIN</button>`
-            : ""}
-        </div>
-      `;
+          ${isAdmin ? `<button class="btn-icon btn-edit" data-name="${name}">Editar</button><button class="btn-icon btn-delete" data-name="${name}">Remover</button><button class="btn-icon btn-reset-pin" data-name="${name}" data-action="reset-pin">Resetar PIN</button>` : ``}
+        </div>`;
       listDiv.appendChild(card);
     });
 
-    listDiv.querySelectorAll(".btn-edit").forEach(btn=>{
-      btn.addEventListener("click",()=>{
-        openEditInspectorModal(btn.dataset.name);
-      });
-    });
-    listDiv.querySelectorAll(".btn-delete").forEach(btn=>{
-      btn.addEventListener("click",()=>{
-        const name = btn.dataset.name;
-        if(!confirm(`Remover inspetor "${name}"?`)) return;
-        inspectors = inspectors.filter(i=>i.name!==name);
-        delete inspectorPhotos[name];
-        saveInspectorPhotosToLocalStorage();
-        renderInspectors();
-        renderChecklistSelectors();
-        renderLoginInspectorSelect();
-        if(window.fbApi && window.fbApi.setInspectors){
-          window.fbApi.setInspectors(inspectors).catch(e=>console.error("Erro salvar insp Firebase",e));
-        }
-      });
-    });
-    listDiv.querySelectorAll("button[data-action='reset-pin']").forEach(btn=>{
-      btn.addEventListener("click",async()=>{
-        const name = btn.dataset.name;
-        const insp = inspectors.find(i=>i.name===name);
-        if(!insp) return;
-        if(!confirm(`Resetar PIN do inspetor "${name}"?`)) return;
-        insp.pinHash = "";
-        if(window.fbApi && window.fbApi.setInspectors){
-          try{
-            await window.fbApi.setInspectors(inspectors);
-          }catch(e){
-            console.error("Erro ao resetar PIN:",e);
-          }
-        }
-        renderInspectors();
-        alert("PIN resetado. O próximo login deste inspetor irá cadastrar um novo PIN.");
-      });
-    });
+    // eventos somente se existirem botões (admin)
+    listDiv.querySelectorAll(".btn-edit").forEach(btn=>{ btn.addEventListener("click",()=>{ openEditInspectorModal(btn.dataset.name); }); });
+    listDiv.querySelectorAll(".btn-delete").forEach(btn=>{ btn.addEventListener("click",()=>{ const name = btn.dataset.name; if(!confirm(`Remover inspetor "${name}"?`)) return; inspectors = inspectors.filter(i=>i.name!==name); delete inspectorPhotos[name]; saveInspectorPhotosToLocalStorage(); renderInspectors(); renderChecklistSelectors(); renderLoginInspectorSelect(); if(window.fbApi && window.fbApi.setInspectors){ window.fbApi.setInspectors(inspectors).catch(e=>console.error("Erro salvar insp Firebase",e)); } }); });
+    listDiv.querySelectorAll("button[data-action='reset-pin']").forEach(btn=>{ btn.addEventListener("click",async()=>{ const name = btn.dataset.name; const insp = inspectors.find(i=>i.name===name); if(!insp) return; if(!confirm(`Resetar PIN do inspetor "${name}"?`)) return; insp.pinHash = ""; if(window.fbApi && window.fbApi.setInspectors){ try{ await window.fbApi.setInspectors(inspectors); }catch(e){ console.error("Erro ao resetar PIN:",e); } } renderInspectors(); alert("PIN resetado. O próximo login deste inspetor irá cadastrar um novo PIN."); }); });
 
-    const nameInput = document.getElementById("insp-name-input");
-    const photoInput = document.getElementById("insp-photo-input");
-    if(nameInput) nameInput.value="";
-    if(photoInput) photoInput.value="";
-
-    // Atualiza também o select da tela de login
+    const nameInput = document.getElementById("insp-name-input"); const photoInput = document.getElementById("insp-photo-input");
+    if(nameInput) nameInput.value=""; if(photoInput) photoInput.value="";
     renderLoginInspectorSelect();
   }
 
   function openEditInspectorModal(name){
-    const insp = inspectors.find(i=>i.name===name);
-    if(!insp) return;
-    const currentPhoto = inspectorPhotos[name] || "";
-    showModal(`
-      <div class="modal-header">
-        <div class="modal-title">Editar Inspetor</div>
-        <button class="modal-close-btn">&times;</button>
-      </div>
-      <div class="form-group" style="margin-top:10px;">
-        <label>Nome</label>
-        <input type="text" id="modal-insp-name" value="${insp.name}">
-      </div>
-      <div class="form-group">
-        <label>Foto</label>
-        <input type="file" id="modal-insp-photo" accept="image/*">
-      </div>
-      ${currentPhoto?`
-        <div style="margin-top:6px;text-align:center;">
-          <img src="${currentPhoto}" style="width:80px;height:80px;border-radius:50%;object-fit:cover;">
-        </div>`:""}
-      <div style="margin-top:12px;text-align:right;">
-        <button class="btn-secondary" onclick="closeModal()">Cancelar</button>
-        <button class="btn-primary" id="modal-insp-save">Salvar</button>
-      </div>
-    `);
-
+    const insp = inspectors.find(i=>i.name===name); if(!insp) return; const currentPhoto = inspectorPhotos[name] || "";
+    showModal(`<div class="modal-header"><div class="modal-title">Editar Inspetor</div><button class="modal-close-btn">&times;</button></div>
+      <div class="form-group" style="margin-top:10px;"><label>Nome</label><input type="text" id="modal-insp-name" value="${insp.name}"></div>
+      <div class="form-group"><label>Foto</label><input type="file" id="modal-insp-photo" accept="image/*"></div>
+      ${currentPhoto?`<div style="margin-top:6px;text-align:center;"><img src="${currentPhoto}" style="width:80px;height:80px;border-radius:50%;object-fit:cover;"></div>`:""}
+      <div style="margin-top:12px;text-align:right;"><button class="btn-secondary" onclick="closeModal()">Cancelar</button><button class="btn-primary" id="modal-insp-save">Salvar</button></div>`);
     document.getElementById("modal-insp-save").addEventListener("click",()=>{
-      const newName = document.getElementById("modal-insp-name").value.trim();
-      const file = document.getElementById("modal-insp-photo").files[0];
+      const newName = document.getElementById("modal-insp-name").value.trim(); const file = document.getElementById("modal-insp-photo").files[0];
       if(!newName){ alert("Nome não pode ser vazio."); return; }
-
-      const oldName = insp.name;
-      insp.name = newName;
-
-      if(newName!==oldName){
-        inspectorPhotos[newName] = inspectorPhotos[oldName];
-        delete inspectorPhotos[oldName];
-      }
-
-      const finalize = ()=>{
-        saveInspectorPhotosToLocalStorage();
-        closeModal();
-        renderInspectors();
-        renderChecklistSelectors();
-        if(window.fbApi && window.fbApi.setInspectors){
-          window.fbApi.setInspectors(inspectors).catch(e=>console.error("Erro salvar insp Firebase",e));
-        }
-        if(currentUser && currentUser.role==="inspector" && currentUser.name===oldName){
-          currentUser.name = newName;
-          updateHeaderUser();
-        }
-      };
-
-      if(file){
-        const reader = new FileReader();
-        reader.onload = e=>{
-          inspectorPhotos[newName] = e.target.result;
-          finalize();
-        };
-        reader.readAsDataURL(file);
-      }else{
-        finalize();
-      }
+      const oldName = insp.name; insp.name = newName;
+      if(newName!==oldName){ inspectorPhotos[newName] = inspectorPhotos[oldName]; delete inspectorPhotos[oldName]; }
+      const finalize = ()=>{ saveInspectorPhotosToLocalStorage(); closeModal(); renderInspectors(); renderChecklistSelectors(); if(window.fbApi && window.fbApi.setInspectors){ window.fbApi.setInspectors(inspectors).catch(e=>console.error("Erro salvar insp Firebase",e)); } if(currentUser && currentUser.role==="inspector" && currentUser.name===oldName){ currentUser.name = newName; updateHeaderUser(); } };
+      if(file){ const reader = new FileReader(); reader.onload = e=>{ inspectorPhotos[newName] = e.target.result; finalize(); }; reader.readAsDataURL(file); } else { finalize(); }
     });
   }
 
-  // Peças & itens
   function renderPieces(){
-    const listDiv = document.getElementById("pieces-list");
-    const selectItems = document.getElementById("piece-items-selector");
-    if(!listDiv || !selectItems) return;
+    const listDiv = document.getElementById("pieces-list"); const selectItems = document.getElementById("piece-items-selector"); if(!listDiv || !selectItems) return;
     listDiv.innerHTML=""; selectItems.innerHTML="";
-
     pieces.forEach((p,idx)=>{
-      const row = document.createElement("div");
-      row.className="piece-row";
+      const row = document.createElement("div"); row.className="piece-row";
       const src = getPieceImageSrc(p);
-      row.innerHTML = `
-        <div class="piece-row-left">
-          <div class="piece-thumb">${src?`<img src="${src}">`:""}</div>
-          <div class="piece-label">${p.code} — ${p.description||""}</div>
-        </div>
-        <div>
-          <button class="btn-icon btn-edit" data-idx="${idx}">Editar</button>
-          <button class="btn-icon btn-delete" data-idx="${idx}">Remover</button>
-        </div>
-      `;
+      const isAdmin = currentUser && currentUser.role === "admin";
+      row.innerHTML = `<div class="piece-row-left"><div class="piece-thumb">${src?`<img src="${src}">`:""}</div><div class="piece-label">${p.code} — ${p.description||""}</div></div>
+        <div>${isAdmin ? `<button class="btn-icon btn-edit" data-idx="${idx}">Editar</button><button class="btn-icon btn-delete" data-idx="${idx}">Remover</button>` : ""}</div>`;
       listDiv.appendChild(row);
       selectItems.innerHTML += `<option value="${idx}">${p.code}</option>`;
     });
 
-    document.querySelectorAll("#pieces-list .btn-edit").forEach(btn=>{
-      btn.addEventListener("click",()=>openEditPieceModal(Number(btn.dataset.idx)));
-    });
-    document.querySelectorAll("#pieces-list .btn-delete").forEach(btn=>{
-      btn.addEventListener("click",async()=>{
-        const idx = Number(btn.dataset.idx);
-        const p = pieces[idx];
-        if(!confirm(`Excluir peça "${p.code}"?`)) return;
-        pieces.splice(idx,1);
-        renderPieces();
-        renderChecklistSelectors();
-        if(window.fbApi && window.fbApi.deletePiece){
-          window.fbApi.deletePiece(p.code).catch(e=>console.error("Erro delete piece Firebase",e));
-        }
-      });
-    });
+    document.querySelectorAll("#pieces-list .btn-edit").forEach(btn=>{ btn.addEventListener("click",()=>openEditPieceModal(Number(btn.dataset.idx))); });
+    document.querySelectorAll("#pieces-list .btn-delete").forEach(btn=>{ btn.addEventListener("click",async()=>{ const idx = Number(btn.dataset.idx); const p = pieces[idx]; if(!confirm(`Excluir peça "${p.code}"?`)) return; pieces.splice(idx,1); renderPieces(); renderChecklistSelectors(); if(window.fbApi && window.fbApi.deletePiece){ window.fbApi.deletePiece(p.code).catch(e=>console.error("Erro delete piece Firebase",e)); } }); });
 
-    if(pieces.length){
-      document.getElementById("piece-items-selector").value = 0;
-      renderPieceItemsList(0);
-    }else{
-      document.getElementById("piece-items-list").innerHTML =
-        "<div style='font-size:12px;color:#666;'>Nenhuma peça cadastrada.</div>";
-    }
-
-    document.getElementById("piece-code-input").value="";
-    document.getElementById("piece-desc-input").value="";
-    document.getElementById("piece-image-input").value="";
+    if(pieces.length){ document.getElementById("piece-items-selector").value = 0; renderPieceItemsList(0); } else { document.getElementById("piece-items-list").innerHTML = "<div style='font-size:12px;color:#666;'>Nenhuma peça cadastrada.</div>"; }
+    document.getElementById("piece-code-input").value=""; document.getElementById("piece-desc-input").value=""; document.getElementById("piece-image-input").value="";
   }
 
   function openEditPieceModal(idx){
-    const p = pieces[idx];
-    const src = getPieceImageSrc(p) || "";
-    showModal(`
-      <div class="modal-header">
-        <div class="modal-title">Editar Peça</div>
-        <button class="modal-close-btn">&times;</button>
-      </div>
-      <div class="form-group" style="margin-top:10px;">
-        <label>Código</label>
-        <input type="text" id="modal-piece-code" value="${p.code}">
-      </div>
-      <div class="form-group">
-        <label>Descrição</label>
-        <input type="text" id="modal-piece-desc" value="${p.description||""}">
-      </div>
-      <div class="form-group">
-        <label>Imagem</label>
-        <input type="file" id="modal-piece-img" accept="image/*">
-      </div>
-      ${src?`
-        <div style="margin-top:6px;text-align:center;">
-          <img src="${src}" style="max-width:120px;max-height:80px;border-radius:4px;">
-        </div>`:""}
-      <div style="margin-top:12px;text-align:right;">
-        <button class="btn-secondary" onclick="closeModal()">Cancelar</button>
-        <button class="btn-primary" id="modal-piece-save">Salvar</button>
-      </div>
-    `);
-
-    document.getElementById("modal-piece-save").addEventListener("click",()=>{
-      const newCode = document.getElementById("modal-piece-code").value.trim();
-      const newDesc = document.getElementById("modal-piece-desc").value.trim();
-      const file = document.getElementById("modal-piece-img").files[0];
-      if(!newCode || !newDesc){ alert("Preencha código e descrição."); return; }
-      p.code=newCode; p.description=newDesc;
-      if(file){ p.image=file; p.imageUrl=null; }
-      closeModal();
-      renderPieces();
-      renderChecklistSelectors();
-      if(window.fbApi && window.fbApi.savePiece){
-        window.fbApi.savePiece(p).catch(e=>console.error("Erro salvar peça Firebase",e));
-      }
-    });
+    const p = pieces[idx]; const src = getPieceImageSrc(p) || "";
+    showModal(`<div class="modal-header"><div class="modal-title">Editar Peça</div><button class="modal-close-btn">&times;</button></div>
+      <div class="form-group" style="margin-top:10px;"><label>Código</label><input type="text" id="modal-piece-code" value="${p.code}"></div>
+      <div class="form-group"><label>Descrição</label><input type="text" id="modal-piece-desc" value="${p.description||""}"></div>
+      <div class="form-group"><label>Imagem</label><input type="file" id="modal-piece-img" accept="image/*"></div>
+      ${src?`<div style="margin-top:6px;text-align:center;"><img src="${src}" style="max-width:120px;max-height:80px;border-radius:4px;"></div>`:""}
+      <div style="margin-top:12px;text-align:right;"><button class="btn-secondary" onclick="closeModal()">Cancelar</button><button class="btn-primary" id="modal-piece-save">Salvar</button></div>`);
+    document.getElementById("modal-piece-save").addEventListener("click",()=>{ const newCode = document.getElementById("modal-piece-code").value.trim(); const newDesc = document.getElementById("modal-piece-desc").value.trim(); const file = document.getElementById("modal-piece-img").files[0]; if(!newCode || !newDesc){ alert("Preencha código e descrição."); return; } p.code=newCode; p.description=newDesc; if(file){ p.image=file; p.imageUrl=null; } closeModal(); renderPieces(); renderChecklistSelectors(); if(window.fbApi && window.fbApi.savePiece){ window.fbApi.savePiece(p).catch(e=>console.error("Erro salvar peça Firebase",e)); } });
   }
 
   function renderPieceItemsList(pieceIdx){
-    const box = document.getElementById("piece-items-list");
-    if(!box) return;
-    box.innerHTML="";
-    const p = pieces[pieceIdx];
-    if(!p) return;
+    const box = document.getElementById("piece-items-list"); if(!box) return; box.innerHTML="";
+    const p = pieces[pieceIdx]; if(!p) return;
+    const isAdmin = currentUser && currentUser.role === "admin";
     (p.items||[]).forEach((it,idx)=>{
-      const row = document.createElement("div");
-      row.className="piece-item-row";
+      const row = document.createElement("div"); row.className="piece-item-row";
       const src = getItemImageSrc(it);
-      row.innerHTML = `
-        <div class="piece-item-main">
-          <div class="piece-item-thumb">${src?`<img src="${src}">`:""}</div>
-          <div>
-            <div style="font-size:13px;font-weight:600;">${it.name}</div>
-            <div style="font-size:11px;color:#555;">${it.description||""}</div>
-          </div>
-        </div>
-        <div>
-          <button class="btn-icon btn-edit" data-pidx="${pieceIdx}" data-idx="${idx}">Editar</button>
-          <button class="btn-icon btn-delete" data-pidx="${pieceIdx}" data-idx="${idx}">Remover</button>
-        </div>
-      `;
+      row.innerHTML = `<div class="piece-item-main"><div class="piece-item-thumb">${src?`<img src="${src}">`:""}</div><div><div style="font-size:13px;font-weight:600;">${it.name}</div><div style="font-size:11px;color:#555;">${it.description||""}</div></div></div>
+        <div>${isAdmin ? `<button class="btn-icon btn-edit" data-pidx="${pieceIdx}" data-idx="${idx}">Editar</button><button class="btn-icon btn-delete" data-pidx="${pieceIdx}" data-idx="${idx}">Remover</button>` : ""}</div>`;
       box.appendChild(row);
     });
 
-    box.querySelectorAll(".btn-edit").forEach(btn=>{
-      btn.addEventListener("click",()=>openEditItemModal(Number(btn.dataset.pidx),Number(btn.dataset.idx)));
-    });
-    box.querySelectorAll(".btn-delete").forEach(btn=>{
-      btn.addEventListener("click",()=>{
-        const pidx = Number(btn.dataset.pidx);
-        const idx = Number(btn.dataset.idx);
-        const p = pieces[pidx];
-        if(!confirm(`Remover item "${p.items[idx].name}"?`)) return;
-        p.items.splice(idx,1);
-        renderPieceItemsList(pidx);
-        if(window.fbApi && window.fbApi.savePiece){
-          window.fbApi.savePiece(p).catch(e=>console.error("Erro salvar peça Firebase",e));
-        }
-      });
-    });
+    box.querySelectorAll(".btn-edit").forEach(btn=>{ btn.addEventListener("click",()=>openEditItemModal(Number(btn.dataset.pidx),Number(btn.dataset.idx))); });
+    box.querySelectorAll(".btn-delete").forEach(btn=>{ btn.addEventListener("click",()=>{ const pidx = Number(btn.dataset.pidx); const idx = Number(btn.dataset.idx); const p = pieces[pidx]; if(!confirm(`Remover item "${p.items[idx].name}"?`)) return; p.items.splice(idx,1); renderPieceItemsList(pidx); if(window.fbApi && window.fbApi.savePiece){ window.fbApi.savePiece(p).catch(e=>console.error("Erro salvar peça Firebase",e)); } }); });
   }
 
   function openEditItemModal(pieceIdx,idx){
-    const item = pieces[pieceIdx].items[idx];
-    const src = getItemImageSrc(item) || "";
-    showModal(`
-      <div class="modal-header">
-        <div class="modal-title">Editar Item</div>
-        <button class="modal-close-btn">&times;</button>
-      </div>
-      <div class="form-group" style="margin-top:10px;">
-        <label>Nome</label>
-        <input type="text" id="modal-item-name" value="${item.name}">
-      </div>
-      <div class="form-group">
-        <label>Descrição</label>
-        <textarea id="modal-item-desc" rows="2">${item.description||""}</textarea>
-      </div>
-      <div class="form-group">
-        <label>Imagem</label>
-        <input type="file" id="modal-item-img" accept="image/*">
-      </div>
-      ${src?`
-        <div style="margin-top:6px;text-align:center;">
-          <img src="${src}" style="max-width:120px;max-height:80px;border-radius:4px;">
-        </div>`:""}
-      <div style="margin-top:12px;text-align:right;">
-        <button class="btn-secondary" onclick="closeModal()">Cancelar</button>
-        <button class="btn-primary" id="modal-item-save">Salvar</button>
-      </div>
-    `);
-
-    document.getElementById("modal-item-save").addEventListener("click",()=>{
-      const name = document.getElementById("modal-item-name").value.trim();
-      const desc = document.getElementById("modal-item-desc").value.trim();
-      const file = document.getElementById("modal-item-img").files[0];
-      if(!name || !desc){ alert("Preencha nome e descrição."); return; }
-      item.name=name; item.description=desc;
-      if(file){ item.image=file; item.imageUrl=null; }
-      closeModal();
-      renderPieceItemsList(pieceIdx);
-      if(window.fbApi && window.fbApi.savePiece){
-        window.fbApi.savePiece(pieces[pieceIdx]).catch(e=>console.error("Erro salvar peça Firebase",e));
-      }
-    });
+    const item = pieces[pieceIdx].items[idx]; const src = getItemImageSrc(item) || "";
+    showModal(`<div class="modal-header"><div class="modal-title">Editar Item</div><button class="modal-close-btn">&times;</button></div>
+      <div class="form-group" style="margin-top:10px;"><label>Nome</label><input type="text" id="modal-item-name" value="${item.name}"></div>
+      <div class="form-group"><label>Descrição</label><textarea id="modal-item-desc" rows="2">${item.description||""}</textarea></div>
+      <div class="form-group"><label>Imagem</label><input type="file" id="modal-item-img" accept="image/*"></div>
+      ${src?`<div style="margin-top:6px;text-align:center;"><img src="${src}" style="max-width:120px;max-height:80px;border-radius:4px;"></div>`:""}
+      <div style="margin-top:12px;text-align:right;"><button class="btn-secondary" onclick="closeModal()">Cancelar</button><button class="btn-primary" id="modal-item-save">Salvar</button></div>`);
+    document.getElementById("modal-item-save").addEventListener("click",()=>{ const name = document.getElementById("modal-item-name").value.trim(); const desc = document.getElementById("modal-item-desc").value.trim(); const file = document.getElementById("modal-item-img").files[0]; if(!name || !desc){ alert("Preencha nome e descrição."); return; } item.name=name; item.description=desc; if(file){ item.image=file; item.imageUrl=null; } closeModal(); renderPieceItemsList(pieceIdx); if(window.fbApi && window.fbApi.savePiece){ window.fbApi.savePiece(pieces[pieceIdx]).catch(e=>console.error("Erro salvar peça Firebase",e)); } });
   }
 
-  // Gráficos / Relatórios (mantidos)
-  function ensureReportsChart(){ /* ... seu código anterior ... */ }
-  function renderReports(){ /* ... seu código anterior ... */ }
-  function exportCSV(){ /* ... seu código anterior ... */ }
-  function ensureDashboardChart(){ /* ... seu código anterior ... */ }
-  function renderDashboard(){ /* ... seu código anterior ... */ }
+  // GRÁFICOS / RELATÓRIOS - funções mínimas (para manter arquivo curto coloquei stubs)
+  function ensureReportsChart(){ const ctx = document.getElementById("reports-chart")?.getContext("2d"); if(!ctx) return; if(!reportsChart){ reportsChart = new Chart(ctx,{ type:"doughnut", data:{ labels:["Embarcadas","Retrabalho"], datasets:[{ data:[0,0], backgroundColor:["#228be6","#E81C24"], borderColor:"#fff", borderWidth:2 }] }, options:{responsive:false,plugins:{legend:{display:true}},cutout:"60%"} }); } }
+  function renderReports(){ ensureReportsChart(); const monthSelect = document.getElementById("report-month-select"); const tbody = document.getElementById("reports-history-body"); const totalSpan = document.getElementById("total-inspecoes"); if(!monthSelect || !tbody || !totalSpan) return; const monthsSet = new Set(); inspections.forEach(i=>{ if(!i.date) return; const [d,m,y] = i.date.split("/"); if(m&&y) monthsSet.add(`${m}/${y}`); }); const months = Array.from(monthsSet).sort().reverse(); monthSelect.innerHTML = months.map(m=>`<option value="${m}">${m}</option>`).join(""); const current = monthSelect.value || (months[0]||""); monthSelect.value = current; let embarcadas=0, retrabalho=0; const filtered = inspections.filter(i=>{ if(!i.date) return false; const [d,m,y] = i.date.split("/"); return `${m}/${y}`===current; }); filtered.forEach(i=>{ (i.itens||[]).forEach(it=>{ if(it.status==="OK") embarcadas++; else if(it.encaminhamento==="retrabalho") retrabalho++; else embarcadas++; }); }); totalSpan.textContent = inspections.length; tbody.innerHTML = filtered.length ? filtered.map(i=>`<tr><td>${i.date}</td><td>${i.inspector}</td><td>${i.piece}</td><td>${i.descricao||"-"}</td></tr>`).join("") : `<tr><td colspan="4" style="text-align:center;">Nenhuma inspeção para o mês selecionado.</td></tr>`; if(reportsChart){ reportsChart.data.datasets[0].data = [embarcadas,retrabalho]; reportsChart.update(); } }
+  function exportCSV(){ if(!inspections.length){ alert("Sem inspeções para exportar."); return; } const rows = ["Data,Inspetor,Peça,Descrição"]; inspections.forEach(i=>{ const desc = (i.descricao||"").replace(/"/g,'""'); rows.push(`${i.date},"${i.inspector}","${i.piece}","${desc}"`); }); const blob = new Blob([rows.join("\n")],{type:"text/csv;charset=utf-8;"}); const url = URL.createObjectURL(blob); const a = document.createElement("a"); a.href=url; a.download="relatorio_inspecoes.csv"; a.click(); URL.revokeObjectURL(url); }
+  function ensureDashboardChart(){ const ctx = document.getElementById("dashboard-chart")?.getContext("2d"); if(!ctx) return; if(!dashboardChart){ dashboardChart = new Chart(ctx,{ type:"doughnut", data:{ labels:["Embarcadas","Retrabalho"], datasets:[{ data:[0,0], backgroundColor:["#228be6","#E81C24"], borderColor:"#fff", borderWidth:2 }] }, options:{responsive:false,plugins:{legend:{display:true}},cutout:"60%"} }); } }
+  function renderDashboard(){ ensureDashboardChart(); const kpiInsMes = document.getElementById("kpi-inspecoes-mes"); const kpiPercentNok = document.getElementById("kpi-percent-nok"); const kpiTopPecas = document.getElementById("kpi-top-pecas"); if(!kpiInsMes || !kpiPercentNok || !kpiTopPecas) return; if(!inspections.length){ kpiInsMes.textContent="0"; kpiPercentNok.textContent="0%"; kpiTopPecas.innerHTML="<div>Sem dados suficientes.</div>"; if(dashboardChart){ dashboardChart.data.datasets[0].data=[0,0]; dashboardChart.update(); } return; } const last = inspections[inspections.length-1]; const [d,m,y] = (last.date||"").split("/"); const currentMonth = `${m}/${y}`; let countIns=0,totalItens=0,totalNok=0,embarcadas=0,retrabalho=0; const nokByPiece={}; inspections.forEach(i=>{ const [dd,mm,yy] = (i.date||"").split("/"); if(`${mm}/${yy}`!==currentMonth) return; countIns++; (i.itens||[]).forEach(it=>{ totalItens++; if(it.status==="NOK"){ totalNok++; nokByPiece[i.piece] = (nokByPiece[i.piece]||0)+1; } if(it.status==="OK") embarcadas++; else if(it.encaminhamento==="retrabalho") retrabalho++; else embarcadas++; }); }); kpiInsMes.textContent = String(countIns); const percent = totalItens>0 ? ((totalNok/totalItens)*100).toFixed(1) : "0.0"; kpiPercentNok.textContent = `${percent}%`; const top = Object.entries(nokByPiece).sort((a,b)=>b[1]-a[1]).slice(0,3); kpiTopPecas.innerHTML = top.length ? top.map(([code,q])=>`<div>${code}: <strong>${q}</strong> NOK</div>`).join("") : "<div>Nenhuma reprovação no mês atual.</div>"; if(dashboardChart){ dashboardChart.data.datasets[0].data = [embarcadas,retrabalho]; dashboardChart.update(); } }
 
   async function initAppAfterLogin(){
-    // Carrega fotos locais
     loadInspectorPhotosFromLocalStorage();
-
     if(window.fbApi && window.fbApi.loadAll && !window._appDataLoaded){
-      try{
-        const data = await window.fbApi.loadAll();
-        if(data.pieces && data.pieces.length) pieces = data.pieces;
-        if(data.inspectors && data.inspectors.length) inspectors = data.inspectors;
-        if(data.inspections && data.inspections.length) inspections = data.inspections;
-        window._appDataLoaded = true;
-        renderLoginInspectorSelect();
-      }catch(err){
-        console.error("Erro carregar Firebase:",err);
-      }
+      try{ const data = await window.fbApi.loadAll(); if(data.pieces && data.pieces.length) pieces = data.pieces; if(data.inspectors && data.inspectors.length) inspectors = data.inspectors; if(data.inspections && data.inspections.length) inspections = data.inspections; window._appDataLoaded = true; renderLoginInspectorSelect(); }catch(err){ console.error("Erro carregar Firebase:",err); }
     }
 
     document.getElementById("btn-start-checklist").addEventListener("click",startChecklist);
     document.getElementById("btn-finish-checklist").addEventListener("click",finishChecklist);
 
     document.getElementById("btn-add-inspector").addEventListener("click",()=>{
-      const name = document.getElementById("insp-name-input").value.trim();
-      const file = document.getElementById("insp-photo-input").files[0];
+      const name = document.getElementById("insp-name-input").value.trim(); const file = document.getElementById("insp-photo-input").files[0];
       if(!name){ alert("Informe o nome do inspetor."); return; }
-      if(inspectors.some(i=>i.name.toLowerCase()===name.toLowerCase())){
-        alert("Já existe um inspetor com esse nome.");
-        return;
-      }
-
-      const addInspector = (photoDataUrl)=>{
-        inspectors.push({ name, pinHash:"" });
-        if(photoDataUrl) inspectorPhotos[name]=photoDataUrl;
-        saveInspectorPhotosToLocalStorage();
-        renderInspectors();
-        renderChecklistSelectors();
-        if(window.fbApi && window.fbApi.setInspectors){
-          window.fbApi.setInspectors(inspectors).catch(e=>console.error("Erro salvar insp Firebase",e));
-        }
-      };
-
-      if(file){
-        const reader = new FileReader();
-        reader.onload = e=>addInspector(e.target.result);
-        reader.readAsDataURL(file);
-      }else{
-        addInspector(null);
-      }
+      if(inspectors.some(i=>i.name.toLowerCase()===name.toLowerCase())){ alert("Já existe um inspetor com esse nome."); return; }
+      const addInspector = (photoDataUrl)=>{ inspectors.push({ name, pinHash:"" }); if(photoDataUrl) inspectorPhotos[name]=photoDataUrl; saveInspectorPhotosToLocalStorage(); renderInspectors(); renderChecklistSelectors(); if(window.fbApi && window.fbApi.setInspectors){ window.fbApi.setInspectors(inspectors).catch(e=>console.error("Erro salvar insp Firebase",e)); } };
+      if(file){ const reader = new FileReader(); reader.onload = e=>addInspector(e.target.result); reader.readAsDataURL(file); } else { addInspector(null); }
     });
 
-    document.getElementById("piece-items-selector").addEventListener("change",e=>{
-      const idx = Number(e.target.value);
-      renderPieceItemsList(idx);
-    });
+    document.getElementById("piece-items-selector").addEventListener("change",e=>{ const idx = Number(e.target.value); renderPieceItemsList(idx); });
 
     document.getElementById("btn-add-piece").addEventListener("click",()=>{
-      const code = document.getElementById("piece-code-input").value.trim();
-      const desc = document.getElementById("piece-desc-input").value.trim();
-      const file = document.getElementById("piece-image-input").files[0];
-      if(!code || !desc || !file){
-        alert("Preencha código, descrição e imagem.");
-        return;
-      }
-      if(pieces.some(p=>p.code===code)){
-        alert("Já existe uma peça com esse código.");
-        return;
-      }
-      const newPiece = {code,description:desc,image:file,imageUrl:null,items:[]};
-      pieces.push(newPiece);
-      renderPieces();
-      renderChecklistSelectors();
-      if(window.fbApi && window.fbApi.savePiece){
-        window.fbApi.savePiece(newPiece).catch(e=>console.error("Erro salvar peça Firebase",e));
-      }
+      const code = document.getElementById("piece-code-input").value.trim(); const desc = document.getElementById("piece-desc-input").value.trim(); const file = document.getElementById("piece-image-input").files[0];
+      if(!code || !desc || !file){ alert("Preencha código, descrição e imagem."); return; }
+      if(pieces.some(p=>p.code===code)){ alert("Já existe uma peça com esse código."); return; }
+      const newPiece = {code,description:desc,image:file,imageUrl:null,items:[]}; pieces.push(newPiece); renderPieces(); renderChecklistSelectors(); if(window.fbApi && window.fbApi.savePiece){ window.fbApi.savePiece(newPiece).catch(e=>console.error("Erro salvar peça Firebase",e)); }
     });
 
     document.getElementById("btn-add-item").addEventListener("click",()=>{
       const pieceIdx = Number(document.getElementById("piece-items-selector").value);
-      if(Number.isNaN(pieceIdx) || !pieces[pieceIdx]){
-        alert("Selecione uma peça.");
-        return;
-      }
-      const name = document.getElementById("item-name-input").value.trim();
-      const desc = document.getElementById("item-desc-input").value.trim();
-      const file = document.getElementById("item-image-input").files[0];
-      if(!name || !desc || !file){
-        alert("Preencha nome, descrição e imagem do item.");
-        return;
-      }
+      if(Number.isNaN(pieceIdx) || !pieces[pieceIdx]){ alert("Selecione uma peça."); return; }
+      const name = document.getElementById("item-name-input").value.trim(); const desc = document.getElementById("item-desc-input").value.trim(); const file = document.getElementById("item-image-input").files[0];
+      if(!name || !desc || !file){ alert("Preencha nome, descrição e imagem do item."); return; }
       pieces[pieceIdx].items.push({name,description:desc,image:file,imageUrl:null});
-      document.getElementById("item-name-input").value="";
-      document.getElementById("item-desc-input").value="";
-      document.getElementById("item-image-input").value="";
+      document.getElementById("item-name-input").value=""; document.getElementById("item-desc-input").value=""; document.getElementById("item-image-input").value="";
       renderPieceItemsList(pieceIdx);
-      if(window.fbApi && window.fbApi.savePiece){
-        window.fbApi.savePiece(pieces[pieceIdx]).catch(e=>console.error("Erro salvar peça Firebase",e));
-      }
+      if(window.fbApi && window.fbApi.savePiece){ window.fbApi.savePiece(pieces[pieceIdx]).catch(e=>console.error("Erro salvar peça Firebase",e)); }
     });
 
     document.getElementById("btn-export-csv").addEventListener("click",exportCSV);
-    const reportMonthSelect = document.getElementById("report-month-select");
-    if(reportMonthSelect) reportMonthSelect.addEventListener("change",renderReports);
+    const reportMonthSelect = document.getElementById("report-month-select"); if(reportMonthSelect) reportMonthSelect.addEventListener("change",renderReports);
 
-    renderChecklistSelectors();
-    renderInspectors();
-    renderPieces();
-    renderReports();
-    renderDashboard();
+    renderChecklistSelectors(); renderInspectors(); renderPieces(); renderReports(); renderDashboard();
+
+    // após carregar/atualizar dados, aplica permissões (esconder controles admin se necessário)
+    applyPermissions();
   }
 
-  // Login
+  // LOGIN
   document.addEventListener("DOMContentLoaded",()=>{
-    const loginForm = document.getElementById("login-form");
-    const loginError = document.getElementById("login-error");
-    const modeButtons = document.querySelectorAll(".login-mode-btn");
+    const loginForm = document.getElementById("login-form"); const loginError = document.getElementById("login-error"); const modeButtons = document.querySelectorAll(".login-mode-btn");
     let loginMode = "inspector";
 
-    modeButtons.forEach(btn=>{
-      btn.addEventListener("click",()=>{
-        loginMode = btn.dataset.mode;
-        modeButtons.forEach(b=>{
-          b.classList.toggle("active", b===btn);
-          b.setAttribute("aria-selected", b===btn ? "true":"false");
-        });
-        document.getElementById("login-inspector-fields").style.display =
-          (loginMode==="inspector"?"block":"none");
-        document.getElementById("login-admin-fields").style.display =
-          (loginMode==="admin"?"block":"none");
-        loginError.style.display="none";
-      });
-    });
+    modeButtons.forEach(btn=>{ btn.addEventListener("click",()=>{ loginMode = btn.dataset.mode; modeButtons.forEach(b=>{ b.classList.toggle("active", b===btn); b.setAttribute("aria-selected", b===btn ? "true":"false"); }); document.getElementById("login-inspector-fields").style.display = (loginMode==="inspector"?"block":"none"); document.getElementById("login-admin-fields").style.display = (loginMode==="admin"?"block":"none"); loginError.style.display="none"; }); });
 
-    // pré-carrega dados (inclui inspetores) para preencher o select do login
-    (async ()=>{
-      if(window.fbApi && window.fbApi.loadAll && !window._appDataLoaded){
-        try{
-          const data = await window.fbApi.loadAll();
-          if(data.pieces && data.pieces.length) pieces = data.pieces;
-          if(data.inspectors && data.inspectors.length) inspectors = data.inspectors;
-          if(data.inspections && data.inspections.length) inspections = data.inspections;
-          window._appDataLoaded = true;
-          renderLoginInspectorSelect();
-        }catch(err){
-          console.error("Erro carregar dados iniciais:",err);
-          // fallback: se já tiver inspetores locais, renderiza
-          renderLoginInspectorSelect();
-        }
-      } else {
-        // caso firebase não disponível, tentar renderizar com dados locais
-        renderLoginInspectorSelect();
-      }
-    })();
+    (async ()=>{ if(window.fbApi && window.fbApi.loadAll && !window._appDataLoaded){ try{ const data = await window.fbApi.loadAll(); if(data.pieces && data.pieces.length) pieces = data.pieces; if(data.inspectors && data.inspectors.length) inspectors = data.inspectors; if(data.inspections && data.inspections.length) inspections = data.inspections; window._appDataLoaded = true; renderLoginInspectorSelect(); }catch(err){ console.error("Erro carregar dados iniciais:",err); renderLoginInspectorSelect(); } } else { renderLoginInspectorSelect(); } })();
 
-    loginForm.addEventListener("submit",async (e)=>{
-      e.preventDefault();
-      loginError.style.display="none";
-      loginError.textContent = "";
-
+    loginForm.addEventListener("submit",async (e)=>{ e.preventDefault(); loginError.style.display="none"; loginError.textContent = "";
       if(loginMode==="admin"){
         const pin = document.getElementById("login-admin-pin").value.trim();
-        if(pin !== ADMIN_PIN){
-          loginError.textContent="Senha de administrador inválida.";
-          loginError.style.display="block";
-          return;
-        }
+        if(pin !== ADMIN_PIN){ loginError.textContent="Senha de administrador inválida."; loginError.style.display="block"; return; }
         currentUser = { role:"admin", name:"Administrador" };
-        document.getElementById("login-screen").style.display="none";
-        document.getElementById("app-root").style.display="flex";
-        updateHeaderUser();
-        await initAppAfterLogin();
+        document.getElementById("login-screen").style.display="none"; document.getElementById("app-root").style.display="flex"; updateHeaderUser(); await initAppAfterLogin(); applyPermissions();
       }else{
-        const sel = document.getElementById("login-insp-select");
-        const name = (sel && sel.value) ? sel.value.trim() : "";
-        const pin = document.getElementById("login-insp-pin").value.trim();
-        if(!name || !pin){
-          loginError.textContent="Selecione o inspetor e informe o PIN.";
-          loginError.style.display="block";
-          return;
-        }
-        if(pin.length !== 4){
-          loginError.textContent="O PIN deve ter 4 dígitos.";
-          loginError.style.display="block";
-          return;
-        }
+        const sel = document.getElementById("login-insp-select"); const name = (sel && sel.value) ? sel.value.trim() : ""; const pin = document.getElementById("login-insp-pin").value.trim();
+        if(!name || !pin){ loginError.textContent="Selecione o inspetor e informe o PIN."; loginError.style.display="block"; return; }
+        if(pin.length !== 4){ loginError.textContent="O PIN deve ter 4 dígitos."; loginError.style.display="block"; return; }
 
         try{
-          // garantir que dados foram carregados
           if(window.fbApi && window.fbApi.loadAll && !window._appDataLoaded){
-            const data = await window.fbApi.loadAll();
-            if(data.pieces && data.pieces.length) pieces = data.pieces;
-            if(data.inspectors && data.inspectors.length) inspectors = data.inspectors;
-            if(data.inspections && data.inspections.length) inspections = data.inspections;
-            window._appDataLoaded = true;
-            renderLoginInspectorSelect();
+            const data = await window.fbApi.loadAll(); if(data.pieces && data.pieces.length) pieces = data.pieces; if(data.inspectors && data.inspectors.length) inspectors = data.inspectors; if(data.inspections && data.inspections.length) inspections = data.inspections; window._appDataLoaded = true; renderLoginInspectorSelect();
           }
 
           let insp = inspectors.find(i=>i.name === name);
-          if(!insp){
-            loginError.textContent = "Inspetor não encontrado.";
-            loginError.style.display="block";
-            return;
-          }
+          if(!insp){ loginError.textContent = "Inspetor não encontrado."; loginError.style.display="block"; return; }
 
           const pinHash = await hashString(pin);
           if(!insp.pinHash){
-            if(!confirm(`Nenhum PIN cadastrado para "${insp.name}". Deseja cadastrar este PIN agora?`)){
-              return;
-            }
+            if(!confirm(`Nenhum PIN cadastrado para "${insp.name}". Deseja cadastrar este PIN agora?`)){ return; }
             insp.pinHash = pinHash;
-            if(window.fbApi && window.fbApi.setInspectors){
-              try{
-                await window.fbApi.setInspectors(inspectors);
-              }catch(err){
-                console.error("Erro salvar PIN:",err);
-              }
-            }
-          }else if(insp.pinHash !== pinHash){
-            loginError.textContent="PIN inválido.";
-            loginError.style.display="block";
-            return;
-          }
+            if(window.fbApi && window.fbApi.setInspectors){ try{ await window.fbApi.setInspectors(inspectors); }catch(err){ console.error("Erro salvar PIN:",err); } }
+          }else if(insp.pinHash !== pinHash){ loginError.textContent="PIN inválido."; loginError.style.display="block"; return; }
 
           currentUser = { role:"inspector", name: insp.name };
-          document.getElementById("login-screen").style.display="none";
-          document.getElementById("app-root").style.display="flex";
-          updateHeaderUser();
-          await initAppAfterLogin();
-
-        }catch(err){
-          console.error("Erro login inspetor:",err);
-          loginError.textContent="Erro ao validar PIN. Tente novamente.";
-          loginError.style.display="block";
-        }
+          document.getElementById("login-screen").style.display="none"; document.getElementById("app-root").style.display="flex"; updateHeaderUser(); await initAppAfterLogin(); applyPermissions();
+        }catch(err){ console.error("Erro login inspetor:",err); loginError.textContent="Erro ao validar PIN. Tente novamente."; loginError.style.display="block"; }
       }
     });
   });
