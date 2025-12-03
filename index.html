@@ -1061,15 +1061,78 @@
       else console.log("Auth none");
     });
 
-    async function uploadFileAndGetUrl(path, file) {
-      if (!file) return null;
-      const ref = sRef(storage, path);
-      const metadata = { contentType: file.type || "image/jpeg" };
-      await uploadBytes(ref, file, metadata);
-      const url = await getDownloadURL(ref);
-      return url;
-    }
+   async function uploadFileAndGetUrl(path, file) {
+  // reduz imagem e retorna Blob (para economizar espaço)
+  function resizeImageFile(file, maxWidth = 1000, quality = 0.7) {
+    return new Promise((resolve, reject) => {
+      if (!file) return reject(new Error("No file"));
+      const img = new Image();
+      const fr = new FileReader();
+      fr.onload = () => { img.src = fr.result; };
+      fr.onerror = reject;
+      fr.readAsDataURL(file);
 
+      img.onload = () => {
+        const scale = Math.min(1, maxWidth / img.width);
+        const w = Math.round(img.width * scale);
+        const h = Math.round(img.height * scale);
+        const canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, w, h);
+        canvas.toBlob((blob) => {
+          if (!blob) return reject(new Error('Falha ao gerar blob'));
+          resolve(blob);
+        }, 'image/jpeg', quality);
+      };
+      img.onerror = reject;
+    });
+  }
+
+  function fileOrBlobToDataUrl(fileOrBlob) {
+    return new Promise((resolve, reject) => {
+      const fr = new FileReader();
+      fr.onload = () => resolve(fr.result);
+      fr.onerror = reject;
+      fr.readAsDataURL(fileOrBlob);
+    });
+  }
+
+  if (!file) return { url: null, dataUrl: null };
+
+  // tenta reduzir a imagem para ficar menor (evita limites Firestore)
+  let uploadBlob = file;
+  try {
+    uploadBlob = await resizeImageFile(file, 1000, 0.7);
+  } catch (e) {
+    console.warn('resize falhou, usando arquivo original', e);
+    uploadBlob = file;
+  }
+
+  // tenta upload normal para Storage
+  try {
+    const ref = sRef(storage, path);
+    const metadata = { contentType: file.type || 'image/jpeg' };
+    await uploadBytes(ref, uploadBlob, metadata);
+    const url = await getDownloadURL(ref);
+    return { url, dataUrl: null };
+  } catch (err) {
+    // fallback: converte para dataURL e devolve
+    console.warn('Upload Storage falhou — fallback para dataURL', err);
+    try {
+      const dataUrl = await fileOrBlobToDataUrl(uploadBlob);
+      if (dataUrl.length > 1000000) {
+        console.warn('DataURL muito grande:', dataUrl.length);
+        return { url: null, dataUrl: null, error: 'DataURL muito grande' };
+      }
+      return { url: null, dataUrl };
+    } catch (e2) {
+      console.error('Falha ao gerar dataURL fallback', e2);
+      return { url: null, dataUrl: null, error: 'fallback fail' };
+    }
+  }
+}
     async function loadAll() {
       const pieces = [];
       let inspectors = [];
@@ -1186,19 +1249,53 @@
       await setDoc(ref, { list: list || [] });
     }
 
-    async function saveInspection(inspec) {
-      const timeStamp = Date.now();
-      const itensToSave = [];
-      for (let idx = 0; idx < (inspec.itens || []).length; idx++) {
-        const it = inspec.itens[idx];
-        let fotoUrl = it.fotoUrl || null;
-        if (it.foto instanceof File) {
-          const ext = (it.foto.name && it.foto.name.split(".").pop()) || "jpg";
-          fotoUrl = await uploadFileAndGetUrl(
-            `inspections/${inspec.piece}/${timeStamp}_${idx}.${ext}`,
-            it.foto
-          );
-        }
+ async function saveInspection(inspec) {
+  const timeStamp = Date.now();
+  const itensToSave = [];
+  for (let idx = 0; idx < (inspec.itens || []).length; idx++) {
+    const it = inspec.itens[idx];
+    let fotoUrl = it.fotoUrl || null;
+    let fotoDataUrl = null;
+
+    if (it.foto instanceof File) {
+      const ext = (it.foto.name && it.foto.name.split(".").pop()) || "jpg";
+      const path = `inspections/${inspec.piece}/${timeStamp}_${idx}.${ext}`;
+      const r = await uploadFileAndGetUrl(path, it.foto);
+      if (r && r.url) {
+        fotoUrl = r.url;
+      } else if (r && r.dataUrl) {
+        fotoUrl = null;
+        fotoDataUrl = r.dataUrl; // salva o base64 direto no documento
+      } else {
+        // upload falhou e não houve dataURL viável
+        fotoUrl = null;
+        fotoDataUrl = null;
+      }
+    }
+
+    itensToSave.push({
+      status: it.status,
+      motivo: it.motivo || "",
+      encaminhamento: it.encaminhamento || "",
+      nome_terceiro: it.nome_terceiro || "",
+      fotoUrl,
+      fotoDataUrl // este campo pode ser null ou base64 string
+    });
+  }
+
+  const docData = {
+    date: inspec.date,
+    inspector: inspec.inspector,
+    piece: inspec.piece,
+    descricao: inspec.descricao || "",
+    itens: itensToSave,
+    createdAt: new Date()
+  };
+
+  const ref = await addDoc(collection(db, "inspections"), docData);
+  return { id: ref.id, ...docData };
+}
+
         itensToSave.push({
           status: it.status,
           motivo: it.motivo,
@@ -2445,3 +2542,4 @@
   </script>
 </body>
 </html>
+
