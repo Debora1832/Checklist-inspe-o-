@@ -920,6 +920,7 @@
               </div>
             </div>
             <div id="cl-piece-image-box" class="piece-image-box">[Imagem da peça]</div>
+            <div id="piece-serial-number-section" style="margin-top:16px;margin-bottom:16px;"></div>
             <div id="checklist-item-list"></div>
             <button class="btn-primary mt-16" id="btn-finish-checklist">Finalizar inspeção</button>
             <div id="checklist-nok-library" class="checklist-nok-library mt-16"></div>
@@ -967,6 +968,12 @@
                 <input type="file" id="piece-image-input" accept="image/*">
               </div>
             </div>
+            <div class="form-group">
+              <label>
+                <input type="checkbox" id="piece-has-serial-input">
+                Peça possui serial number?
+              </label>
+            </div>
             <button class="btn-primary" id="btn-add-piece">Adicionar peça</button>
           </div>
 
@@ -994,12 +1001,6 @@
               <div class="form-group">
                 <label for="item-image-input">Imagem do item</label>
                 <input type="file" id="item-image-input" accept="image/*">
-              </div>
-              <div class="form-group">
-                <label>
-                  <input type="checkbox" id="item-has-serial-input">
-                  Item possui serial number?
-                </label>
               </div>
               <button class="btn-primary" id="btn-add-item">Adicionar item</button>
             </div>
@@ -1352,6 +1353,7 @@
 
   let currentChecklistPiece = null;
   let checklistItemStates = [];
+  let currentPieceSerialNumber = ""; // Serial number for the current piece being inspected
 
   let reportsChart = null;
   let dashboardChart = null;
@@ -1604,8 +1606,9 @@
     }
     checklistItemStates = (currentChecklistPiece.items||[]).map(()=>({
       status:null,motivo:"",encaminhamento:"",nomeTerceiro:"",
-      fotoFile:null,fotoUrl:null,serialNumber:""
+      fotoFile:null,fotoUrl:null
     }));
+    currentPieceSerialNumber = ""; // Reset serial number for new inspection
     renderChecklistExecution();
     document.getElementById("checklist-execution").classList.remove("hide");
   }
@@ -1625,6 +1628,25 @@
       imgBox.textContent = "[Imagem da peça]";
     }
 
+    // Show serial number input if piece has serial number
+    const serialSection = document.getElementById("piece-serial-number-section");
+    if(piece.hasSerialNumber){
+      serialSection.innerHTML = `
+        <div style="padding:12px;background:#f0f4f8;border-radius:6px;border:1px solid #c8d3e6;">
+          <label style="font-size:14px;font-weight:600;color:#003366;display:block;margin-bottom:6px;">Serial Number da Peça:</label>
+          <input type="text" id="piece-serial-input" value="${currentPieceSerialNumber}" placeholder="Digite o serial number da peça" style="width:100%;padding:8px;border:1px solid #c8d3e6;border-radius:4px;font-size:14px;">
+        </div>
+      `;
+      const serialInput = serialSection.querySelector("#piece-serial-input");
+      if(serialInput){
+        serialInput.addEventListener("input",()=>{
+          currentPieceSerialNumber = serialInput.value;
+        });
+      }
+    }else{
+      serialSection.innerHTML = "";
+    }
+
     const listDiv = document.getElementById("checklist-item-list");
     listDiv.innerHTML = "";
 
@@ -1641,12 +1663,6 @@
         <div class="checklist-item-body">
           <div class="checklist-item-title">${item.name}</div>
           <div class="checklist-item-desc">${item.description||""}</div>
-          ${item.hasSerialNumber ? `
-            <div style="margin-top:8px;">
-              <label style="font-size:13px;font-weight:600;color:#003366;">Serial Number:</label>
-              <input type="text" id="serial-${idx}" value="${st.serialNumber||""}" placeholder="Digite o serial number" style="width:100%;padding:6px;border:1px solid #c8d3e6;border-radius:4px;font-size:13px;">
-            </div>
-          ` : ""}
           <div class="checklist-item-extra" id="extra-${idx}"></div>
         </div>
         <div class="checklist-item-actions">
@@ -1655,16 +1671,6 @@
         </div>
       `;
       listDiv.appendChild(wrap);
-
-      // Add serial number input event listener if item has serial number
-      if(item.hasSerialNumber){
-        const serialInput = wrap.querySelector(`#serial-${idx}`);
-        if(serialInput){
-          serialInput.addEventListener("input",()=>{
-            checklistItemStates[idx].serialNumber = serialInput.value;
-          });
-        }
-      }
 
       if(st.status==="NOK"){
         const extraDiv = wrap.querySelector(`#extra-${idx}`);
@@ -1812,12 +1818,12 @@
       inspector: inspName,
       piece: currentChecklistPiece.code,
       descricao: "Inspeção realizada",
+      serialNumber: currentPieceSerialNumber || "",
       itens: checklistItemStates.map(s=>({
         status: s.status,
         motivo: s.motivo,
         encaminhamento: s.encaminhamento,
         nome_terceiro: s.nomeTerceiro,
-        serialNumber: s.serialNumber || "",
         foto: s.fotoFile,
         fotoUrl: s.fotoUrl
       }))
@@ -2635,6 +2641,7 @@
       const code = document.getElementById("piece-code-input").value.trim();
       const desc = document.getElementById("piece-desc-input").value.trim();
       const file = document.getElementById("piece-image-input").files[0];
+      const hasSerial = document.getElementById("piece-has-serial-input").checked;
       if(!code || !desc || !file){
         alert("Preencha código, descrição e imagem.");
         return;
@@ -2643,7 +2650,7 @@
         alert("Já existe uma peça com esse código.");
         return;
       }
-      const newPiece = {code,description:desc,image:file,imageUrl:null,items:[]};
+      const newPiece = {code,description:desc,image:file,imageUrl:null,items:[],hasSerialNumber:hasSerial};
       pieces.push(newPiece);
       renderPieces();
       renderChecklistSelectors();
@@ -2669,6 +2676,12 @@
         }
       }
       renderBiblioteca();
+      
+      // Clear form
+      document.getElementById("piece-code-input").value="";
+      document.getElementById("piece-desc-input").value="";
+      document.getElementById("piece-image-input").value="";
+      document.getElementById("piece-has-serial-input").checked=false;
     });
 
     document.getElementById("btn-add-item").addEventListener("click",()=>{
@@ -2680,16 +2693,14 @@
       const name = document.getElementById("item-name-input").value.trim();
       const desc = document.getElementById("item-desc-input").value.trim();
       const file = document.getElementById("item-image-input").files[0];
-      const hasSerial = document.getElementById("item-has-serial-input").checked;
       if(!name || !desc || !file){
         alert("Preencha nome, descrição e imagem do item.");
         return;
       }
-      pieces[pieceIdx].items.push({name,description:desc,image:file,imageUrl:null,hasSerialNumber:hasSerial});
+      pieces[pieceIdx].items.push({name,description:desc,image:file,imageUrl:null});
       document.getElementById("item-name-input").value="";
       document.getElementById("item-desc-input").value="";
       document.getElementById("item-image-input").value="";
-      document.getElementById("item-has-serial-input").checked=false;
       renderPieceItemsList(pieceIdx);
       if(window.fbApi && window.fbApi.savePiece){
         window.fbApi.savePiece(pieces[pieceIdx]).catch(e=>console.error("Erro salvar peça Firebase",e));
