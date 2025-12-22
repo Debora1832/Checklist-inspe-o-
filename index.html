@@ -2362,7 +2362,10 @@
     const pieceSelect = document.getElementById("biblioteca-piece-select");
     if(pieceSelect && currentUser && currentUser.role === "admin"){
       pieceSelect.innerHTML = '<option value="" disabled selected>Selecione uma peça</option>' +
-        pieces.map(p=>`<option value="${escapeHtml(p.code)}">${escapeHtml(p.code)} - ${escapeHtml(p.description||"")}</option>`).join("");
+        pieces.map(p=>{
+          const pieceName = `${p.code} - ${p.description||""}`;
+          return `<option value="${escapeHtml(pieceName)}">${escapeHtml(pieceName)}</option>`;
+        }).join("");
     }
 
     if(!bibliotecaItems.length){
