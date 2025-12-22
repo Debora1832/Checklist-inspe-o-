@@ -1,3 +1,7 @@
+/* ===========================================================
+   FIREBASE – CONFIGURAÇÃO PARA PRODUÇÃO
+   =========================================================== */
+
 export const firebaseConfigProd = {
     apiKey: "AIzaSyCExbzz_2-ttOsz8Bsixco14aSQfUKnK3w",
     authDomain: "magius-checklist.firebaseapp.com",
