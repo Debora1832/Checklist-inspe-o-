@@ -12,8 +12,409 @@
     <!-- Ícones -->
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
 
-    <!-- CSS -->
-    <link rel="stylesheet" href="assets/css/style.css" />
+    <!-- CSS Inline -->
+    <style>
+/* ================================
+   TEMA E VARIÁVEIS
+================================ */
+:root {
+    --color-bg: #f5f7fa;
+    --color-white: #ffffff;
+    --color-gray-light: #e5e8ec;
+    --color-gray: #cbd3dd;
+    --color-gray-dark: #70778a;
+    --color-text: #2b2f38;
+    --color-primary: #2a62ff;
+    --color-primary-hover: #084ff8;
+    --color-danger: #df3d3d;
+
+    --radius: 10px;
+    --transition: 0.25s ease;
+    --shadow: 0 3px 8px rgba(0,0,0,0.08);
+    --font-main: 'Inter', sans-serif;
+}
+
+/* ================================
+   GLOBAL
+================================ */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    height: 100%;
+    background: var(--color-bg);
+    font-family: var(--font-main);
+    color: var(--color-text);
+}
+
+button {
+    cursor: pointer;
+    font-family: inherit;
+}
+
+input, select {
+    font-family: inherit;
+    padding: 10px;
+    border-radius: var(--radius);
+    border: 1px solid var(--color-gray);
+    background: var(--color-white);
+    transition: var(--transition);
+}
+
+input:focus, select:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 2px rgba(42,98,255,0.2);
+}
+
+/* ================================
+   LAYOUT PRINCIPAL
+================================ */
+#app {
+    display: flex;
+    width: 100%;
+    height: 100vh;
+}
+
+/* ================================
+   SIDEBAR RETRÁTIL
+================================ */
+.sidebar {
+    width: 250px;
+    background: var(--color-white);
+    border-right: 1px solid var(--color-gray-light);
+    box-shadow: var(--shadow);
+    padding: 16px 12px;
+    display: flex;
+    flex-direction: column;
+    transition: width var(--transition);
+}
+
+.sidebar.closed {
+    width: 70px;
+}
+
+.sidebar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 28px;
+}
+
+.sidebar-logo {
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.sidebar.closed .sidebar-logo {
+    opacity: 0;
+    width: 0;
+}
+
+.sidebar-toggle {
+    background: none;
+    border: none;
+    padding: 6px;
+}
+
+.sidebar-toggle span {
+    font-size: 28px;
+    color: var(--color-text);
+}
+
+.sidebar-menu {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.menu-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border: none;
+    background: none;
+    padding: 12px;
+    border-radius: var(--radius);
+    transition: var(--transition);
+    color: var(--color-text);
+    font-size: 15px;
+}
+
+.menu-item:hover {
+    background: var(--color-gray-light);
+}
+
+.sidebar.closed .menu-item .label {
+    opacity: 0;
+    width: 0;
+}
+
+.menu-item .material-symbols-outlined {
+    font-size: 22px;
+}
+
+.sidebar-footer {
+    font-size: 12px;
+    text-align: center;
+    color: var(--color-gray-dark);
+    margin-top: 20px;
+}
+
+/* ================================
+   ÁREA PRINCIPAL
+================================ */
+.main {
+    flex: 1;
+    padding: 24px;
+    overflow-y: auto;
+}
+
+.main-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.header-title {
+    font-size: 28px;
+    font-weight: 700;
+}
+
+.header-subtitle {
+    font-size: 14px;
+    color: var(--color-gray-dark);
+}
+
+.user-info {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* ================================
+   TELAS DINÂMICAS
+================================ */
+.screen {
+    display: none;
+}
+
+.screen.active {
+    display: block;
+}
+
+/* ================================
+   CARTÕES
+================================ */
+.card {
+    background: var(--color-white);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 20px;
+    margin-bottom: 12px;
+}
+
+.card-title {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 18px;
+}
+
+/* ================================
+   LISTAS E TABELAS
+================================ */
+.list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.list-item {
+    background: var(--color-gray-light);
+    padding: 10px 14px;
+    border-radius: var(--radius);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table th, .table td {
+    border-bottom: 1px solid var(--color-gray);
+    padding: 8px;
+}
+
+.table th {
+    text-align: left;
+    background: var(--color-gray-light);
+    font-weight: 600;
+}
+
+/* ================================
+   BOTÕES
+================================ */
+.btn-primary {
+    background: var(--color-primary);
+    color: var(--color-white);
+    border: none;
+    padding: 12px 16px;
+    border-radius: var(--radius);
+    transition: var(--transition);
+    font-weight: 600;
+}
+
+.btn-primary:hover {
+    background: var(--color-primary-hover);
+}
+
+.btn-secondary {
+    background: var(--color-gray);
+    color: var(--color-text);
+    border: none;
+    padding: 12px 16px;
+    border-radius: var(--radius);
+    transition: var(--transition);
+}
+
+.btn-secondary:hover {
+    background: var(--color-gray-dark);
+    color: var(--color-white);
+}
+
+.btn-danger {
+    background: var(--color-danger);
+    color: var(--color-white);
+    border: none;
+    padding: 10px 14px;
+    border-radius: var(--radius);
+}
+
+/* ================================
+   LOGIN
+================================ */
+.login-card {
+    width: 330px;
+    margin: 80px auto;
+    background: var(--color-white);
+    padding: 24px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+}
+
+.login-title {
+    text-align: center;
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 20px;
+}
+
+.login-tabs {
+    display: flex;
+    margin-bottom: 20px;
+}
+
+.login-tab {
+    flex: 1;
+    border: none;
+    background: var(--color-gray-light);
+    padding: 10px;
+    font-weight: 600;
+    border-radius: var(--radius);
+}
+
+.login-tab.active {
+    background: var(--color-primary);
+    color: var(--color-white);
+}
+
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.login-error {
+    color: var(--color-danger);
+    font-size: 13px;
+    margin-bottom: 10px;
+}
+
+/* ================================
+   GRID DE VÍDEOS
+================================ */
+.videos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+}
+
+.video-item {
+    background: var(--color-white);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 12px;
+}
+
+video {
+    width: 100%;
+    border-radius: var(--radius);
+}
+
+/* ================================
+   ESPAÇAMENTOS ÚTEIS
+================================ */
+.mt-12 { margin-top: 12px; }
+.mt-16 { margin-top: 16px; }
+.mt-24 { margin-top: 24px; }
+
+/* ================================
+   EXECUÇÃO DO CHECKLIST
+================================ */
+.exec-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 12px;
+}
+
+/* ================================
+   RESPONSIVIDADE
+================================ */
+@media (max-width: 768px) {
+    .sidebar {
+        position: absolute;
+        z-index: 20;
+        height: 100%;
+        left: 0;
+        top: 0;
+        transform: translateX(-100%);
+    }
+
+    .sidebar.open {
+        transform: translateX(0);
+    }
+
+    .main {
+        padding: 16px;
+    }
+
+    .login-card {
+        width: 95%;
+        margin-top: 40px;
+    }
+}
+    </style>
 </head>
 
 <body>
@@ -251,7 +652,541 @@
     <!-- LIB externa -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <!-- APP PRINCIPAL (MÓDULO) -->
-    <script type="module" src="assets/js/app.js"></script>
+    <!-- APP PRINCIPAL (Consolidated) -->
+    <script type="module">
+/* ===========================================================
+   FIREBASE CONFIGURATION
+   =========================================================== */
+const firebaseConfigDev = {
+    apiKey: "AIzaSyCExbzz_2-ttOsz8Bsixco14aSQfUKnK3w",
+    authDomain: "magius-checklist.firebaseapp.com",
+    projectId: "magius-checklist",
+    storageBucket: "magius-checklist.firebasestorage.app",
+    messagingSenderId: "377875879336",
+    appId: "1:377875879336:web:011fed4dda63f4b724f99d"
+};
+
+const firebaseConfigProd = {
+    apiKey: "AIzaSyCExbzz_2-ttOsz8Bsixco14aSQfUKnK3w",
+    authDomain: "magius-checklist.firebaseapp.com",
+    projectId: "magius-checklist",
+    storageBucket: "magius-checklist.firebasestorage.app",
+    messagingSenderId: "377875879336",
+    appId: "1:377875879336:web:011fed4dda63f4b724f99d"
+};
+
+const isDev = location.hostname === "localhost" || location.hostname === "127.0.0.1";
+const firebaseConfig = isDev ? firebaseConfigDev : firebaseConfigProd;
+
+/* ===========================================================
+   FIREBASE SDK IMPORTS
+   =========================================================== */
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+import {
+    getFirestore, collection, doc, addDoc, getDoc, getDocs, deleteDoc
+} from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+import {
+    getStorage, ref, uploadBytes, getDownloadURL
+} from "https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js";
+import {
+    getAuth, signInAnonymously
+} from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+
+const app = initializeApp(firebaseConfig);
+const Firestore = getFirestore(app);
+const Storage = getStorage(app);
+const Auth = getAuth(app);
+
+/* Login anônimo obrigatório para usar Firestore/Storage */
+signInAnonymously(Auth).catch(err => console.warn("Auth anônima falhou:", err));
+
+async function uploadFile(path, file) {
+    const storageRef = ref(Storage, path);
+    await uploadBytes(storageRef, file);
+    return await getDownloadURL(storageRef);
+}
+
+/* ===========================================================
+   FIREBASE FUNCTIONS - INSPECTORS
+   =========================================================== */
+async function firebaseGetInspectors() {
+    const snap = await getDocs(collection(Firestore, "Inspectors"));
+    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+}
+
+async function firebaseLoginInspector(id, pin) {
+    const refDoc = doc(Firestore, "Inspectors", id);
+    const data = await getDoc(refDoc);
+    if (!data.exists()) return null;
+
+    const insp = data.data();
+    return String(insp.pin) === String(pin)
+        ? { id, ...insp }
+        : null;
+}
+
+async function firebaseLoginAdmin(pin) {
+    const refDoc = doc(Firestore, "Settings", "admin");
+    const snap = await getDoc(refDoc);
+    if (!snap.exists()) return null;
+
+    return snap.data().adminPin === pin ? { role: "admin" } : null;
+}
+
+async function firebaseAddInspector({ name, photo }) {
+    let url = null;
+
+    if (photo) {
+        const ext = photo.name.split(".").pop();
+        url = await uploadFile(`inspectors/${Date.now()}.${ext}`, photo);
+    }
+
+    await addDoc(collection(Firestore, "Inspectors"), {
+        name,
+        photoUrl: url,
+        pin: null
+    });
+}
+
+/* ===========================================================
+   FIREBASE FUNCTIONS - PIECES
+   =========================================================== */
+async function firebaseGetPieces() {
+    const snap = await getDocs(collection(Firestore, "Pieces"));
+    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+}
+
+async function firebaseAddPiece({ code, desc, file }) {
+    let url = null;
+
+    if (file) {
+        const ext = file.name.split(".").pop();
+        url = await uploadFile(`pieces/${code}_${Date.now()}.${ext}`, file);
+    }
+
+    await addDoc(collection(Firestore, "Pieces"), {
+        code,
+        desc,
+        imageUrl: url,
+        items: []
+    });
+}
+
+async function firebaseDeletePiece(id) {
+    await deleteDoc(doc(Firestore, "Pieces", id));
+}
+
+/* ===========================================================
+   FIREBASE FUNCTIONS - INSPECTIONS
+   =========================================================== */
+async function firebaseAddInspection(data) {
+    await addDoc(collection(Firestore, "Inspections"), data);
+}
+
+/* ===========================================================
+   FIREBASE FUNCTIONS - VIDEOS
+   =========================================================== */
+async function firebaseGetVideos() {
+    const snap = await getDocs(collection(Firestore, "Videos"));
+    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+}
+
+async function firebaseAddVideo(pieceId, file) {
+    const ext = file.name.split(".").pop();
+    const url = await uploadFile(`videos/${pieceId}_${Date.now()}.${ext}`, file);
+
+    await addDoc(collection(Firestore, "Videos"), {
+        pieceId,
+        url,
+        createdAt: Date.now()
+    });
+}
+
+async function firebaseDeleteVideo(id) {
+    await deleteDoc(doc(Firestore, "Videos", id));
+}
+
+/* ===========================================================
+   APP.JS – Lógica Principal do Sistema
+   =========================================================== */
+
+/* ===========================================================
+   VARIÁVEIS GLOBAIS
+   =========================================================== */
+let currentUser = null;
+let currentRole = null;
+let currentChecklistPiece = null;
+let currentChecklistItems = [];
+
+/* ===========================================================
+   SISTEMA DE NAVEGAÇÃO (SPA)
+   =========================================================== */
+const screens = document.querySelectorAll(".screen");
+const sidebarButtons = document.querySelectorAll(".menu-item");
+
+function showScreen(name) {
+    screens.forEach(s => s.classList.remove("active"));
+    document.getElementById(`screen-${name}`).classList.add("active");
+}
+
+sidebarButtons.forEach(btn => {
+    btn.addEventListener("click", () => {
+        const target = btn.dataset.screen;
+        showScreen(target);
+    });
+});
+
+/* ===========================================================
+   SIDEBAR RETRÁTIL
+   =========================================================== */
+const sidebar = document.getElementById("sidebar");
+const btnSidebar = document.getElementById("btn-toggle-sidebar");
+
+btnSidebar.addEventListener("click", () => {
+    sidebar.classList.toggle("closed");
+});
+
+/* ===========================================================
+   TELA DE LOGIN
+   =========================================================== */
+const loginTabs = document.querySelectorAll(".login-tab");
+const loginInspectorForm = document.getElementById("login-inspector-form");
+const loginAdminForm = document.getElementById("login-admin-form");
+const loginErrorBox = document.getElementById("login-error");
+
+loginTabs.forEach(tab => {
+    tab.addEventListener("click", () => {
+        loginTabs.forEach(t => t.classList.remove("active"));
+        tab.classList.add("active");
+
+        loginErrorBox.textContent = "";
+
+        const mode = tab.dataset.mode;
+        if (mode === "inspector") {
+            loginInspectorForm.classList.remove("hidden");
+            loginAdminForm.classList.add("hidden");
+        } else {
+            loginInspectorForm.classList.add("hidden");
+            loginAdminForm.classList.remove("hidden");
+        }
+    });
+});
+
+/* ===========================================================
+   LOGIN – INSPECTOR
+   =========================================================== */
+const loginInspSelect = document.getElementById("login-insp-select");
+const loginInspPin = document.getElementById("login-insp-pin");
+const btnLoginInsp = document.getElementById("btn-login-insp");
+
+async function loadInspectorsForLogin() {
+    const list = await firebaseGetInspectors();
+    loginInspSelect.innerHTML = "";
+
+    list.forEach(insp => {
+        const op = document.createElement("option");
+        op.value = insp.id;
+        op.textContent = insp.name;
+        loginInspSelect.appendChild(op);
+    });
+}
+
+btnLoginInsp.addEventListener("click", async () => {
+    loginErrorBox.textContent = "";
+
+    try {
+        const userId = loginInspSelect.value;
+        const pin = loginInspPin.value;
+
+        const user = await firebaseLoginInspector(userId, pin);
+
+        if (!user) {
+            loginErrorBox.textContent = "PIN incorreto.";
+            return;
+        }
+
+        currentUser = user;
+        currentRole = "inspector";
+
+        document.getElementById("user-info").textContent = `Inspetor: ${user.name}`;
+
+        showScreen("checklist");
+
+    } catch (err) {
+        loginErrorBox.textContent = "Erro no login.";
+    }
+});
+
+/* ===========================================================
+   LOGIN – ADMIN
+   =========================================================== */
+const loginAdminPin = document.getElementById("login-admin-pin");
+const btnLoginAdmin = document.getElementById("btn-login-admin");
+
+btnLoginAdmin.addEventListener("click", async () => {
+    loginErrorBox.textContent = "";
+
+    const pin = loginAdminPin.value.trim();
+    const admin = await firebaseLoginAdmin(pin);
+
+    if (!admin) {
+        loginErrorBox.textContent = "Senha incorreta.";
+        return;
+    }
+
+    currentUser = admin;
+    currentRole = "admin";
+
+    document.getElementById("user-info").textContent = "Administrador";
+
+    showScreen("pieces");
+});
+
+/* ===========================================================
+   CHECKLIST – Seleção de Peças
+   =========================================================== */
+const checklistPieceSelect = document.getElementById("checklist-piece-select");
+const btnStartChecklist = document.getElementById("btn-start-checklist");
+const checklistExec = document.getElementById("checklist-exec");
+const checklistItemsContainer = document.getElementById("checklist-items-container");
+const checklistPieceTitle = document.getElementById("checklist-piece-title");
+const btnFinishChecklist = document.getElementById("btn-finish-checklist");
+
+async function loadPieces() {
+    const list = await firebaseGetPieces();
+
+    checklistPieceSelect.innerHTML = "";
+    list.forEach(piece => {
+        const op = document.createElement("option");
+        op.value = piece.id;
+        op.textContent = `${piece.code} – ${piece.desc}`;
+        checklistPieceSelect.appendChild(op);
+    });
+
+    renderPiecesList(list);
+}
+
+btnStartChecklist.addEventListener("click", async () => {
+    const pieceId = checklistPieceSelect.value;
+
+    const pieces = await firebaseGetPieces();
+    const piece = pieces.find(p => p.id === pieceId);
+    if (!piece) return;
+
+    currentChecklistPiece = piece;
+    currentChecklistItems = piece.items || [];
+
+    checklistPieceTitle.textContent = `${piece.code} – ${piece.desc}`;
+    checklistItemsContainer.innerHTML = "";
+
+    currentChecklistItems.forEach((item, idx) => {
+        const div = document.createElement("div");
+        div.className = "list-item";
+
+        div.innerHTML = `
+            <span>${item.text}</span>
+            <select data-i="${idx}">
+                <option value="ok">OK</option>
+                <option value="nc">NC</option>
+            </select>
+        `;
+
+        checklistItemsContainer.appendChild(div);
+    });
+
+    checklistExec.classList.remove("hidden");
+});
+
+btnFinishChecklist.addEventListener("click", async () => {
+    const results = [];
+
+    checklistItemsContainer.querySelectorAll("select").forEach(sel => {
+        results.push({
+            itemIndex: Number(sel.dataset.i),
+            result: sel.value
+        });
+    });
+
+    await firebaseAddInspection({
+        inspectorId: currentUser.id,
+        pieceId: currentChecklistPiece.id,
+        results,
+        timestamp: Date.now()
+    });
+
+    alert("Checklist concluído com sucesso.");
+    checklistExec.classList.add("hidden");
+});
+
+/* ===========================================================
+   PEÇAS – CRUD
+   =========================================================== */
+const pieceCodeInput = document.getElementById("piece-code-input");
+const pieceDescInput = document.getElementById("piece-desc-input");
+const pieceImgInput = document.getElementById("piece-img-input");
+const btnAddPiece = document.getElementById("btn-add-piece");
+const piecesListDiv = document.getElementById("pieces-list");
+
+btnAddPiece.addEventListener("click", async () => {
+    const code = pieceCodeInput.value.trim();
+    const desc = pieceDescInput.value.trim();
+    const file = pieceImgInput.files[0];
+
+    if (!code || !desc) {
+        alert("Preencha código e descrição.");
+        return;
+    }
+
+    await firebaseAddPiece({ code, desc, file });
+
+    pieceCodeInput.value = "";
+    pieceDescInput.value = "";
+    pieceImgInput.value = "";
+
+    loadPieces();
+});
+
+function renderPiecesList(list) {
+    piecesListDiv.innerHTML = "";
+
+    list.forEach(piece => {
+        const div = document.createElement("div");
+        div.className = "list-item";
+
+        div.innerHTML = `
+            <span>${piece.code} – ${piece.desc}</span>
+            <button class="btn-danger" data-id="${piece.id}">Excluir</button>
+        `;
+
+        div.querySelector("button")
+            .addEventListener("click", async () => {
+                await firebaseDeletePiece(piece.id);
+                loadPieces();
+            });
+
+        piecesListDiv.appendChild(div);
+    });
+}
+
+/* ===========================================================
+   INSPETORES – CRUD
+   =========================================================== */
+const inspNameInput = document.getElementById("insp-name-input");
+const inspPhotoInput = document.getElementById("insp-photo-input");
+const btnAddInspector = document.getElementById("btn-add-inspector");
+const inspectorsListDiv = document.getElementById("inspectors-list");
+
+btnAddInspector.addEventListener("click", async () => {
+    const name = inspNameInput.value.trim();
+    const photo = inspPhotoInput.files[0];
+
+    if (!name) {
+        alert("Informe o nome.");
+        return;
+    }
+
+    await firebaseAddInspector({ name, photo });
+
+    inspNameInput.value = "";
+    inspPhotoInput.value = "";
+
+    loadInspectors();
+});
+
+async function loadInspectors() {
+    const list = await firebaseGetInspectors();
+
+    inspectorsListDiv.innerHTML = "";
+    list.forEach(insp => {
+        const div = document.createElement("div");
+        div.className = "list-item";
+        div.innerHTML = `<span>${insp.name}</span>`;
+        inspectorsListDiv.appendChild(div);
+    });
+}
+
+/* ===========================================================
+   VÍDEOS – CRUD
+   =========================================================== */
+const videoPieceSelect = document.getElementById("video-piece-select");
+const videoFileInput = document.getElementById("video-file-input");
+const btnAddVideo = document.getElementById("btn-add-video");
+const videosListDiv = document.getElementById("videos-list");
+
+async function loadPiecesForVideos() {
+    const list = await firebaseGetPieces();
+
+    videoPieceSelect.innerHTML = "";
+    list.forEach(p => {
+        const op = document.createElement("option");
+        op.value = p.id;
+        op.textContent = `${p.code} – ${p.desc}`;
+        videoPieceSelect.appendChild(op);
+    });
+}
+
+btnAddVideo.addEventListener("click", async () => {
+    const pieceId = videoPieceSelect.value;
+    const file = videoFileInput.files[0];
+
+    if (!file) {
+        alert("Selecione um vídeo.");
+        return;
+    }
+
+    await firebaseAddVideo(pieceId, file);
+    videoFileInput.value = "";
+    loadVideos();
+});
+
+async function loadVideos() {
+    const list = await firebaseGetVideos();
+
+    videosListDiv.innerHTML = "";
+    list.forEach(video => {
+        const div = document.createElement("div");
+        div.className = "video-item";
+
+        div.innerHTML = `
+            <video controls src="${video.url}"></video>
+            <button class="btn-danger" data-id="${video.id}">Excluir</button>
+        `;
+
+        div.querySelector("button").addEventListener("click", async () => {
+            await firebaseDeleteVideo(video.id);
+            loadVideos();
+        });
+
+        videosListDiv.appendChild(div);
+    });
+}
+
+/* ===========================================================
+   RELATÓRIOS (placeholder)
+   =========================================================== */
+const reportMonthSelect = document.getElementById("report-month-select");
+
+function loadReportMonths() {
+    for (let m = 1; m <= 12; m++) {
+        const op = document.createElement("option");
+        op.value = m;
+        op.textContent = `Mês ${m}`;
+        reportMonthSelect.appendChild(op);
+    }
+}
+
+/* ===========================================================
+   INICIALIZAÇÃO
+   =========================================================== */
+async function init() {
+    await loadInspectorsForLogin();
+    await loadPieces();
+    await loadPiecesForVideos();
+    await loadVideos();
+    loadReportMonths();
+}
+
+init();
+    </script>
 </body>
 </html>
