@@ -995,6 +995,12 @@
                 <label for="item-image-input">Imagem do item</label>
                 <input type="file" id="item-image-input" accept="image/*">
               </div>
+              <div class="form-group">
+                <label>
+                  <input type="checkbox" id="item-has-serial-input">
+                  Item possui serial number?
+                </label>
+              </div>
               <button class="btn-primary" id="btn-add-item">Adicionar item</button>
             </div>
           </div>
@@ -1598,7 +1604,7 @@
     }
     checklistItemStates = (currentChecklistPiece.items||[]).map(()=>({
       status:null,motivo:"",encaminhamento:"",nomeTerceiro:"",
-      fotoFile:null,fotoUrl:null
+      fotoFile:null,fotoUrl:null,serialNumber:""
     }));
     renderChecklistExecution();
     document.getElementById("checklist-execution").classList.remove("hide");
@@ -1635,6 +1641,12 @@
         <div class="checklist-item-body">
           <div class="checklist-item-title">${item.name}</div>
           <div class="checklist-item-desc">${item.description||""}</div>
+          ${item.hasSerialNumber ? `
+            <div style="margin-top:8px;">
+              <label style="font-size:13px;font-weight:600;color:#003366;">Serial Number:</label>
+              <input type="text" id="serial-${idx}" value="${st.serialNumber||""}" placeholder="Digite o serial number" style="width:100%;padding:6px;border:1px solid #c8d3e6;border-radius:4px;font-size:13px;">
+            </div>
+          ` : ""}
           <div class="checklist-item-extra" id="extra-${idx}"></div>
         </div>
         <div class="checklist-item-actions">
@@ -1643,6 +1655,16 @@
         </div>
       `;
       listDiv.appendChild(wrap);
+
+      // Add serial number input event listener if item has serial number
+      if(item.hasSerialNumber){
+        const serialInput = wrap.querySelector(`#serial-${idx}`);
+        if(serialInput){
+          serialInput.addEventListener("input",()=>{
+            checklistItemStates[idx].serialNumber = serialInput.value;
+          });
+        }
+      }
 
       if(st.status==="NOK"){
         const extraDiv = wrap.querySelector(`#extra-${idx}`);
@@ -1795,6 +1817,7 @@
         motivo: s.motivo,
         encaminhamento: s.encaminhamento,
         nome_terceiro: s.nomeTerceiro,
+        serialNumber: s.serialNumber || "",
         foto: s.fotoFile,
         fotoUrl: s.fotoUrl
       }))
@@ -2657,14 +2680,16 @@
       const name = document.getElementById("item-name-input").value.trim();
       const desc = document.getElementById("item-desc-input").value.trim();
       const file = document.getElementById("item-image-input").files[0];
+      const hasSerial = document.getElementById("item-has-serial-input").checked;
       if(!name || !desc || !file){
         alert("Preencha nome, descrição e imagem do item.");
         return;
       }
-      pieces[pieceIdx].items.push({name,description:desc,image:file,imageUrl:null});
+      pieces[pieceIdx].items.push({name,description:desc,image:file,imageUrl:null,hasSerialNumber:hasSerial});
       document.getElementById("item-name-input").value="";
       document.getElementById("item-desc-input").value="";
       document.getElementById("item-image-input").value="";
+      document.getElementById("item-has-serial-input").checked=false;
       renderPieceItemsList(pieceIdx);
       if(window.fbApi && window.fbApi.savePiece){
         window.fbApi.savePiece(pieces[pieceIdx]).catch(e=>console.error("Erro salvar peça Firebase",e));
