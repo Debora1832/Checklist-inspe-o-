@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Setup Firebase Data - Magius</title>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f7fa;
+        }
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+        }
+        h1 { color: #2a62ff; }
+        button {
+            background: #2a62ff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #084ff8;
+        }
+        .log {
+            background: #f5f7fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>Configuração Inicial do Firebase</h1>
+        <p>Este script irá popular o Firebase com dados iniciais:</p>
+        <ul>
+            <li><strong>Peças:</strong> 597-2445#01 e 597-2435#o1</li>
+            <li><strong>Inspetores:</strong> João Silva, Maria Santos, Pedro Costa, Ana Oliveira, Carlos Pereira</li>
+            <li><strong>Senha Admin:</strong> admin123</li>
+        </ul>
+        
+        <button onclick="setupData()">Inicializar Dados</button>
+        <button onclick="clearLog()">Limpar Log</button>
+        
+        <div class="log" id="log"></div>
+    </div>
+
+    <script type="module">
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCExbzz_2-ttOsz8Bsixco14aSQfUKnK3w",
+            authDomain: "magius-checklist.firebaseapp.com",
+            projectId: "magius-checklist",
+            storageBucket: "magius-checklist.firebasestorage.app",
+            messagingSenderId: "377875879336",
+            appId: "1:377875879336:web:011fed4dda63f4b724f99d"
+        };
+
+        // Import Firebase
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+        import {
+            getFirestore, collection, doc, setDoc, addDoc, getDocs
+        } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+        import {
+            getAuth, signInAnonymously
+        } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        // Login anônimo
+        await signInAnonymously(auth).catch(err => console.warn("Auth error:", err));
+
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('log');
+            const time = new Date().toLocaleTimeString();
+            const className = type === 'success' ? 'success' : type === 'error' ? 'error' : '';
+            logDiv.innerHTML += `<div class="${className}">[${time}] ${message}</div>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        window.clearLog = function() {
+            document.getElementById('log').innerHTML = '';
+        }
+
+        window.setupData = async function() {
+            try {
+                log('Iniciando configuração do Firebase...', 'info');
+
+                // 1. Configurar senha do admin
+                log('Configurando senha do administrador...', 'info');
+                await setDoc(doc(db, "Settings", "admin"), {
+                    adminPin: "admin123"
+                });
+                log('✓ Senha do admin configurada: admin123', 'success');
+
+                // 2. Adicionar peças
+                log('Adicionando peças...', 'info');
+                
+                const piece1 = {
+                    code: "597-2445#01",
+                    desc: "Peça de Teste 1",
+                    imageUrl: null,
+                    items: [
+                        { text: "Verificar dimensões" },
+                        { text: "Verificar acabamento superficial" },
+                        { text: "Verificar furos" },
+                        { text: "Verificar rosca" },
+                        { text: "Verificar tolerâncias" }
+                    ]
+                };
+
+                const piece2 = {
+                    code: "597-2435#o1",
+                    desc: "Peça de Teste 2",
+                    imageUrl: null,
+                    items: [
+                        { text: "Inspeção visual" },
+                        { text: "Verificar medidas" },
+                        { text: "Verificar marcação" },
+                        { text: "Verificar tratamento térmico" }
+                    ]
+                };
+
+                await addDoc(collection(db, "Pieces"), piece1);
+                log('✓ Peça adicionada: 597-2445#01', 'success');
+                
+                await addDoc(collection(db, "Pieces"), piece2);
+                log('✓ Peça adicionada: 597-2435#o1', 'success');
+
+                // 3. Adicionar inspetores
+                log('Adicionando inspetores...', 'info');
+                
+                const inspectors = [
+                    { name: "João Silva", pin: "1234", photoUrl: null },
+                    { name: "Maria Santos", pin: "1234", photoUrl: null },
+                    { name: "Pedro Costa", pin: "1234", photoUrl: null },
+                    { name: "Ana Oliveira", pin: "1234", photoUrl: null },
+                    { name: "Carlos Pereira", pin: "1234", photoUrl: null },
+                    { name: "Luisa Ferreira", pin: "1234", photoUrl: null },
+                    { name: "Roberto Alves", pin: "1234", photoUrl: null },
+                    { name: "Fernanda Lima", pin: "1234", photoUrl: null }
+                ];
+
+                for (const inspector of inspectors) {
+                    await addDoc(collection(db, "Inspectors"), inspector);
+                    log(`✓ Inspetor adicionado: ${inspector.name} (PIN: ${inspector.pin})`, 'success');
+                }
+
+                log('=================================', 'info');
+                log('✓ CONFIGURAÇÃO CONCLUÍDA COM SUCESSO!', 'success');
+                log('=================================', 'info');
+                log('Você pode agora usar o sistema principal.', 'info');
+                log('Login Admin: admin123', 'info');
+                log('Login Inspetores: PIN 1234 para todos', 'info');
+
+            } catch (error) {
+                log(`✗ Erro: ${error.message}`, 'error');
+                console.error('Erro completo:', error);
+            }
+        }
+    </script>
+</body>
+</html>
