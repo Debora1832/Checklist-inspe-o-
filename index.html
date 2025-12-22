@@ -709,6 +709,46 @@
     text-align:left;
   }
 
+  /* BIBLIOTECA DE INSPEÇÕES */
+
+  .biblioteca-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(320px,1fr));
+    gap:16px;
+    margin-top:16px;
+  }
+  .biblioteca-card{
+    border-radius:4px;
+    border:1px solid #d6ddeb;
+    padding:12px;
+    background:#f9fbff;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+  }
+  .biblioteca-card-title{
+    font-size:15px;
+    font-weight:700;
+    color:#003366;
+  }
+  .biblioteca-video-box{
+    width:100%;
+    aspect-ratio:16/9;
+    background:#e0e5f0;
+    border-radius:4px;
+    overflow:hidden;
+  }
+  .biblioteca-video-box video{
+    width:100%;
+    height:100%;
+    object-fit:contain;
+  }
+  .biblioteca-actions{
+    display:flex;
+    gap:6px;
+    margin-top:4px;
+  }
+
   /* MODAL */
 
   .modal-overlay{
@@ -824,6 +864,9 @@
         </button>
         <button class="sidebar-item" data-screen="reports" onclick="selectSidebar('reports')">
           <span class="sidebar-label">Relatórios</span>
+        </button>
+        <button class="sidebar-item" data-screen="biblioteca" onclick="selectSidebar('biblioteca')">
+          <span class="sidebar-label">Biblioteca de Inspeções</span>
         </button>
       </nav>
 
@@ -1017,6 +1060,33 @@
               </thead>
               <tbody id="reports-history-body"></tbody>
             </table>
+          </div>
+        </section>
+
+        <!-- TELA: BIBLIOTECA DE INSPEÇÕES -->
+        <section id="biblioteca" class="screen">
+          <div class="card">
+            <h2 class="screen-title">Biblioteca de Inspeções</h2>
+            <p style="font-size:13px;color:#555;margin-bottom:16px;">
+              Adicione vídeos tutoriais demonstrando como inspecionar cada peça. 
+              Os vídeos servem como material de treinamento e consulta para os inspetores.
+            </p>
+            <div class="grid-2">
+              <div class="form-group">
+                <label for="biblioteca-piece-input">Nome da peça *</label>
+                <input type="text" id="biblioteca-piece-input" placeholder="Ex: Longarina 597-2445#01">
+              </div>
+              <div class="form-group">
+                <label for="biblioteca-video-input">Vídeo de inspeção *</label>
+                <input type="file" id="biblioteca-video-input" accept="video/*">
+              </div>
+            </div>
+            <button class="btn-primary" id="btn-add-biblioteca">Adicionar item à biblioteca</button>
+          </div>
+
+          <div class="card mt-16">
+            <h3 class="card-title">Itens cadastrados na biblioteca</h3>
+            <div id="biblioteca-list" class="biblioteca-grid"></div>
           </div>
         </section>
 
@@ -1218,7 +1288,45 @@
       return { id: ref.id, ...docData };
     }
 
-    window.fbApi = { loadAll, savePiece, deletePiece, setInspectors, saveInspection };
+    async function loadBiblioteca() {
+      const items = [];
+      try {
+        const snapshot = await getDocs(collection(db, "biblioteca"));
+        snapshot.docs.forEach(d => {
+          const data = d.data();
+          items.push({
+            id: d.id,
+            piece: data.piece || "",
+            videoUrl: data.videoUrl || null
+          });
+        });
+      } catch (err) {
+        console.warn("Erro load biblioteca:", err);
+      }
+      return items;
+    }
+
+    async function saveBibliotecaItem(item) {
+      if (!item || !item.piece) return;
+      let videoUrl = item.videoUrl || null;
+      if (item.video instanceof File) {
+        const ext = (item.video.name && item.video.name.split(".").pop()) || "mp4";
+        videoUrl = await uploadFileAndGetUrl(`biblioteca/${item.piece}_${Date.now()}.${ext}`, item.video);
+      }
+      const docData = {
+        piece: item.piece,
+        videoUrl
+      };
+      const ref = await addDoc(collection(db, "biblioteca"), docData);
+      return { id: ref.id, ...docData };
+    }
+
+    async function deleteBibliotecaItem(id) {
+      if (!id) return;
+      await deleteDoc(doc(db, "biblioteca", id));
+    }
+
+    window.fbApi = { loadAll, savePiece, deletePiece, setInspectors, saveInspection, loadBiblioteca, saveBibliotecaItem, deleteBibliotecaItem };
   </script>
 
   <!-- SCRIPT PRINCIPAL (UI) -->
@@ -1230,6 +1338,7 @@
   let inspectors = []; // { name, pinHash, photoUrl? }
   let inspections = [];
   let inspectorPhotos = {}; // nome -> base64 local
+  let bibliotecaItems = []; // { id, piece, video?, videoUrl? }
 
   let currentChecklistPiece = null;
   let checklistItemStates = [];
@@ -1274,6 +1383,7 @@
     if(screenId==="pieces") renderPieces();
     if(screenId==="reports") renderReports();
     if(screenId==="dashboard") renderDashboard();
+    if(screenId==="biblioteca") renderBiblioteca();
   }
   window.selectSidebar = selectSidebar;
 
@@ -2216,6 +2326,122 @@
     }
   }
 
+  // Biblioteca de Inspeções
+  function getBibliotecaVideoSrc(item){
+    if(!item) return null;
+    if(item.video instanceof File) return URL.createObjectURL(item.video);
+    return item.videoUrl || null;
+  }
+
+  function renderBiblioteca(){
+    const listDiv = document.getElementById("biblioteca-list");
+    if(!listDiv) return;
+    listDiv.innerHTML = "";
+
+    if(!bibliotecaItems.length){
+      listDiv.innerHTML = '<div style="font-size:13px;color:#666;padding:20px;text-align:center;">Nenhum item cadastrado na biblioteca. Adicione vídeos tutoriais de inspeção acima.</div>';
+      return;
+    }
+
+    bibliotecaItems.forEach(item=>{
+      const card = document.createElement("div");
+      card.className = "biblioteca-card";
+      const videoSrc = getBibliotecaVideoSrc(item);
+      
+      card.innerHTML = `
+        <div class="biblioteca-card-title">${item.piece}</div>
+        <div class="biblioteca-video-box">
+          ${videoSrc ? `<video controls><source src="${videoSrc}" type="video/mp4">Seu navegador não suporta vídeos.</video>` : '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#666;">Sem vídeo</div>'}
+        </div>
+        <div class="biblioteca-actions">
+          <button class="btn-icon btn-edit" data-id="${item.id}">Editar</button>
+          <button class="btn-icon btn-delete" data-id="${item.id}">Remover</button>
+        </div>
+      `;
+      listDiv.appendChild(card);
+    });
+
+    listDiv.querySelectorAll(".btn-edit").forEach(btn=>{
+      btn.addEventListener("click",()=>openEditBibliotecaModal(btn.dataset.id));
+    });
+    listDiv.querySelectorAll(".btn-delete").forEach(btn=>{
+      btn.addEventListener("click",async()=>{
+        const id = btn.dataset.id;
+        const item = bibliotecaItems.find(i=>i.id===id);
+        if(!item) return;
+        if(!confirm(`Remover "${item.piece}" da biblioteca?`)) return;
+        bibliotecaItems = bibliotecaItems.filter(i=>i.id!==id);
+        renderBiblioteca();
+        if(window.fbApi && window.fbApi.deleteBibliotecaItem){
+          window.fbApi.deleteBibliotecaItem(id).catch(e=>console.error("Erro deletar biblioteca Firebase",e));
+        }
+      });
+    });
+
+    // Limpar form
+    const pieceInput = document.getElementById("biblioteca-piece-input");
+    const videoInput = document.getElementById("biblioteca-video-input");
+    if(pieceInput) pieceInput.value = "";
+    if(videoInput) videoInput.value = "";
+  }
+
+  function openEditBibliotecaModal(id){
+    const item = bibliotecaItems.find(i=>i.id===id);
+    if(!item) return;
+    const videoSrc = getBibliotecaVideoSrc(item) || "";
+    
+    showModal(`
+      <div class="modal-header">
+        <div class="modal-title">Editar Item da Biblioteca</div>
+        <button class="modal-close-btn">&times;</button>
+      </div>
+      <div class="form-group" style="margin-top:10px;">
+        <label>Nome da peça</label>
+        <input type="text" id="modal-biblioteca-piece" value="${item.piece}">
+      </div>
+      <div class="form-group">
+        <label>Vídeo</label>
+        <input type="file" id="modal-biblioteca-video" accept="video/*">
+      </div>
+      ${videoSrc ? `
+        <div style="margin-top:6px;">
+          <video controls style="max-width:100%;max-height:200px;border-radius:4px;">
+            <source src="${videoSrc}" type="video/mp4">
+          </video>
+        </div>` : ""}
+      <div style="margin-top:12px;text-align:right;">
+        <button class="btn-secondary" onclick="closeModal()">Cancelar</button>
+        <button class="btn-primary" id="modal-biblioteca-save">Salvar</button>
+      </div>
+    `);
+
+    document.getElementById("modal-biblioteca-save").addEventListener("click",async()=>{
+      const newPiece = document.getElementById("modal-biblioteca-piece").value.trim();
+      const file = document.getElementById("modal-biblioteca-video").files[0];
+      if(!newPiece){ alert("Informe o nome da peça."); return; }
+      
+      item.piece = newPiece;
+      if(file){ 
+        item.video = file; 
+        item.videoUrl = null; 
+      }
+      
+      closeModal();
+      renderBiblioteca();
+      
+      if(window.fbApi && window.fbApi.deleteBibliotecaItem && window.fbApi.saveBibliotecaItem){
+        try{
+          await window.fbApi.deleteBibliotecaItem(item.id);
+          const saved = await window.fbApi.saveBibliotecaItem(item);
+          const idx = bibliotecaItems.findIndex(i=>i.id===id);
+          if(idx >= 0) bibliotecaItems[idx] = saved;
+        }catch(e){
+          console.error("Erro atualizar biblioteca Firebase",e);
+        }
+      }
+    });
+  }
+
   async function initAppAfterLogin(){
     loadInspectorPhotosFromLocalStorage();
 
@@ -2229,6 +2455,15 @@
         renderLoginInspectorSelect();
       }catch(err){
         console.error("Erro carregar Firebase:",err);
+      }
+    }
+
+    // Carregar biblioteca
+    if(window.fbApi && window.fbApi.loadBiblioteca){
+      try{
+        bibliotecaItems = await window.fbApi.loadBiblioteca();
+      }catch(err){
+        console.error("Erro carregar biblioteca:",err);
       }
     }
 
@@ -2316,6 +2551,35 @@
     document.getElementById("btn-export-csv").addEventListener("click",exportCSV);
     const reportMonthSelect = document.getElementById("report-month-select");
     if(reportMonthSelect) reportMonthSelect.addEventListener("change",renderReports);
+
+    // Biblioteca de Inspeções
+    document.getElementById("btn-add-biblioteca").addEventListener("click",async()=>{
+      const piece = document.getElementById("biblioteca-piece-input").value.trim();
+      const file = document.getElementById("biblioteca-video-input").files[0];
+      
+      if(!piece || !file){
+        alert("Preencha o nome da peça e selecione um vídeo.");
+        return;
+      }
+
+      const newItem = { piece, video: file, videoUrl: null };
+      
+      if(window.fbApi && window.fbApi.saveBibliotecaItem){
+        try{
+          const saved = await window.fbApi.saveBibliotecaItem(newItem);
+          bibliotecaItems.push(saved);
+          renderBiblioteca();
+        }catch(err){
+          console.error("Erro salvar biblioteca Firebase:", err);
+          alert("Erro ao salvar no servidor. Tente novamente.");
+        }
+      }else{
+        // Fallback local (sem Firebase)
+        newItem.id = `local_${Date.now()}`;
+        bibliotecaItems.push(newItem);
+        renderBiblioteca();
+      }
+    });
 
     renderChecklistSelectors();
     renderInspectors();
