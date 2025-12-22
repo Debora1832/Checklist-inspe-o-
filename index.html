@@ -1784,6 +1784,13 @@
       alert("Nenhuma peça selecionada.");
       return;
     }
+    
+    // Validate serial number if piece has it
+    if(currentChecklistPiece.hasSerialNumber && !currentPieceSerialNumber?.trim()){
+      alert("Preencha o serial number da peça.");
+      return;
+    }
+    
     for(let i=0;i<checklistItemStates.length;i++){
       const st = checklistItemStates[i];
       if(!st.status){
@@ -1833,6 +1840,7 @@
       try{
         const saved = await window.fbApi.saveInspection(inspecToSave);
         inspections.push(saved);
+        saveInspectionsToLocalStorage();
         alert("Inspeção salva no servidor.");
       }catch(err){
         console.error("Erro salvar inspeção Firebase:", err);
@@ -1840,6 +1848,7 @@
           ...inspecToSave,
           itens: inspecToSave.itens.map(i=>({...i, foto:null, fotoUrl:null}))
         });
+        saveInspectionsToLocalStorage();
         alert("Erro ao salvar no servidor. Inspeção registrada apenas neste navegador.");
       }
     }else{
@@ -1847,6 +1856,7 @@
         ...inspecToSave,
         itens: inspecToSave.itens.map(i=>({...i, foto:null, fotoUrl:null}))
       });
+      saveInspectionsToLocalStorage();
       alert("Inspeção registrada localmente.");
     }
 
@@ -1859,6 +1869,7 @@
     if(pieceSel) pieceSel.value = "";
     currentChecklistPiece = null;
     checklistItemStates = [];
+    currentPieceSerialNumber = ""; // Reset serial number
     const exec = document.getElementById("checklist-execution");
     if(exec) exec.classList.add("hide");
     window.scrollTo({top:0,behavior:"smooth"});
@@ -1875,6 +1886,24 @@
     try{
       localStorage.setItem("inspPhotos", JSON.stringify(inspectorPhotos||{}));
     }catch(e){ console.warn("Erro salvar fotos localStorage",e); }
+  }
+
+  // Inspeções (localStorage backup)
+  function loadInspectionsFromLocalStorage(){
+    try{
+      const raw = localStorage.getItem("inspections");
+      const localInspections = raw ? JSON.parse(raw) : [];
+      // Merge with existing inspections (avoid duplicates)
+      localInspections.forEach(localInsp=>{
+        const exists = inspections.some(i=>i.date===localInsp.date && i.inspector===localInsp.inspector && i.piece===localInsp.piece);
+        if(!exists) inspections.push(localInsp);
+      });
+    }catch(e){ console.warn("Erro carregar inspeções localStorage",e); }
+  }
+  function saveInspectionsToLocalStorage(){
+    try{
+      localStorage.setItem("inspections", JSON.stringify(inspections||[]));
+    }catch(e){ console.warn("Erro salvar inspeções localStorage",e); }
   }
 
   function renderInspectors(){
@@ -2577,6 +2606,7 @@
 
   async function initAppAfterLogin(){
     loadInspectorPhotosFromLocalStorage();
+    loadInspectionsFromLocalStorage();
 
     if(window.fbApi && window.fbApi.loadAll && !window._appDataLoaded){
       try{
