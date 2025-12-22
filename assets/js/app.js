@@ -1,18 +1,18 @@
 /* ===========================================================
    APP.JS – Lógica Principal do Sistema
-   Estrutura Enterprise, Modular, Firebase v9
+   Sistema SPA + Firebase Firestore
    =========================================================== */
 
 /* ===========================================================
-   IMPORTAÇÃO DOS MÓDULOS FIREBASE (de firebase.js)
+   IMPORTAÇÕES FIREBASE (via módulo firebase.js)
    =========================================================== */
 import {
-    Auth,
     Firestore,
     Storage,
+    Auth,
+    firebaseGetInspectors,
     firebaseLoginInspector,
     firebaseLoginAdmin,
-    firebaseGetInspectors,
     firebaseAddInspector,
     firebaseGetPieces,
     firebaseAddPiece,
@@ -24,16 +24,16 @@ import {
 } from "./firebase/firebase.js";
 
 /* ===========================================================
-   ESTADO GLOBAL
-=========================================================== */
+   VARIÁVEIS GLOBAIS
+   =========================================================== */
 let currentUser = null;
-let currentRole = null;   // "inspector" | "admin"
+let currentRole = null;
 let currentChecklistPiece = null;
 let currentChecklistItems = [];
 
 /* ===========================================================
-   UTILITÁRIOS DE NAVEGAÇÃO SPA
-=========================================================== */
+   SISTEMA DE NAVEGAÇÃO (SPA)
+   =========================================================== */
 const screens = document.querySelectorAll(".screen");
 const sidebarButtons = document.querySelectorAll(".menu-item");
 
@@ -42,17 +42,16 @@ function showScreen(name) {
     document.getElementById(`screen-${name}`).classList.add("active");
 }
 
-/* Navegação da sidebar */
 sidebarButtons.forEach(btn => {
     btn.addEventListener("click", () => {
-        const screen = btn.dataset.screen;
-        showScreen(screen);
+        const target = btn.dataset.screen;
+        showScreen(target);
     });
 });
 
 /* ===========================================================
    SIDEBAR RETRÁTIL
-=========================================================== */
+   =========================================================== */
 const sidebar = document.getElementById("sidebar");
 const btnSidebar = document.getElementById("btn-toggle-sidebar");
 
@@ -61,8 +60,8 @@ btnSidebar.addEventListener("click", () => {
 });
 
 /* ===========================================================
-   TELA DE LOGIN – Tabs
-=========================================================== */
+   TELA DE LOGIN
+   =========================================================== */
 const loginTabs = document.querySelectorAll(".login-tab");
 const loginInspectorForm = document.getElementById("login-inspector-form");
 const loginAdminForm = document.getElementById("login-admin-form");
@@ -73,9 +72,9 @@ loginTabs.forEach(tab => {
         loginTabs.forEach(t => t.classList.remove("active"));
         tab.classList.add("active");
 
-        const mode = tab.dataset.mode;
         loginErrorBox.textContent = "";
 
+        const mode = tab.dataset.mode;
         if (mode === "inspector") {
             loginInspectorForm.classList.remove("hidden");
             loginAdminForm.classList.add("hidden");
@@ -88,12 +87,11 @@ loginTabs.forEach(tab => {
 
 /* ===========================================================
    LOGIN – INSPECTOR
-=========================================================== */
+   =========================================================== */
 const loginInspSelect = document.getElementById("login-insp-select");
 const loginInspPin = document.getElementById("login-insp-pin");
 const btnLoginInsp = document.getElementById("btn-login-insp");
 
-/* Carregar inspetores ao abrir o sistema */
 async function loadInspectorsForLogin() {
     const list = await firebaseGetInspectors();
     loginInspSelect.innerHTML = "";
@@ -124,23 +122,24 @@ btnLoginInsp.addEventListener("click", async () => {
         currentRole = "inspector";
 
         document.getElementById("user-info").textContent = `Inspetor: ${user.name}`;
+
         showScreen("checklist");
 
-    } catch (e) {
+    } catch (err) {
         loginErrorBox.textContent = "Erro no login.";
     }
 });
 
 /* ===========================================================
    LOGIN – ADMIN
-=========================================================== */
+   =========================================================== */
 const loginAdminPin = document.getElementById("login-admin-pin");
 const btnLoginAdmin = document.getElementById("btn-login-admin");
 
 btnLoginAdmin.addEventListener("click", async () => {
     loginErrorBox.textContent = "";
 
-    const pin = loginAdminPin.value;
+    const pin = loginAdminPin.value.trim();
     const admin = await firebaseLoginAdmin(pin);
 
     if (!admin) {
@@ -152,12 +151,13 @@ btnLoginAdmin.addEventListener("click", async () => {
     currentRole = "admin";
 
     document.getElementById("user-info").textContent = "Administrador";
+
     showScreen("pieces");
 });
 
 /* ===========================================================
-   CHECKLIST – Seleção de peças
-=========================================================== */
+   CHECKLIST – Seleção de Peças
+   =========================================================== */
 const checklistPieceSelect = document.getElementById("checklist-piece-select");
 const btnStartChecklist = document.getElementById("btn-start-checklist");
 const checklistExec = document.getElementById("checklist-exec");
@@ -165,45 +165,40 @@ const checklistItemsContainer = document.getElementById("checklist-items-contain
 const checklistPieceTitle = document.getElementById("checklist-piece-title");
 const btnFinishChecklist = document.getElementById("btn-finish-checklist");
 
-/* Carregar peças em vários lugares */
 async function loadPieces() {
     const list = await firebaseGetPieces();
 
-    /* Checklist select */
     checklistPieceSelect.innerHTML = "";
-    list.forEach(p => {
+    list.forEach(piece => {
         const op = document.createElement("option");
-        op.value = p.id;
-        op.textContent = `${p.code} – ${p.desc}`;
+        op.value = piece.id;
+        op.textContent = `${piece.code} – ${piece.desc}`;
         checklistPieceSelect.appendChild(op);
     });
 
-    /* Peças – listagem */
     renderPiecesList(list);
 }
 
-/* Iniciar checklist */
 btnStartChecklist.addEventListener("click", async () => {
     const pieceId = checklistPieceSelect.value;
 
     const pieces = await firebaseGetPieces();
     const piece = pieces.find(p => p.id === pieceId);
-
     if (!piece) return;
 
     currentChecklistPiece = piece;
-
-    checklistPieceTitle.textContent = `${piece.code} – ${piece.desc}`;
     currentChecklistItems = piece.items || [];
 
+    checklistPieceTitle.textContent = `${piece.code} – ${piece.desc}`;
     checklistItemsContainer.innerHTML = "";
+
     currentChecklistItems.forEach((item, idx) => {
         const div = document.createElement("div");
         div.className = "list-item";
 
         div.innerHTML = `
             <span>${item.text}</span>
-            <select data-item-index="${idx}">
+            <select data-i="${idx}">
                 <option value="ok">OK</option>
                 <option value="nc">NC</option>
             </select>
@@ -215,13 +210,12 @@ btnStartChecklist.addEventListener("click", async () => {
     checklistExec.classList.remove("hidden");
 });
 
-/* Finalizar checklist */
 btnFinishChecklist.addEventListener("click", async () => {
     const results = [];
 
     checklistItemsContainer.querySelectorAll("select").forEach(sel => {
         results.push({
-            itemIndex: sel.dataset.itemIndex,
+            itemIndex: Number(sel.dataset.i),
             result: sel.value
         });
     });
@@ -239,7 +233,7 @@ btnFinishChecklist.addEventListener("click", async () => {
 
 /* ===========================================================
    PEÇAS – CRUD
-=========================================================== */
+   =========================================================== */
 const pieceCodeInput = document.getElementById("piece-code-input");
 const pieceDescInput = document.getElementById("piece-desc-input");
 const pieceImgInput = document.getElementById("piece-img-input");
@@ -247,12 +241,12 @@ const btnAddPiece = document.getElementById("btn-add-piece");
 const piecesListDiv = document.getElementById("pieces-list");
 
 btnAddPiece.addEventListener("click", async () => {
-    const code = pieceCodeInput.value;
-    const desc = pieceDescInput.value;
+    const code = pieceCodeInput.value.trim();
+    const desc = pieceDescInput.value.trim();
     const file = pieceImgInput.files[0];
 
     if (!code || !desc) {
-        alert("Preencha o código e a descrição.");
+        alert("Preencha código e descrição.");
         return;
     }
 
@@ -277,10 +271,11 @@ function renderPiecesList(list) {
             <button class="btn-danger" data-id="${piece.id}">Excluir</button>
         `;
 
-        div.querySelector("button").addEventListener("click", async () => {
-            await firebaseDeletePiece(piece.id);
-            loadPieces();
-        });
+        div.querySelector("button")
+            .addEventListener("click", async () => {
+                await firebaseDeletePiece(piece.id);
+                loadPieces();
+            });
 
         piecesListDiv.appendChild(div);
     });
@@ -288,14 +283,14 @@ function renderPiecesList(list) {
 
 /* ===========================================================
    INSPETORES – CRUD
-=========================================================== */
+   =========================================================== */
 const inspNameInput = document.getElementById("insp-name-input");
 const inspPhotoInput = document.getElementById("insp-photo-input");
 const btnAddInspector = document.getElementById("btn-add-inspector");
 const inspectorsListDiv = document.getElementById("inspectors-list");
 
 btnAddInspector.addEventListener("click", async () => {
-    const name = inspNameInput.value;
+    const name = inspNameInput.value.trim();
     const photo = inspPhotoInput.files[0];
 
     if (!name) {
@@ -311,33 +306,26 @@ btnAddInspector.addEventListener("click", async () => {
     loadInspectors();
 });
 
-/* Exibir inspetores */
 async function loadInspectors() {
     const list = await firebaseGetInspectors();
 
     inspectorsListDiv.innerHTML = "";
-
     list.forEach(insp => {
         const div = document.createElement("div");
         div.className = "list-item";
-
-        div.innerHTML = `
-            <span>${insp.name}</span>
-        `;
-
+        div.innerHTML = `<span>${insp.name}</span>`;
         inspectorsListDiv.appendChild(div);
     });
 }
 
 /* ===========================================================
-   BIBLIOTECA DE VÍDEOS
-=========================================================== */
+   VÍDEOS – CRUD
+   =========================================================== */
 const videoPieceSelect = document.getElementById("video-piece-select");
 const videoFileInput = document.getElementById("video-file-input");
-const btnAddVideoBtn = document.getElementById("btn-add-video");
+const btnAddVideo = document.getElementById("btn-add-video");
 const videosListDiv = document.getElementById("videos-list");
 
-/* Carregar peças no select de vídeos */
 async function loadPiecesForVideos() {
     const list = await firebaseGetPieces();
 
@@ -350,8 +338,7 @@ async function loadPiecesForVideos() {
     });
 }
 
-/* Adicionar vídeo */
-btnAddVideoBtn.addEventListener("click", async () => {
+btnAddVideo.addEventListener("click", async () => {
     const pieceId = videoPieceSelect.value;
     const file = videoFileInput.files[0];
 
@@ -365,18 +352,17 @@ btnAddVideoBtn.addEventListener("click", async () => {
     loadVideos();
 });
 
-/* Listar vídeos */
 async function loadVideos() {
     const list = await firebaseGetVideos();
-    videosListDiv.innerHTML = "";
 
+    videosListDiv.innerHTML = "";
     list.forEach(video => {
         const div = document.createElement("div");
         div.className = "video-item";
 
         div.innerHTML = `
             <video controls src="${video.url}"></video>
-            <button class="btn-danger mt-12" data-id="${video.id}">Excluir</button>
+            <button class="btn-danger" data-id="${video.id}">Excluir</button>
         `;
 
         div.querySelector("button").addEventListener("click", async () => {
@@ -389,36 +375,11 @@ async function loadVideos() {
 }
 
 /* ===========================================================
-   DASHBOARD – CHART.JS
-=========================================================== */
-let chartDashboard = null;
-
-async function loadDashboard() {
-    const ctx = document.getElementById("chart-dashboard");
-    const data = await firebaseAddInspection(); /* apenas placeholder, ajuste conforme dados reais */
-
-    if (chartDashboard) chartDashboard.destroy();
-
-    chartDashboard = new Chart(ctx, {
-        type: "bar",
-        data: {
-            labels: ["OK", "NC"],
-            datasets: [{
-                data: [12, 3],
-            }]
-        }
-    });
-}
-
-/* ===========================================================
-   RELATÓRIOS
-=========================================================== */
+   RELATÓRIOS (placeholder)
+   =========================================================== */
 const reportMonthSelect = document.getElementById("report-month-select");
-const btnExportCsv = document.getElementById("btn-export-csv");
-const reportsTable = document.getElementById("reports-table");
 
 function loadReportMonths() {
-    reportMonthSelect.innerHTML = "";
     for (let m = 1; m <= 12; m++) {
         const op = document.createElement("option");
         op.value = m;
@@ -427,14 +388,9 @@ function loadReportMonths() {
     }
 }
 
-/* CSV */
-btnExportCsv.addEventListener("click", () => {
-    alert("Exportação CSV será implementada conforme sua necessidade.");
-});
-
 /* ===========================================================
-   INICIALIZAÇÃO DO APP
-=========================================================== */
+   INICIALIZAÇÃO
+   =========================================================== */
 async function init() {
     await loadInspectorsForLogin();
     await loadPieces();
