@@ -1462,6 +1462,22 @@
     }
   }
 
+  function updateSidebarForRole(){
+    // Hide/show menu items based on user role
+    const inspectorsBtn = document.querySelector('[data-screen="inspectors"]');
+    const piecesBtn = document.querySelector('[data-screen="pieces"]');
+    
+    if(currentUser && currentUser.role === "inspector"){
+      // Hide Inspetores and Peças & Itens for inspectors
+      if(inspectorsBtn) inspectorsBtn.style.display = "none";
+      if(piecesBtn) piecesBtn.style.display = "none";
+    } else {
+      // Show all menu items for admins
+      if(inspectorsBtn) inspectorsBtn.style.display = "";
+      if(piecesBtn) piecesBtn.style.display = "";
+    }
+  }
+
   function logout(){
     currentUser = null;
     updateHeaderUser();
@@ -2768,6 +2784,7 @@
         document.getElementById("login-screen").style.display="none";
         document.getElementById("app-root").style.display="flex";
         updateHeaderUser();
+        updateSidebarForRole();
         await initAppAfterLogin();
       }else{
         const sel = document.getElementById("login-insp-select");
@@ -2825,6 +2842,7 @@
           document.getElementById("login-screen").style.display="none";
           document.getElementById("app-root").style.display="flex";
           updateHeaderUser();
+          updateSidebarForRole();
           await initAppAfterLogin();
 
         }catch(err){
