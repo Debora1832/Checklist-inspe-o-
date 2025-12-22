@@ -1065,7 +1065,7 @@
 
         <!-- TELA: BIBLIOTECA DE INSPEÇÕES -->
         <section id="biblioteca" class="screen">
-          <div class="card">
+          <div class="card" id="biblioteca-admin-form">
             <h2 class="screen-title">Biblioteca de Inspeções</h2>
             <p id="biblioteca-description" style="font-size:13px;color:#555;margin-bottom:16px;">
               Adicione vídeos tutoriais demonstrando como inspecionar cada peça. 
@@ -1073,19 +1073,21 @@
             </p>
             <div class="grid-2">
               <div class="form-group">
-                <label for="biblioteca-piece-input">Nome da peça *</label>
-                <input type="text" id="biblioteca-piece-input" placeholder="Ex: Longarina 597-2445#01" aria-required="true" aria-describedby="biblioteca-description">
+                <label for="biblioteca-piece-select">Selecionar peça *</label>
+                <select id="biblioteca-piece-select" aria-required="true" aria-describedby="biblioteca-description">
+                  <option value="" disabled selected>Selecione uma peça</option>
+                </select>
               </div>
               <div class="form-group">
                 <label for="biblioteca-video-input">Vídeo de inspeção *</label>
                 <input type="file" id="biblioteca-video-input" accept="video/*" aria-required="true" aria-describedby="biblioteca-description">
               </div>
             </div>
-            <button class="btn-primary" id="btn-add-biblioteca" aria-label="Adicionar novo item à biblioteca de inspeções">Adicionar item à biblioteca</button>
+            <button class="btn-primary" id="btn-add-biblioteca" aria-label="Adicionar vídeo tutorial à biblioteca">Adicionar vídeo tutorial</button>
           </div>
 
           <div class="card mt-16">
-            <h3 class="card-title">Itens cadastrados na biblioteca</h3>
+            <h3 class="card-title">Vídeos tutoriais cadastrados</h3>
             <div id="biblioteca-list" class="biblioteca-grid"></div>
           </div>
         </section>
@@ -2350,8 +2352,21 @@
     if(!listDiv) return;
     listDiv.innerHTML = "";
 
+    // Show/hide admin form based on user role
+    const adminForm = document.getElementById("biblioteca-admin-form");
+    if(adminForm){
+      adminForm.style.display = (currentUser && currentUser.role === "admin") ? "block" : "none";
+    }
+
+    // Populate piece selector for admin
+    const pieceSelect = document.getElementById("biblioteca-piece-select");
+    if(pieceSelect && currentUser && currentUser.role === "admin"){
+      pieceSelect.innerHTML = '<option value="" disabled selected>Selecione uma peça</option>' +
+        pieces.map(p=>`<option value="${escapeHtml(p.code)}">${escapeHtml(p.code)} - ${escapeHtml(p.description||"")}</option>`).join("");
+    }
+
     if(!bibliotecaItems.length){
-      listDiv.innerHTML = '<div style="font-size:13px;color:#666;padding:20px;text-align:center;">Nenhum item cadastrado na biblioteca. Adicione vídeos tutoriais de inspeção acima.</div>';
+      listDiv.innerHTML = '<div style="font-size:13px;color:#666;padding:20px;text-align:center;">Nenhum vídeo tutorial cadastrado na biblioteca.</div>';
       return;
     }
 
@@ -2387,51 +2402,58 @@
         videoBox.appendChild(noVideo);
       }
       
-      // Create actions
-      const actionsDiv = document.createElement("div");
-      actionsDiv.className = "biblioteca-actions";
-      
-      const editBtn = document.createElement("button");
-      editBtn.className = "btn-icon btn-edit";
-      editBtn.textContent = "Editar";
-      editBtn.dataset.id = item.id;
-      
-      const deleteBtn = document.createElement("button");
-      deleteBtn.className = "btn-icon btn-delete";
-      deleteBtn.textContent = "Remover";
-      deleteBtn.dataset.id = item.id;
-      
-      actionsDiv.appendChild(editBtn);
-      actionsDiv.appendChild(deleteBtn);
-      
       card.appendChild(titleDiv);
       card.appendChild(videoBox);
-      card.appendChild(actionsDiv);
+      
+      // Only show edit/delete buttons for admins
+      if(currentUser && currentUser.role === "admin"){
+        const actionsDiv = document.createElement("div");
+        actionsDiv.className = "biblioteca-actions";
+        
+        const editBtn = document.createElement("button");
+        editBtn.className = "btn-icon btn-edit";
+        editBtn.textContent = "Editar";
+        editBtn.dataset.id = item.id;
+        
+        const deleteBtn = document.createElement("button");
+        deleteBtn.className = "btn-icon btn-delete";
+        deleteBtn.textContent = "Remover";
+        deleteBtn.dataset.id = item.id;
+        
+        actionsDiv.appendChild(editBtn);
+        actionsDiv.appendChild(deleteBtn);
+        card.appendChild(actionsDiv);
+      }
+      
       listDiv.appendChild(card);
     });
 
-    listDiv.querySelectorAll(".btn-edit").forEach(btn=>{
-      btn.addEventListener("click",()=>openEditBibliotecaModal(btn.dataset.id));
-    });
-    listDiv.querySelectorAll(".btn-delete").forEach(btn=>{
-      btn.addEventListener("click",async()=>{
-        const id = btn.dataset.id;
-        const item = bibliotecaItems.find(i=>i.id===id);
-        if(!item) return;
-        if(!confirm(`Remover "${item.piece}" da biblioteca?`)) return;
-        bibliotecaItems = bibliotecaItems.filter(i=>i.id!==id);
-        renderBiblioteca();
-        if(window.fbApi && window.fbApi.deleteBibliotecaItem){
-          window.fbApi.deleteBibliotecaItem(id).catch(e=>console.error("Erro deletar biblioteca Firebase",e));
-        }
+    // Only add event listeners for admin buttons
+    if(currentUser && currentUser.role === "admin"){
+      listDiv.querySelectorAll(".btn-edit").forEach(btn=>{
+        btn.addEventListener("click",()=>openEditBibliotecaModal(btn.dataset.id));
       });
-    });
+      listDiv.querySelectorAll(".btn-delete").forEach(btn=>{
+        btn.addEventListener("click",async()=>{
+          const id = btn.dataset.id;
+          const item = bibliotecaItems.find(i=>i.id===id);
+          if(!item) return;
+          if(!confirm(`Remover "${item.piece}" da biblioteca?`)) return;
+          bibliotecaItems = bibliotecaItems.filter(i=>i.id!==id);
+          renderBiblioteca();
+          if(window.fbApi && window.fbApi.deleteBibliotecaItem){
+            window.fbApi.deleteBibliotecaItem(id).catch(e=>console.error("Erro deletar biblioteca Firebase",e));
+          }
+        });
+      });
+    }
 
-    // Limpar form
-    const pieceInput = document.getElementById("biblioteca-piece-input");
-    const videoInput = document.getElementById("biblioteca-video-input");
-    if(pieceInput) pieceInput.value = "";
-    if(videoInput) videoInput.value = "";
+    // Limpar form (somente para admin)
+    if(currentUser && currentUser.role === "admin"){
+      const videoInput = document.getElementById("biblioteca-video-input");
+      if(videoInput) videoInput.value = "";
+      if(pieceSelect) pieceSelect.value = "";
+    }
   }
 
   function openEditBibliotecaModal(id){
@@ -2443,14 +2465,23 @@
     const escapedPiece = escapeHtml(item.piece);
     const escapedVideoSrc = escapeHtml(videoSrc);
     
+    // Build piece selector options
+    const pieceOptions = pieces.map(p=>{
+      const pieceName = `${p.code} - ${p.description||""}`;
+      const selected = pieceName === item.piece ? 'selected' : '';
+      return `<option value="${escapeHtml(pieceName)}" ${selected}>${escapeHtml(pieceName)}</option>`;
+    }).join("");
+    
     showModal(`
       <div class="modal-header">
-        <div class="modal-title">Editar Item da Biblioteca</div>
+        <div class="modal-title">Editar Vídeo Tutorial</div>
         <button class="modal-close-btn">&times;</button>
       </div>
       <div class="form-group" style="margin-top:10px;">
-        <label>Nome da peça</label>
-        <input type="text" id="modal-biblioteca-piece" value="${escapedPiece}">
+        <label>Peça</label>
+        <select id="modal-biblioteca-piece">
+          ${pieceOptions}
+        </select>
       </div>
       <div class="form-group">
         <label>Vídeo</label>
@@ -2470,9 +2501,9 @@
     `);
 
     document.getElementById("modal-biblioteca-save").addEventListener("click",async()=>{
-      const newPiece = document.getElementById("modal-biblioteca-piece").value.trim();
+      const newPiece = document.getElementById("modal-biblioteca-piece").value;
       const file = document.getElementById("modal-biblioteca-video").files[0];
-      if(!newPiece){ alert("Informe o nome da peça."); return; }
+      if(!newPiece){ alert("Selecione uma peça."); return; }
       
       item.piece = newPiece;
       if(file){ 
@@ -2558,7 +2589,7 @@
       renderPieceItemsList(idx);
     });
 
-    document.getElementById("btn-add-piece").addEventListener("click",()=>{
+    document.getElementById("btn-add-piece").addEventListener("click",async()=>{
       const code = document.getElementById("piece-code-input").value.trim();
       const desc = document.getElementById("piece-desc-input").value.trim();
       const file = document.getElementById("piece-image-input").files[0];
@@ -2577,6 +2608,25 @@
       if(window.fbApi && window.fbApi.savePiece){
         window.fbApi.savePiece(newPiece).catch(e=>console.error("Erro salvar peça Firebase",e));
       }
+      
+      // Auto-sync to biblioteca (create entry without video)
+      const pieceName = `${code} - ${desc}`;
+      const existingBibliotecaItem = bibliotecaItems.find(b=>b.piece===pieceName);
+      if(!existingBibliotecaItem){
+        const bibliotecaEntry = { piece: pieceName, video: null, videoUrl: null };
+        if(window.fbApi && window.fbApi.saveBibliotecaItem){
+          try{
+            const saved = await window.fbApi.saveBibliotecaItem(bibliotecaEntry);
+            bibliotecaItems.push(saved);
+          }catch(e){
+            console.error("Erro criar entrada na biblioteca:",e);
+          }
+        }else{
+          bibliotecaEntry.id = `local_${Date.now()}`;
+          bibliotecaItems.push(bibliotecaEntry);
+        }
+      }
+      renderBiblioteca();
     });
 
     document.getElementById("btn-add-item").addEventListener("click",()=>{
@@ -2608,31 +2658,53 @@
 
     // Biblioteca de Inspeções
     document.getElementById("btn-add-biblioteca").addEventListener("click",async()=>{
-      const piece = document.getElementById("biblioteca-piece-input").value.trim();
+      const pieceCode = document.getElementById("biblioteca-piece-select").value;
       const file = document.getElementById("biblioteca-video-input").files[0];
       
-      if(!piece || !file){
-        alert("Preencha o nome da peça e selecione um vídeo.");
+      if(!pieceCode || !file){
+        alert("Selecione uma peça e um vídeo.");
         return;
       }
 
-      const newItem = { piece, video: file, videoUrl: null };
+      // Find or update existing biblioteca item
+      const existingItem = bibliotecaItems.find(b=>b.piece===pieceCode);
       
-      if(window.fbApi && window.fbApi.saveBibliotecaItem){
-        try{
-          const saved = await window.fbApi.saveBibliotecaItem(newItem);
-          bibliotecaItems.push(saved);
-          renderBiblioteca();
-        }catch(err){
-          console.error("Erro salvar biblioteca Firebase:", err);
-          alert("Erro ao salvar no servidor. Tente novamente.");
+      if(existingItem){
+        // Update existing item with video
+        existingItem.video = file;
+        existingItem.videoUrl = null;
+        
+        if(window.fbApi && window.fbApi.deleteBibliotecaItem && window.fbApi.saveBibliotecaItem){
+          try{
+            await window.fbApi.deleteBibliotecaItem(existingItem.id);
+            const saved = await window.fbApi.saveBibliotecaItem(existingItem);
+            const idx = bibliotecaItems.findIndex(i=>i.id===existingItem.id);
+            if(idx >= 0) bibliotecaItems[idx] = saved;
+          }catch(err){
+            console.error("Erro atualizar biblioteca Firebase:", err);
+            alert("Erro ao salvar no servidor. Tente novamente.");
+          }
         }
       }else{
-        // Fallback local (sem Firebase)
-        newItem.id = `local_${Date.now()}`;
-        bibliotecaItems.push(newItem);
-        renderBiblioteca();
+        // Create new item
+        const newItem = { piece: pieceCode, video: file, videoUrl: null };
+        
+        if(window.fbApi && window.fbApi.saveBibliotecaItem){
+          try{
+            const saved = await window.fbApi.saveBibliotecaItem(newItem);
+            bibliotecaItems.push(saved);
+          }catch(err){
+            console.error("Erro salvar biblioteca Firebase:", err);
+            alert("Erro ao salvar no servidor. Tente novamente.");
+          }
+        }else{
+          // Fallback local (sem Firebase)
+          newItem.id = `local_${Date.now()}`;
+          bibliotecaItems.push(newItem);
+        }
       }
+      
+      renderBiblioteca();
     });
 
     renderChecklistSelectors();
