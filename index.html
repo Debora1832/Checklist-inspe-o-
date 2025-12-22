@@ -2,26 +2,26 @@
 <html lang="pt-BR">
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <title>Magius – Sistema de Checklist de Inspeção</title>
 
-    <!-- Tipografia premium -->
+    <!-- Tipografia -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
-    <!-- Ícones Material Symbols -->
+    <!-- Ícones -->
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
 
-    <!-- CSS principal -->
+    <!-- CSS -->
     <link rel="stylesheet" href="assets/css/style.css" />
 </head>
 
 <body>
 
-    <!-- CONTAINER GERAL -->
+    <!-- APP CONTAINER -->
     <div id="app">
 
-        <!-- SIDEBAR RETRÁTIL -->
+        <!-- SIDEBAR -->
         <aside id="sidebar" class="sidebar closed">
 
             <div class="sidebar-header">
@@ -32,7 +32,6 @@
             </div>
 
             <nav class="sidebar-menu">
-
                 <button class="menu-item" data-screen="checklist">
                     <span class="material-symbols-outlined">checklist</span>
                     <span class="label">Checklist</span>
@@ -62,7 +61,6 @@
                     <span class="material-symbols-outlined">video_library</span>
                     <span class="label">Biblioteca</span>
                 </button>
-
             </nav>
 
             <footer class="sidebar-footer">
@@ -71,27 +69,26 @@
 
         </aside>
 
-        <!-- ÁREA PRINCIPAL -->
+        <!-- MAIN CONTENT -->
         <main class="main">
 
-            <!-- TOPO -->
             <header class="main-header">
                 <div class="header-left">
                     <h1 class="header-title">Sistema de Inspeção</h1>
-                    <p class="header-subtitle">Ajudando a construir, cultivar, transportar e seguir em frente</p>
+                    <p class="header-subtitle">
+                        Ajudando a construir, cultivar, transportar e seguir em frente
+                    </p>
                 </div>
 
                 <div class="header-right">
-                    <div id="user-info" class="user-info">
-                        <!-- preenchido pelo app.js -->
-                    </div>
+                    <div id="user-info" class="user-info"></div>
                 </div>
             </header>
 
-            <!-- CONTEÚDO DINÂMICO -->
+            <!-- SCREENS -->
             <section id="screen-container">
 
-                <!-- TELA: LOGIN -->
+                <!-- LOGIN -->
                 <div id="screen-login" class="screen active">
                     <div class="login-card">
 
@@ -104,29 +101,28 @@
 
                         <div id="login-error" class="login-error"></div>
 
-                        <!-- FORM INSPETOR -->
+                        <!-- LOGIN INSPETOR -->
                         <div id="login-inspector-form" class="login-form">
                             <label>Inspetor</label>
                             <select id="login-insp-select"></select>
 
-                            <label>PIN (4 dígitos)</label>
+                            <label>PIN</label>
                             <input id="login-insp-pin" type="password" maxlength="4" />
 
                             <button id="btn-login-insp" class="btn-primary">Entrar</button>
                         </div>
 
-                        <!-- FORM ADMIN -->
+                        <!-- LOGIN ADMIN -->
                         <div id="login-admin-form" class="login-form hidden">
-                            <label>Senha do administrador</label>
+                            <label>Senha admin</label>
                             <input id="login-admin-pin" type="password" />
 
                             <button id="btn-login-admin" class="btn-primary">Entrar</button>
                         </div>
-
                     </div>
                 </div>
 
-                <!-- TELA: CHECKLIST -->
+                <!-- CHECKLIST -->
                 <div id="screen-checklist" class="screen">
                     <div class="card">
                         <h2 class="card-title">Checklist de Inspeção</h2>
@@ -134,7 +130,9 @@
                         <label>Selecione a peça</label>
                         <select id="checklist-piece-select"></select>
 
-                        <button id="btn-start-checklist" class="btn-primary mt-16">Iniciar Checklist</button>
+                        <button id="btn-start-checklist" class="btn-primary mt-16">
+                            Iniciar Checklist
+                        </button>
                     </div>
 
                     <div id="checklist-exec" class="card mt-24 hidden">
@@ -148,7 +146,7 @@
                     </div>
                 </div>
 
-                <!-- TELA: PEÇAS -->
+                <!-- PEÇAS -->
                 <div id="screen-pieces" class="screen">
                     <div class="card">
                         <h2 class="card-title">Cadastro de Peças</h2>
@@ -162,7 +160,9 @@
                         <label>Imagem</label>
                         <input id="piece-img-input" type="file" accept="image/*" />
 
-                        <button id="btn-add-piece" class="btn-primary mt-12">Adicionar Peça</button>
+                        <button id="btn-add-piece" class="btn-primary mt-12">
+                            Adicionar Peça
+                        </button>
                     </div>
 
                     <div class="card mt-24">
@@ -171,7 +171,7 @@
                     </div>
                 </div>
 
-                <!-- TELA: INSPETORES -->
+                <!-- INSPETORES -->
                 <div id="screen-inspectors" class="screen">
                     <div class="card">
                         <h2 class="card-title">Cadastro de Inspetores</h2>
@@ -179,7 +179,7 @@
                         <label>Nome</label>
                         <input id="insp-name-input" type="text" />
 
-                        <label>Foto do inspetor</label>
+                        <label>Foto</label>
                         <input id="insp-photo-input" type="file" accept="image/*" />
 
                         <button id="btn-add-inspector" class="btn-primary mt-12">
@@ -193,7 +193,7 @@
                     </div>
                 </div>
 
-                <!-- TELA: DASHBOARD -->
+                <!-- DASHBOARD -->
                 <div id="screen-dashboard" class="screen">
                     <div class="card">
                         <h2 class="card-title">Dashboard</h2>
@@ -201,7 +201,7 @@
                     </div>
                 </div>
 
-                <!-- TELA: RELATÓRIOS -->
+                <!-- RELATÓRIOS -->
                 <div id="screen-reports" class="screen">
                     <div class="card">
                         <h2 class="card-title">Relatórios</h2>
@@ -209,7 +209,9 @@
                         <label>Mês</label>
                         <select id="report-month-select"></select>
 
-                        <button id="btn-export-csv" class="btn-secondary mt-12">Exportar CSV</button>
+                        <button id="btn-export-csv" class="btn-secondary mt-12">
+                            Exportar CSV
+                        </button>
 
                         <canvas id="chart-reports" width="200" height="200" class="mt-24"></canvas>
                     </div>
@@ -220,7 +222,7 @@
                     </div>
                 </div>
 
-                <!-- TELA: BIBLIOTECA DE VÍDEOS -->
+                <!-- VÍDEOS -->
                 <div id="screen-videos" class="screen">
                     <div class="card">
                         <h2 class="card-title">Biblioteca de Vídeos</h2>
@@ -231,7 +233,9 @@
                         <label>Vídeo</label>
                         <input id="video-file-input" type="file" accept="video/*" />
 
-                        <button id="btn-add-video" class="btn-primary mt-12">Adicionar Vídeo</button>
+                        <button id="btn-add-video" class="btn-primary mt-12">
+                            Adicionar Vídeo
+                        </button>
                     </div>
 
                     <div class="card mt-24">
@@ -241,17 +245,13 @@
                 </div>
 
             </section>
-
         </main>
     </div>
 
-    <!-- SCRIPT JS PRINCIPAIS -->
-    <script src="assets/js/firebase/config.dev.js"></script>
-    <script src="assets/js/firebase/config.prod.js"></script>
-    <script src="assets/js/firebase/firebase.js"></script>
-
+    <!-- LIB externa -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <script src="assets/js/app.js"></script>
+    <!-- APP PRINCIPAL (MÓDULO) -->
+    <script type="module" src="assets/js/app.js"></script>
 </body>
 </html>
