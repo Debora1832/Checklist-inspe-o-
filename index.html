@@ -1311,8 +1311,8 @@
       let videoUrl = item.videoUrl || null;
       if (item.video instanceof File) {
         const ext = (item.video.name && item.video.name.split(".").pop()) || "mp4";
-        // Sanitize piece name to prevent path traversal
-        const sanitizedPiece = item.piece.replace(/[^a-zA-Z0-9_-]/g, '_');
+        // Sanitize piece name to prevent path traversal - only allow alphanumeric and underscores
+        const sanitizedPiece = item.piece.replace(/[^a-zA-Z0-9]/g, '_');
         videoUrl = await uploadFileAndGetUrl(`biblioteca/${sanitizedPiece}_${Date.now()}.${ext}`, item.video);
       }
       const docData = {
@@ -2329,6 +2329,16 @@
   }
 
   // Biblioteca de Inspeções
+  function escapeHtml(str){
+    if(!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
   function getBibliotecaVideoSrc(item){
     if(!item) return null;
     if(item.video instanceof File) return URL.createObjectURL(item.video);
@@ -2364,7 +2374,9 @@
         video.controls = true;
         const source = document.createElement("source");
         source.src = videoSrc;
-        source.type = "video/mp4";
+        // Determine video type from file extension or use generic video type
+        const ext = videoSrc.split('.').pop().split('?')[0].toLowerCase();
+        source.type = ext === 'webm' ? 'video/webm' : ext === 'ogg' ? 'video/ogg' : 'video/mp4';
         video.appendChild(source);
         video.textContent = "Seu navegador não suporta vídeos.";
         videoBox.appendChild(video);
@@ -2427,9 +2439,9 @@
     if(!item) return;
     const videoSrc = getBibliotecaVideoSrc(item) || "";
     
-    // Escape HTML for safe insertion
-    const escapedPiece = item.piece.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
-    const escapedVideoSrc = videoSrc.replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+    // Use utility function for HTML escaping
+    const escapedPiece = escapeHtml(item.piece);
+    const escapedVideoSrc = escapeHtml(videoSrc);
     
     showModal(`
       <div class="modal-header">
@@ -2448,6 +2460,7 @@
         <div style="margin-top:6px;">
           <video controls style="max-width:100%;max-height:200px;border-radius:4px;">
             <source src="${escapedVideoSrc}" type="video/mp4">
+            Seu navegador não suporta vídeos.
           </video>
         </div>` : ""}
       <div style="margin-top:12px;text-align:right;">
