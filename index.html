@@ -901,12 +901,22 @@
         <section id="checklist" class="screen active">
           <div class="card">
             <h2 class="screen-title">Checklist de Inspeção</h2>
-            <div class="grid-2">
+            <div class="grid-3">
               <div class="form-group">
                 <label for="piece-selector">Peça</label>
                 <select id="piece-selector">
                   <option value="" disabled selected>Selecionar peça</option>
                 </select>
+              </div>
+              <div class="form-group">
+                <label for="client-selector">Cliente</label>
+                <input type="text" id="client-selector" placeholder="Ex: Cliente A" list="client-list">
+                <datalist id="client-list"></datalist>
+              </div>
+              <div class="form-group">
+                <label for="station-selector">Estação/Linha</label>
+                <input type="text" id="station-selector" placeholder="Ex: Linha 1" list="station-list">
+                <datalist id="station-list"></datalist>
               </div>
             </div>
             <button class="btn-primary mt-8" id="btn-start-checklist">Iniciar Checklist</button>
@@ -1010,27 +1020,96 @@
         <!-- TELA: DASHBOARD -->
         <section id="dashboard" class="screen">
           <div class="card">
-            <h2 class="screen-title">Dashboard – KPIs de Inspeção</h2>
-            <div class="kpi-grid">
+            <h2 class="screen-title">Dashboard – Resultados de Inspeção</h2>
+            
+            <!-- Filtros -->
+            <div class="dashboard-filters" style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:16px;padding:12px;background:#f8faff;border-radius:6px;">
+              <div class="form-group" style="margin:0;min-width:150px;">
+                <label style="font-size:12px;margin-bottom:4px;">Data Início</label>
+                <input type="date" id="filter-date-start" style="padding:6px 8px;font-size:13px;border:1px solid #cbd3e3;border-radius:4px;width:100%;">
+              </div>
+              <div class="form-group" style="margin:0;min-width:150px;">
+                <label style="font-size:12px;margin-bottom:4px;">Data Fim</label>
+                <input type="date" id="filter-date-end" style="padding:6px 8px;font-size:13px;border:1px solid #cbd3e3;border-radius:4px;width:100%;">
+              </div>
+              <div class="form-group" style="margin:0;min-width:150px;">
+                <label style="font-size:12px;margin-bottom:4px;">Cliente</label>
+                <select id="filter-client" style="padding:6px 8px;font-size:13px;border:1px solid #cbd3e3;border-radius:4px;width:100%;">
+                  <option value="">Todos</option>
+                </select>
+              </div>
+              <div class="form-group" style="margin:0;min-width:150px;">
+                <label style="font-size:12px;margin-bottom:4px;">Peça</label>
+                <select id="filter-item" style="padding:6px 8px;font-size:13px;border:1px solid #cbd3e3;border-radius:4px;width:100%;">
+                  <option value="">Todas</option>
+                </select>
+              </div>
+              <div class="form-group" style="margin:0;min-width:150px;">
+                <label style="font-size:12px;margin-bottom:4px;">Modo de Falha</label>
+                <select id="filter-failure-mode" style="padding:6px 8px;font-size:13px;border:1px solid #cbd3e3;border-radius:4px;width:100%;">
+                  <option value="">Todos</option>
+                </select>
+              </div>
+              <div class="form-group" style="margin:0;min-width:150px;">
+                <label style="font-size:12px;margin-bottom:4px;">Inspetor</label>
+                <select id="filter-inspector" style="padding:6px 8px;font-size:13px;border:1px solid #cbd3e3;border-radius:4px;width:100%;">
+                  <option value="">Todos</option>
+                </select>
+              </div>
+              <div style="display:flex;align-items:flex-end;">
+                <button class="btn-primary" id="btn-apply-filters" style="padding:6px 16px;font-size:13px;">Aplicar Filtros</button>
+              </div>
+            </div>
+
+            <!-- KPIs -->
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:16px;">
               <div class="kpi-card">
-                <div class="kpi-label">Inspeções no mês</div>
-                <div class="kpi-value" id="kpi-inspecoes-mes">0</div>
+                <div class="kpi-label">Total de Inspeções</div>
+                <div class="kpi-value" id="kpi-total-inspecoes">0</div>
               </div>
               <div class="kpi-card">
-                <div class="kpi-label">% Itens NÃO OK</div>
-                <div class="kpi-value" id="kpi-percent-nok">0%</div>
+                <div class="kpi-label">Itens Aprovados</div>
+                <div class="kpi-value" style="color:#28b649;" id="kpi-aprovados">0</div>
               </div>
-              <div class="kpi-card kpi-large">
-                <div class="kpi-label">Peças com mais reprovações</div>
-                <div class="kpi-list" id="kpi-top-pecas"></div>
+              <div class="kpi-card">
+                <div class="kpi-label">Itens Reprovados</div>
+                <div class="kpi-value" style="color:#E81C24;" id="kpi-reprovados">0</div>
+              </div>
+              <div class="kpi-card">
+                <div class="kpi-label">% Defeitos</div>
+                <div class="kpi-value" id="kpi-percent-defeitos">0%</div>
               </div>
             </div>
           </div>
 
-          <div class="card mt-16">
-            <h3 class="card-title">Distribuição de status (OK x Retrabalho)</h3>
-            <div class="chart-wrapper">
-              <canvas id="dashboard-chart" width="200" height="200"></canvas>
+          <!-- Gráficos -->
+          <div class="grid-2 mt-16">
+            <div class="card">
+              <h3 class="card-title">Defeitos por Estação</h3>
+              <div class="chart-wrapper">
+                <canvas id="chart-by-station" width="300" height="250"></canvas>
+              </div>
+            </div>
+            <div class="card">
+              <h3 class="card-title">Defeitos por Cliente</h3>
+              <div class="chart-wrapper">
+                <canvas id="chart-by-client" width="300" height="250"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid-2 mt-16">
+            <div class="card">
+              <h3 class="card-title">Defeitos por Modo de Falha</h3>
+              <div class="chart-wrapper">
+                <canvas id="chart-by-failure" width="300" height="250"></canvas>
+              </div>
+            </div>
+            <div class="card">
+              <h3 class="card-title">Status de Inspeção</h3>
+              <div class="chart-wrapper">
+                <canvas id="dashboard-chart" width="300" height="250"></canvas>
+              </div>
             </div>
           </div>
         </section>
@@ -1354,9 +1433,14 @@
   let currentChecklistPiece = null;
   let checklistItemStates = [];
   let currentPieceSerialNumber = ""; // Serial number for the current piece being inspected
+  let currentClient = ""; // Client for current inspection
+  let currentStation = ""; // Station for current inspection
 
   let reportsChart = null;
   let dashboardChart = null;
+  let chartByStation = null;
+  let chartByClient = null;
+  let chartByFailure = null;
 
   let currentUser = null; // { role: "admin"|"inspector", name: string }
   window._appDataLoaded = false;
@@ -1595,18 +1679,33 @@
       return;
     }
     const pieceCode = document.getElementById("piece-selector").value;
+    const client = document.getElementById("client-selector").value.trim();
+    const station = document.getElementById("station-selector").value.trim();
+    
     if(!pieceCode){
       alert("Selecione a peça.");
       return;
     }
+    if(!client){
+      alert("Informe o cliente.");
+      return;
+    }
+    if(!station){
+      alert("Informe a estação/linha.");
+      return;
+    }
+    
     currentChecklistPiece = pieces.find(p=>p.code===pieceCode);
     if(!currentChecklistPiece){
       alert("Peça não encontrada.");
       return;
     }
+    currentClient = client;
+    currentStation = station;
+    
     checklistItemStates = (currentChecklistPiece.items||[]).map(()=>({
       status:null,motivo:"",encaminhamento:"",nomeTerceiro:"",
-      fotoFile:null,fotoUrl:null
+      fotoFile:null,fotoUrl:null,failureMode:""
     }));
     currentPieceSerialNumber = ""; // Reset serial number for new inspection
     renderChecklistExecution();
@@ -1676,6 +1775,19 @@
         const extraDiv = wrap.querySelector(`#extra-${idx}`);
         extraDiv.innerHTML = `
           <div class="checklist-extra">
+            <label>Modo de falha (obrigatório):</label>
+            <select id="failure-mode-${idx}" style="width:100%;padding:6px 8px;margin-top:4px;margin-bottom:6px;border:1px solid #cbd3e3;border-radius:4px;font-size:13px;">
+              <option value="">Selecione o modo de falha</option>
+              <option value="Dimensional" ${st.failureMode==="Dimensional"?"selected":""}>Dimensional</option>
+              <option value="Visual" ${st.failureMode==="Visual"?"selected":""}>Visual</option>
+              <option value="Acabamento" ${st.failureMode==="Acabamento"?"selected":""}>Acabamento</option>
+              <option value="Material" ${st.failureMode==="Material"?"selected":""}>Material</option>
+              <option value="Montagem" ${st.failureMode==="Montagem"?"selected":""}>Montagem</option>
+              <option value="Soldagem" ${st.failureMode==="Soldagem"?"selected":""}>Soldagem</option>
+              <option value="Pintura" ${st.failureMode==="Pintura"?"selected":""}>Pintura</option>
+              <option value="Outro" ${st.failureMode==="Outro"?"selected":""}>Outro</option>
+            </select>
+
             <label>Descrição da não conformidade (obrigatório):</label>
             <textarea id="motivo-${idx}">${st.motivo||""}</textarea>
 
@@ -1699,11 +1811,15 @@
             `:""}
           </div>
         `;
+        const failureModeSelect = extraDiv.querySelector(`#failure-mode-${idx}`);
         const motivo = extraDiv.querySelector(`#motivo-${idx}`);
         const fotoInput = extraDiv.querySelector(`#foto-${idx}`);
         const radios = extraDiv.querySelectorAll(`input[name="enc-${idx}"]`);
         const terceiro = extraDiv.querySelector(`#terceiro-${idx}`);
 
+        failureModeSelect.addEventListener("change",()=>{
+          checklistItemStates[idx].failureMode = failureModeSelect.value;
+        });
         motivo.addEventListener("input",()=>{
           checklistItemStates[idx].motivo = motivo.value;
         });
@@ -1798,6 +1914,10 @@
         return;
       }
       if(st.status==="NOK"){
+        if(!st.failureMode?.trim()){
+          alert("Selecione o modo de falha em todos os itens NÃO OK.");
+          return;
+        }
         if(!st.motivo?.trim()){
           alert("Preencha o motivo em todos os itens NÃO OK.");
           return;
@@ -1826,11 +1946,14 @@
       piece: currentChecklistPiece.code,
       descricao: "Inspeção realizada",
       serialNumber: currentPieceSerialNumber || "",
+      client: currentClient || "",
+      station: currentStation || "",
       itens: checklistItemStates.map(s=>({
         status: s.status,
         motivo: s.motivo,
         encaminhamento: s.encaminhamento,
         nome_terceiro: s.nomeTerceiro,
+        failureMode: s.failureMode || "",
         foto: s.fotoFile,
         fotoUrl: s.fotoUrl
       }))
@@ -1867,9 +1990,15 @@
     // resetar seleção e voltar ao início do checklist
     const pieceSel = document.getElementById("piece-selector");
     if(pieceSel) pieceSel.value = "";
+    const clientSel = document.getElementById("client-selector");
+    if(clientSel) clientSel.value = "";
+    const stationSel = document.getElementById("station-selector");
+    if(stationSel) stationSel.value = "";
     currentChecklistPiece = null;
     checklistItemStates = [];
     currentPieceSerialNumber = ""; // Reset serial number
+    currentClient = ""; // Reset client
+    currentStation = ""; // Reset station
     const exec = document.getElementById("checklist-execution");
     if(exec) exec.classList.add("hide");
     window.scrollTo({top:0,behavior:"smooth"});
@@ -2334,73 +2463,261 @@
       dashboardChart = new Chart(ctx,{
         type:"doughnut",
         data:{
-          labels:["Embarcadas","Retrabalho"],
+          labels:["Aprovados","Retrabalho"],
           datasets:[{
             data:[0,0],
-            backgroundColor:["#228be6","#E81C24"],
+            backgroundColor:["#28b649","#E81C24"],
             borderColor:"#fff",
             borderWidth:2
           }]
         },
-        options:{responsive:false,plugins:{legend:{display:true}},cutout:"60%"}
+        options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{display:true,position:'bottom'}}}
+      });
+    }
+  }
+
+  function ensureChartByStation(){
+    const ctx = document.getElementById("chart-by-station")?.getContext("2d");
+    if(!ctx) return;
+    if(!chartByStation){
+      chartByStation = new Chart(ctx,{
+        type:"bar",
+        data:{
+          labels:[],
+          datasets:[{
+            label:"Defeitos",
+            data:[],
+            backgroundColor:"#E81C24",
+            borderColor:"#c41820",
+            borderWidth:1
+          }]
+        },
+        options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}
+      });
+    }
+  }
+
+  function ensureChartByClient(){
+    const ctx = document.getElementById("chart-by-client")?.getContext("2d");
+    if(!ctx) return;
+    if(!chartByClient){
+      chartByClient = new Chart(ctx,{
+        type:"bar",
+        data:{
+          labels:[],
+          datasets:[{
+            label:"Defeitos",
+            data:[],
+            backgroundColor:"#1844F0",
+            borderColor:"#0f34d0",
+            borderWidth:1
+          }]
+        },
+        options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}
+      });
+    }
+  }
+
+  function ensureChartByFailure(){
+    const ctx = document.getElementById("chart-by-failure")?.getContext("2d");
+    if(!ctx) return;
+    if(!chartByFailure){
+      chartByFailure = new Chart(ctx,{
+        type:"bar",
+        data:{
+          labels:[],
+          datasets:[{
+            label:"Defeitos",
+            data:[],
+            backgroundColor:"#f59f00",
+            borderColor:"#d98200",
+            borderWidth:1
+          }]
+        },
+        options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}
       });
     }
   }
 
   function renderDashboard(){
     ensureDashboardChart();
-    const kpiInsMes = document.getElementById("kpi-inspecoes-mes");
-    const kpiPercentNok = document.getElementById("kpi-percent-nok");
-    const kpiTopPecas = document.getElementById("kpi-top-pecas");
-    if(!kpiInsMes || !kpiPercentNok || !kpiTopPecas) return;
+    ensureChartByStation();
+    ensureChartByClient();
+    ensureChartByFailure();
+    
+    // Populate filter dropdowns
+    populateDashboardFilters();
+    
+    // Apply filters and render data
+    applyDashboardFilters();
+  }
 
-    if(!inspections.length){
-      kpiInsMes.textContent="0";
-      kpiPercentNok.textContent="0%";
-      kpiTopPecas.innerHTML="<div>Sem dados suficientes.</div>";
-      if(dashboardChart){
-        dashboardChart.data.datasets[0].data=[0,0];
-        dashboardChart.update();
-      }
-      return;
+  function populateDashboardFilters(){
+    // Populate clients
+    const clientSet = new Set();
+    inspections.forEach(i=>{
+      if(i.client) clientSet.add(i.client);
+    });
+    const clientFilter = document.getElementById("filter-client");
+    if(clientFilter){
+      clientFilter.innerHTML = '<option value="">Todos</option>' +
+        Array.from(clientSet).map(c=>`<option value="${c}">${c}</option>`).join("");
     }
 
-    const last = inspections[inspections.length-1];
-    const [d,m,y] = (last.date||"").split("/");
-    const currentMonth = `${m}/${y}`;
+    // Populate pieces
+    const itemFilter = document.getElementById("filter-item");
+    if(itemFilter){
+      itemFilter.innerHTML = '<option value="">Todas</option>' +
+        pieces.map(p=>`<option value="${p.code}">${p.code}</option>`).join("");
+    }
 
-    let countIns=0,totalItens=0,totalNok=0,embarcadas=0,retrabalho=0;
-    const nokByPiece={};
+    // Populate failure modes
+    const failureModes = new Set();
     inspections.forEach(i=>{
-      const [dd,mm,yy] = (i.date||"").split("/");
-      if(`${mm}/${yy}`!==currentMonth) return;
-      countIns++;
       (i.itens||[]).forEach(it=>{
-        totalItens++;
-        if(it.status==="NOK"){
-          totalNok++;
-          nokByPiece[i.piece] = (nokByPiece[i.piece]||0)+1;
+        if(it.failureMode) failureModes.add(it.failureMode);
+      });
+    });
+    const failureFilter = document.getElementById("filter-failure-mode");
+    if(failureFilter){
+      failureFilter.innerHTML = '<option value="">Todos</option>' +
+        Array.from(failureModes).map(f=>`<option value="${f}">${f}</option>`).join("");
+    }
+
+    // Populate inspectors
+    const inspectorFilter = document.getElementById("filter-inspector");
+    if(inspectorFilter){
+      inspectorFilter.innerHTML = '<option value="">Todos</option>' +
+        inspectors.map(i=>`<option value="${i.name}">${i.name}</option>`).join("");
+    }
+  }
+
+  function applyDashboardFilters(){
+    const startDate = document.getElementById("filter-date-start")?.value || "";
+    const endDate = document.getElementById("filter-date-end")?.value || "";
+    const clientFilter = document.getElementById("filter-client")?.value || "";
+    const itemFilter = document.getElementById("filter-item")?.value || "";
+    const failureModeFilter = document.getElementById("filter-failure-mode")?.value || "";
+    const inspectorFilter = document.getElementById("filter-inspector")?.value || "";
+
+    // Filter inspections
+    const filtered = inspections.filter(i=>{
+      // Date filter
+      if(startDate || endDate){
+        const [d,m,y] = (i.date||"").split("/");
+        const inspDate = new Date(parseInt(y),parseInt(m)-1,parseInt(d));
+        if(startDate){
+          const start = new Date(startDate);
+          if(inspDate < start) return false;
         }
-        if(it.status==="OK") embarcadas++;
-        else if(it.encaminhamento==="retrabalho") retrabalho++;
-        else embarcadas++;
+        if(endDate){
+          const end = new Date(endDate);
+          if(inspDate > end) return false;
+        }
+      }
+      
+      // Client filter
+      if(clientFilter && i.client !== clientFilter) return false;
+      
+      // Item/Piece filter
+      if(itemFilter && i.piece !== itemFilter) return false;
+      
+      // Inspector filter
+      if(inspectorFilter && i.inspector !== inspectorFilter) return false;
+      
+      // Failure mode filter (at least one item matches)
+      if(failureModeFilter){
+        const hasFailure = (i.itens||[]).some(it=>it.failureMode === failureModeFilter);
+        if(!hasFailure) return false;
+      }
+      
+      return true;
+    });
+
+    // Calculate KPIs
+    let totalInsp = filtered.length;
+    let aprovados = 0;
+    let reprovados = 0;
+    let embarcadas = 0;
+    let retrabalho = 0;
+    const defectsByStation = {};
+    const defectsByClient = {};
+    const defectsByFailure = {};
+
+    filtered.forEach(i=>{
+      (i.itens||[]).forEach(it=>{
+        if(it.status==="OK"){
+          aprovados++;
+          embarcadas++;
+        }else{
+          reprovados++;
+          
+          // Count defects by station
+          if(i.station){
+            defectsByStation[i.station] = (defectsByStation[i.station]||0)+1;
+          }
+          
+          // Count defects by client
+          if(i.client){
+            defectsByClient[i.client] = (defectsByClient[i.client]||0)+1;
+          }
+          
+          // Count defects by failure mode
+          if(it.failureMode){
+            defectsByFailure[it.failureMode] = (defectsByFailure[it.failureMode]||0)+1;
+          }
+          
+          if(it.encaminhamento==="retrabalho"){
+            retrabalho++;
+          }else{
+            embarcadas++;
+          }
+        }
       });
     });
 
-    kpiInsMes.textContent = String(countIns);
-    const percent = totalItens>0 ? ((totalNok/totalItens)*100).toFixed(1) : "0.0";
-    kpiPercentNok.textContent = `${percent}%`;
+    const totalItens = aprovados + reprovados;
+    const percentDefects = totalItens > 0 ? ((reprovados/totalItens)*100).toFixed(1) : "0.0";
 
-    const top = Object.entries(nokByPiece)
-      .sort((a,b)=>b[1]-a[1])
-      .slice(0,3);
-    kpiTopPecas.innerHTML = top.length
-      ? top.map(([code,q])=>`<div>${code}: <strong>${q}</strong> NOK</div>`).join("")
-      : "<div>Nenhuma reprovação no mês atual.</div>";
+    // Update KPIs
+    const kpiTotal = document.getElementById("kpi-total-inspecoes");
+    const kpiAprovados = document.getElementById("kpi-aprovados");
+    const kpiReprovados = document.getElementById("kpi-reprovados");
+    const kpiPercent = document.getElementById("kpi-percent-defeitos");
+    
+    if(kpiTotal) kpiTotal.textContent = totalInsp;
+    if(kpiAprovados) kpiAprovados.textContent = aprovados;
+    if(kpiReprovados) kpiReprovados.textContent = reprovados;
+    if(kpiPercent) kpiPercent.textContent = `${percentDefects}%`;
 
+    // Update charts
     if(dashboardChart){
-      dashboardChart.data.datasets[0].data = [embarcadas,retrabalho];
+      dashboardChart.data.datasets[0].data = [embarcadas, retrabalho];
       dashboardChart.update();
+    }
+
+    if(chartByStation){
+      const stationLabels = Object.keys(defectsByStation).sort();
+      const stationData = stationLabels.map(s=>defectsByStation[s]);
+      chartByStation.data.labels = stationLabels.length ? stationLabels : ['Sem dados'];
+      chartByStation.data.datasets[0].data = stationData.length ? stationData : [0];
+      chartByStation.update();
+    }
+
+    if(chartByClient){
+      const clientLabels = Object.keys(defectsByClient).sort();
+      const clientData = clientLabels.map(c=>defectsByClient[c]);
+      chartByClient.data.labels = clientLabels.length ? clientLabels : ['Sem dados'];
+      chartByClient.data.datasets[0].data = clientData.length ? clientData : [0];
+      chartByClient.update();
+    }
+
+    if(chartByFailure){
+      const failureLabels = Object.keys(defectsByFailure).sort();
+      const failureData = failureLabels.map(f=>defectsByFailure[f]);
+      chartByFailure.data.labels = failureLabels.length ? failureLabels : ['Sem dados'];
+      chartByFailure.data.datasets[0].data = failureData.length ? failureData : [0];
+      chartByFailure.update();
     }
   }
 
@@ -2740,6 +3057,31 @@
     document.getElementById("btn-export-csv").addEventListener("click",exportCSV);
     const reportMonthSelect = document.getElementById("report-month-select");
     if(reportMonthSelect) reportMonthSelect.addEventListener("change",renderReports);
+
+    // Dashboard filters
+    const btnApplyFilters = document.getElementById("btn-apply-filters");
+    if(btnApplyFilters) btnApplyFilters.addEventListener("click",applyDashboardFilters);
+
+    // Populate client and station datalists
+    function updateDataLists(){
+      const clientList = document.getElementById("client-list");
+      const stationList = document.getElementById("station-list");
+      const clientSet = new Set();
+      const stationSet = new Set();
+      
+      inspections.forEach(i=>{
+        if(i.client) clientSet.add(i.client);
+        if(i.station) stationSet.add(i.station);
+      });
+      
+      if(clientList){
+        clientList.innerHTML = Array.from(clientSet).map(c=>`<option value="${c}">`).join("");
+      }
+      if(stationList){
+        stationList.innerHTML = Array.from(stationSet).map(s=>`<option value="${s}">`).join("");
+      }
+    }
+    updateDataLists();
 
     // Biblioteca de Inspeções
     document.getElementById("btn-add-biblioteca").addEventListener("click",async()=>{
