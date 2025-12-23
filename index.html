@@ -919,7 +919,19 @@
             <div id="cl-piece-info" style="margin-top:8px;padding:12px;background:#f0f4f8;border-radius:6px;border:1px solid #c8d3e6;">
               <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;font-size:14px;">
                 <div><strong>Cliente:</strong> <span id="cl-piece-client"></span></div>
-                <div><strong>Estação/Linha:</strong> <span id="cl-piece-station"></span></div>
+                <div style="display:flex;flex-direction:column;gap:4px;">
+                  <label style="font-size:13px;font-weight:600;color:#003366;">Estação/Linha:</label>
+                  <select id="cl-piece-station-select" style="padding:6px;border:1px solid #c8d3e6;border-radius:4px;font-size:13px;">
+                    <option value="">Selecione a estação</option>
+                    <option value="Solda Robô 1 / Solda Projeção">Solda Robô 1 / Solda Projeção</option>
+                    <option value="Jato Automático">Jato Automático</option>
+                    <option value="Mesa Desempeno">Mesa Desempeno</option>
+                    <option value="Tratamento Superficial">Tratamento Superficial</option>
+                    <option value="Jato">Jato</option>
+                    <option value="Calibragem / Estanqueidade / Acabamento">Calibragem / Estanqueidade / Acabamento</option>
+                    <option value="Solda Manual / Solda Extra Pesada">Solda Manual / Solda Extra Pesada</option>
+                  </select>
+                </div>
               </div>
             </div>
             <div id="cl-piece-image-box" class="piece-image-box">[Imagem da peça]</div>
@@ -1013,19 +1025,6 @@
               </div>
             </div>
             <div class="grid-3">
-              <div class="form-group">
-                <label for="piece-station-input">Estação/Linha</label>
-                <select id="piece-station-input">
-                  <option value="">Selecione a estação</option>
-                  <option value="Solda Robô 1 / Solda Projeção">Solda Robô 1 / Solda Projeção</option>
-                  <option value="Jato Automático">Jato Automático</option>
-                  <option value="Mesa Desempeno">Mesa Desempeno</option>
-                  <option value="Tratamento Superficial">Tratamento Superficial</option>
-                  <option value="Jato">Jato</option>
-                  <option value="Calibragem / Estanqueidade / Acabamento">Calibragem / Estanqueidade / Acabamento</option>
-                  <option value="Solda Manual / Solda Extra Pesada">Solda Manual / Solda Extra Pesada</option>
-                </select>
-              </div>
               <div class="form-group">
                 <label for="piece-image-input">Imagem da peça</label>
                 <input type="file" id="piece-image-input" accept="image/*">
@@ -1813,16 +1812,12 @@
       return;
     }
     
-    // Pull client and station from piece registration
+    // Pull client from piece registration
     currentClient = currentChecklistPiece.client || "";
-    currentStation = currentChecklistPiece.station || "";
+    currentStation = ""; // Station will be selected during inspection
     
     if(!currentClient){
       alert("A peça selecionada não possui cliente cadastrado. Por favor, edite a peça e adicione o cliente.");
-      return;
-    }
-    if(!currentStation){
-      alert("A peça selecionada não possui estação cadastrada. Por favor, edite a peça e adicione a estação.");
       return;
     }
     
@@ -1846,9 +1841,17 @@
     document.getElementById("cl-piece-code").textContent = piece.code;
     document.getElementById("cl-piece-desc").textContent = piece.description || "";
     
-    // Display client and station from piece
+    // Display client from piece
     document.getElementById("cl-piece-client").textContent = piece.client || "-";
-    document.getElementById("cl-piece-station").textContent = piece.station || "-";
+    
+    // Setup station dropdown
+    const stationSelect = document.getElementById("cl-piece-station-select");
+    if(stationSelect){
+      stationSelect.value = currentStation || "";
+      stationSelect.addEventListener("change",()=>{
+        currentStation = stationSelect.value;
+      });
+    }
 
     const imgBox = document.getElementById("cl-piece-image-box");
     const mainSrc = getPieceImageSrc(piece);
@@ -2084,6 +2087,12 @@
   async function finishChecklist(){
     if(!currentChecklistPiece){
       alert("Nenhuma peça selecionada.");
+      return;
+    }
+    
+    // Validate station is selected
+    if(!currentStation?.trim()){
+      alert("Selecione a estação/linha.");
       return;
     }
     
@@ -2480,19 +2489,6 @@
         </select>
       </div>
       <div class="form-group">
-        <label>Estação/Linha</label>
-        <select id="modal-piece-station">
-          <option value="">Selecione a estação</option>
-          <option value="Solda Robô 1 / Solda Projeção" ${p.station==="Solda Robô 1 / Solda Projeção"?"selected":""}>Solda Robô 1 / Solda Projeção</option>
-          <option value="Jato Automático" ${p.station==="Jato Automático"?"selected":""}>Jato Automático</option>
-          <option value="Mesa Desempeno" ${p.station==="Mesa Desempeno"?"selected":""}>Mesa Desempeno</option>
-          <option value="Tratamento Superficial" ${p.station==="Tratamento Superficial"?"selected":""}>Tratamento Superficial</option>
-          <option value="Jato" ${p.station==="Jato"?"selected":""}>Jato</option>
-          <option value="Calibragem / Estanqueidade / Acabamento" ${p.station==="Calibragem / Estanqueidade / Acabamento"?"selected":""}>Calibragem / Estanqueidade / Acabamento</option>
-          <option value="Solda Manual / Solda Extra Pesada" ${p.station==="Solda Manual / Solda Extra Pesada"?"selected":""}>Solda Manual / Solda Extra Pesada</option>
-        </select>
-      </div>
-      <div class="form-group">
         <label>Imagem</label>
         <input type="file" id="modal-piece-img" accept="image/*">
       </div>
@@ -2510,16 +2506,14 @@
       const newCode = document.getElementById("modal-piece-code").value.trim();
       const newDesc = document.getElementById("modal-piece-desc").value.trim();
       const newClient = document.getElementById("modal-piece-client").value.trim();
-      const newStation = document.getElementById("modal-piece-station").value.trim();
       const file = document.getElementById("modal-piece-img").files[0];
-      if(!newCode || !newDesc || !newClient || !newStation){ 
-        alert("Preencha código, descrição, cliente e estação."); 
+      if(!newCode || !newDesc || !newClient){ 
+        alert("Preencha código, descrição e cliente."); 
         return; 
       }
       p.code=newCode; 
       p.description=newDesc;
       p.client=newClient;
-      p.station=newStation;
       if(file){ p.image=file; p.imageUrl=null; }
       closeModal();
       renderPieces();
@@ -3375,18 +3369,17 @@
       const code = document.getElementById("piece-code-input").value.trim();
       const desc = document.getElementById("piece-desc-input").value.trim();
       const client = document.getElementById("piece-client-input").value.trim();
-      const station = document.getElementById("piece-station-input").value.trim();
       const file = document.getElementById("piece-image-input").files[0];
       const hasSerial = document.getElementById("piece-has-serial-input").checked;
-      if(!code || !desc || !client || !station || !file){
-        alert("Preencha código, descrição, cliente, estação e imagem.");
+      if(!code || !desc || !client || !file){
+        alert("Preencha código, descrição, cliente e imagem.");
         return;
       }
       if(pieces.some(p=>p.code===code)){
         alert("Já existe uma peça com esse código.");
         return;
       }
-      const newPiece = {code,description:desc,client,station,image:file,imageUrl:null,items:[],hasSerialNumber:hasSerial};
+      const newPiece = {code,description:desc,client,image:file,imageUrl:null,items:[],hasSerialNumber:hasSerial};
       pieces.push(newPiece);
       renderPieces();
       renderChecklistSelectors();
@@ -3417,7 +3410,6 @@
       document.getElementById("piece-code-input").value="";
       document.getElementById("piece-desc-input").value="";
       document.getElementById("piece-client-input").value="";
-      document.getElementById("piece-station-input").value="";
       document.getElementById("piece-image-input").value="";
       document.getElementById("piece-has-serial-input").checked=false;
     });
