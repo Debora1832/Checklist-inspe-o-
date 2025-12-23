@@ -899,27 +899,14 @@
 
         <!-- TELA: CHECKLIST -->
         <section id="checklist" class="screen active">
-          <div class="card">
+          <div class="card" id="piece-selection-card">
             <h2 class="screen-title">Checklist de Inspeção</h2>
-            <div class="grid-3">
-              <div class="form-group">
-                <label for="piece-selector">Peça</label>
-                <select id="piece-selector">
-                  <option value="" disabled selected>Selecionar peça</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label for="client-selector">Cliente</label>
-                <input type="text" id="client-selector" placeholder="Ex: Cliente A" list="client-list">
-                <datalist id="client-list"></datalist>
-              </div>
-              <div class="form-group">
-                <label for="station-selector">Estação/Linha</label>
-                <input type="text" id="station-selector" placeholder="Ex: Linha 1" list="station-list">
-                <datalist id="station-list"></datalist>
-              </div>
+            <div class="form-group">
+              <label for="piece-selector">Selecione a peça para inspeção</label>
+              <select id="piece-selector">
+                <option value="" disabled selected>Selecionar peça</option>
+              </select>
             </div>
-            <button class="btn-primary mt-8" id="btn-start-checklist">Iniciar Checklist</button>
           </div>
 
           <div id="checklist-execution" class="card mt-16 hide">
@@ -927,6 +914,12 @@
               <div>
                 <div class="checklist-piece-code" id="cl-piece-code"></div>
                 <div class="checklist-piece-desc" id="cl-piece-desc"></div>
+              </div>
+            </div>
+            <div id="cl-piece-info" style="margin-top:8px;padding:12px;background:#f0f4f8;border-radius:6px;border:1px solid #c8d3e6;">
+              <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;font-size:14px;">
+                <div><strong>Cliente:</strong> <span id="cl-piece-client"></span></div>
+                <div><strong>Estação/Linha:</strong> <span id="cl-piece-station"></span></div>
               </div>
             </div>
             <div id="cl-piece-image-box" class="piece-image-box">[Imagem da peça]</div>
@@ -974,15 +967,38 @@
                 <input type="text" id="piece-desc-input" placeholder="Longarina">
               </div>
               <div class="form-group">
+                <label for="piece-client-input">Cliente</label>
+                <select id="piece-client-input">
+                  <option value="">Selecione o cliente</option>
+                  <option value="Cliente A">Cliente A</option>
+                  <option value="Cliente B">Cliente B</option>
+                  <option value="Cliente C">Cliente C</option>
+                  <option value="Outro">Outro</option>
+                </select>
+              </div>
+            </div>
+            <div class="grid-3">
+              <div class="form-group">
+                <label for="piece-station-input">Estação/Linha</label>
+                <select id="piece-station-input">
+                  <option value="">Selecione a estação</option>
+                  <option value="Linha 1">Linha 1</option>
+                  <option value="Linha 2">Linha 2</option>
+                  <option value="Linha 3">Linha 3</option>
+                  <option value="Área de Montagem">Área de Montagem</option>
+                  <option value="Outro">Outro</option>
+                </select>
+              </div>
+              <div class="form-group">
                 <label for="piece-image-input">Imagem da peça</label>
                 <input type="file" id="piece-image-input" accept="image/*">
               </div>
-            </div>
-            <div class="form-group">
-              <label>
-                <input type="checkbox" id="piece-has-serial-input">
-                Peça possui serial number?
-              </label>
+              <div class="form-group">
+                <label>
+                  <input type="checkbox" id="piece-has-serial-input">
+                  Peça possui serial number?
+                </label>
+              </div>
             </div>
             <button class="btn-primary" id="btn-add-piece">Adicionar peça</button>
           </div>
@@ -1007,6 +1023,20 @@
               <div class="form-group">
                 <label for="item-desc-input">Descrição do item</label>
                 <textarea id="item-desc-input" rows="2" placeholder="Descreva o que deve ser verificado"></textarea>
+              </div>
+              <div class="form-group">
+                <label for="item-failure-modes-input">Modos de falha possíveis</label>
+                <select id="item-failure-modes-input" multiple style="height:120px;">
+                  <option value="Dimensional">Dimensional</option>
+                  <option value="Visual">Visual</option>
+                  <option value="Acabamento">Acabamento</option>
+                  <option value="Material">Material</option>
+                  <option value="Montagem">Montagem</option>
+                  <option value="Soldagem">Soldagem</option>
+                  <option value="Pintura">Pintura</option>
+                  <option value="Outro">Outro</option>
+                </select>
+                <small style="color:#666;font-size:11px;display:block;margin-top:4px;">Use Ctrl/Cmd para selecionar múltiplos modos</small>
               </div>
               <div class="form-group">
                 <label for="item-image-input">Imagem do item</label>
@@ -1240,11 +1270,15 @@
           pieces.push({
             code: data.code,
             description: data.description,
+            client: data.client || "",
+            station: data.station || "",
             image: null,
             imageUrl: data.imageUrl || null,
+            hasSerialNumber: data.hasSerialNumber || false,
             items: (data.items || []).map(it => ({
               name: it.name,
               description: it.description,
+              failureModes: it.failureModes || [],
               image: null,
               imageUrl: it.imageUrl || null
             }))
@@ -1322,6 +1356,7 @@
         itemsToSave.push({
           name: it.name,
           description: it.description,
+          failureModes: it.failureModes || [],
           imageUrl: itemImageUrl
         });
       }
@@ -1329,6 +1364,9 @@
       await setDoc(ref, {
         code: piece.code,
         description: piece.description,
+        client: piece.client || "",
+        station: piece.station || "",
+        hasSerialNumber: piece.hasSerialNumber || false,
         imageUrl,
         items: itemsToSave
       });
@@ -1679,19 +1717,9 @@
       return;
     }
     const pieceCode = document.getElementById("piece-selector").value;
-    const client = document.getElementById("client-selector").value.trim();
-    const station = document.getElementById("station-selector").value.trim();
     
     if(!pieceCode){
       alert("Selecione a peça.");
-      return;
-    }
-    if(!client){
-      alert("Informe o cliente.");
-      return;
-    }
-    if(!station){
-      alert("Informe a estação/linha.");
       return;
     }
     
@@ -1700,16 +1728,31 @@
       alert("Peça não encontrada.");
       return;
     }
-    currentClient = client;
-    currentStation = station;
+    
+    // Pull client and station from piece registration
+    currentClient = currentChecklistPiece.client || "";
+    currentStation = currentChecklistPiece.station || "";
+    
+    if(!currentClient){
+      alert("A peça selecionada não possui cliente cadastrado. Por favor, edite a peça e adicione o cliente.");
+      return;
+    }
+    if(!currentStation){
+      alert("A peça selecionada não possui estação cadastrada. Por favor, edite a peça e adicione a estação.");
+      return;
+    }
     
     checklistItemStates = (currentChecklistPiece.items||[]).map(()=>({
       status:null,motivo:"",encaminhamento:"",nomeTerceiro:"",
       fotoFile:null,fotoUrl:null,failureMode:""
     }));
     currentPieceSerialNumber = ""; // Reset serial number for new inspection
-    renderChecklistExecution();
+    
+    // Hide piece selection card and show checklist
+    document.getElementById("piece-selection-card").classList.add("hide");
     document.getElementById("checklist-execution").classList.remove("hide");
+    
+    renderChecklistExecution();
   }
 
   function renderChecklistExecution(){
@@ -1718,6 +1761,10 @@
 
     document.getElementById("cl-piece-code").textContent = piece.code;
     document.getElementById("cl-piece-desc").textContent = piece.description || "";
+    
+    // Display client and station from piece
+    document.getElementById("cl-piece-client").textContent = piece.client || "-";
+    document.getElementById("cl-piece-station").textContent = piece.station || "-";
 
     const imgBox = document.getElementById("cl-piece-image-box");
     const mainSrc = getPieceImageSrc(piece);
@@ -1773,19 +1820,26 @@
 
       if(st.status==="NOK"){
         const extraDiv = wrap.querySelector(`#extra-${idx}`);
+        const itemFailureModes = item.failureModes || [];
+        const failureModeOptions = itemFailureModes.length > 0
+          ? itemFailureModes.map(fm=>`<option value="${fm}" ${st.failureMode===fm?"selected":""}>${fm}</option>`).join("")
+          : `
+            <option value="Dimensional" ${st.failureMode==="Dimensional"?"selected":""}>Dimensional</option>
+            <option value="Visual" ${st.failureMode==="Visual"?"selected":""}>Visual</option>
+            <option value="Acabamento" ${st.failureMode==="Acabamento"?"selected":""}>Acabamento</option>
+            <option value="Material" ${st.failureMode==="Material"?"selected":""}>Material</option>
+            <option value="Montagem" ${st.failureMode==="Montagem"?"selected":""}>Montagem</option>
+            <option value="Soldagem" ${st.failureMode==="Soldagem"?"selected":""}>Soldagem</option>
+            <option value="Pintura" ${st.failureMode==="Pintura"?"selected":""}>Pintura</option>
+            <option value="Outro" ${st.failureMode==="Outro"?"selected":""}>Outro</option>
+          `;
+        
         extraDiv.innerHTML = `
           <div class="checklist-extra">
             <label>Modo de falha (obrigatório):</label>
             <select id="failure-mode-${idx}" style="width:100%;padding:6px 8px;margin-top:4px;margin-bottom:6px;border:1px solid #cbd3e3;border-radius:4px;font-size:13px;">
               <option value="">Selecione o modo de falha</option>
-              <option value="Dimensional" ${st.failureMode==="Dimensional"?"selected":""}>Dimensional</option>
-              <option value="Visual" ${st.failureMode==="Visual"?"selected":""}>Visual</option>
-              <option value="Acabamento" ${st.failureMode==="Acabamento"?"selected":""}>Acabamento</option>
-              <option value="Material" ${st.failureMode==="Material"?"selected":""}>Material</option>
-              <option value="Montagem" ${st.failureMode==="Montagem"?"selected":""}>Montagem</option>
-              <option value="Soldagem" ${st.failureMode==="Soldagem"?"selected":""}>Soldagem</option>
-              <option value="Pintura" ${st.failureMode==="Pintura"?"selected":""}>Pintura</option>
-              <option value="Outro" ${st.failureMode==="Outro"?"selected":""}>Outro</option>
+              ${failureModeOptions}
             </select>
 
             <label>Descrição da não conformidade (obrigatório):</label>
@@ -1990,15 +2044,14 @@
     // resetar seleção e voltar ao início do checklist
     const pieceSel = document.getElementById("piece-selector");
     if(pieceSel) pieceSel.value = "";
-    const clientSel = document.getElementById("client-selector");
-    if(clientSel) clientSel.value = "";
-    const stationSel = document.getElementById("station-selector");
-    if(stationSel) stationSel.value = "";
     currentChecklistPiece = null;
     checklistItemStates = [];
     currentPieceSerialNumber = ""; // Reset serial number
     currentClient = ""; // Reset client
     currentStation = ""; // Reset station
+    
+    // Show piece selection card again and hide checklist
+    document.getElementById("piece-selection-card").classList.remove("hide");
     const exec = document.getElementById("checklist-execution");
     if(exec) exec.classList.add("hide");
     window.scrollTo({top:0,behavior:"smooth"});
@@ -2250,6 +2303,27 @@
         <input type="text" id="modal-piece-desc" value="${p.description||""}">
       </div>
       <div class="form-group">
+        <label>Cliente</label>
+        <select id="modal-piece-client">
+          <option value="">Selecione o cliente</option>
+          <option value="Cliente A" ${p.client==="Cliente A"?"selected":""}>Cliente A</option>
+          <option value="Cliente B" ${p.client==="Cliente B"?"selected":""}>Cliente B</option>
+          <option value="Cliente C" ${p.client==="Cliente C"?"selected":""}>Cliente C</option>
+          <option value="Outro" ${p.client==="Outro"?"selected":""}>Outro</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Estação/Linha</label>
+        <select id="modal-piece-station">
+          <option value="">Selecione a estação</option>
+          <option value="Linha 1" ${p.station==="Linha 1"?"selected":""}>Linha 1</option>
+          <option value="Linha 2" ${p.station==="Linha 2"?"selected":""}>Linha 2</option>
+          <option value="Linha 3" ${p.station==="Linha 3"?"selected":""}>Linha 3</option>
+          <option value="Área de Montagem" ${p.station==="Área de Montagem"?"selected":""}>Área de Montagem</option>
+          <option value="Outro" ${p.station==="Outro"?"selected":""}>Outro</option>
+        </select>
+      </div>
+      <div class="form-group">
         <label>Imagem</label>
         <input type="file" id="modal-piece-img" accept="image/*">
       </div>
@@ -2266,9 +2340,17 @@
     document.getElementById("modal-piece-save").addEventListener("click",()=>{
       const newCode = document.getElementById("modal-piece-code").value.trim();
       const newDesc = document.getElementById("modal-piece-desc").value.trim();
+      const newClient = document.getElementById("modal-piece-client").value.trim();
+      const newStation = document.getElementById("modal-piece-station").value.trim();
       const file = document.getElementById("modal-piece-img").files[0];
-      if(!newCode || !newDesc){ alert("Preencha código e descrição."); return; }
-      p.code=newCode; p.description=newDesc;
+      if(!newCode || !newDesc || !newClient || !newStation){ 
+        alert("Preencha código, descrição, cliente e estação."); 
+        return; 
+      }
+      p.code=newCode; 
+      p.description=newDesc;
+      p.client=newClient;
+      p.station=newStation;
       if(file){ p.image=file; p.imageUrl=null; }
       closeModal();
       renderPieces();
@@ -2326,6 +2408,13 @@
   function openEditItemModal(pieceIdx,idx){
     const item = pieces[pieceIdx].items[idx];
     const src = getItemImageSrc(item) || "";
+    const failureModes = item.failureModes || [];
+    
+    const allModes = ["Dimensional","Visual","Acabamento","Material","Montagem","Soldagem","Pintura","Outro"];
+    const modeOptions = allModes.map(mode => 
+      `<option value="${mode}" ${failureModes.includes(mode)?"selected":""}>${mode}</option>`
+    ).join("");
+    
     showModal(`
       <div class="modal-header">
         <div class="modal-title">Editar Item</div>
@@ -2338,6 +2427,13 @@
       <div class="form-group">
         <label>Descrição</label>
         <textarea id="modal-item-desc" rows="2">${item.description||""}</textarea>
+      </div>
+      <div class="form-group">
+        <label>Modos de falha possíveis</label>
+        <select id="modal-item-failure-modes" multiple style="height:120px;width:100%;padding:6px;border:1px solid #cbd3e3;border-radius:4px;font-size:13px;">
+          ${modeOptions}
+        </select>
+        <small style="color:#666;font-size:11px;display:block;margin-top:4px;">Use Ctrl/Cmd para selecionar múltiplos modos</small>
       </div>
       <div class="form-group">
         <label>Imagem</label>
@@ -2357,8 +2453,18 @@
       const name = document.getElementById("modal-item-name").value.trim();
       const desc = document.getElementById("modal-item-desc").value.trim();
       const file = document.getElementById("modal-item-img").files[0];
+      const failureModesSelect = document.getElementById("modal-item-failure-modes");
+      const newFailureModes = Array.from(failureModesSelect.selectedOptions).map(opt=>opt.value);
+      
       if(!name || !desc){ alert("Preencha nome e descrição."); return; }
-      item.name=name; item.description=desc;
+      if(newFailureModes.length === 0){
+        alert("Selecione pelo menos um modo de falha possível.");
+        return;
+      }
+      
+      item.name=name; 
+      item.description=desc;
+      item.failureModes=newFailureModes;
       if(file){ item.image=file; item.imageUrl=null; }
       closeModal();
       renderPieceItemsList(pieceIdx);
@@ -3017,17 +3123,19 @@
     document.getElementById("btn-add-piece").addEventListener("click",async()=>{
       const code = document.getElementById("piece-code-input").value.trim();
       const desc = document.getElementById("piece-desc-input").value.trim();
+      const client = document.getElementById("piece-client-input").value.trim();
+      const station = document.getElementById("piece-station-input").value.trim();
       const file = document.getElementById("piece-image-input").files[0];
       const hasSerial = document.getElementById("piece-has-serial-input").checked;
-      if(!code || !desc || !file){
-        alert("Preencha código, descrição e imagem.");
+      if(!code || !desc || !client || !station || !file){
+        alert("Preencha código, descrição, cliente, estação e imagem.");
         return;
       }
       if(pieces.some(p=>p.code===code)){
         alert("Já existe uma peça com esse código.");
         return;
       }
-      const newPiece = {code,description:desc,image:file,imageUrl:null,items:[],hasSerialNumber:hasSerial};
+      const newPiece = {code,description:desc,client,station,image:file,imageUrl:null,items:[],hasSerialNumber:hasSerial};
       pieces.push(newPiece);
       renderPieces();
       renderChecklistSelectors();
@@ -3057,6 +3165,8 @@
       // Clear form
       document.getElementById("piece-code-input").value="";
       document.getElementById("piece-desc-input").value="";
+      document.getElementById("piece-client-input").value="";
+      document.getElementById("piece-station-input").value="";
       document.getElementById("piece-image-input").value="";
       document.getElementById("piece-has-serial-input").checked=false;
     });
@@ -3070,18 +3180,32 @@
       const name = document.getElementById("item-name-input").value.trim();
       const desc = document.getElementById("item-desc-input").value.trim();
       const file = document.getElementById("item-image-input").files[0];
+      const failureModesSelect = document.getElementById("item-failure-modes-input");
+      const failureModes = Array.from(failureModesSelect.selectedOptions).map(opt=>opt.value);
+      
       if(!name || !desc || !file){
         alert("Preencha nome, descrição e imagem do item.");
         return;
       }
-      pieces[pieceIdx].items.push({name,description:desc,image:file,imageUrl:null});
+      if(failureModes.length === 0){
+        alert("Selecione pelo menos um modo de falha possível.");
+        return;
+      }
+      
+      pieces[pieceIdx].items.push({name,description:desc,failureModes,image:file,imageUrl:null});
       document.getElementById("item-name-input").value="";
       document.getElementById("item-desc-input").value="";
       document.getElementById("item-image-input").value="";
+      failureModesSelect.selectedIndex = -1; // Clear selection
       renderPieceItemsList(pieceIdx);
       if(window.fbApi && window.fbApi.savePiece){
         window.fbApi.savePiece(pieces[pieceIdx]).catch(e=>console.error("Erro salvar peça Firebase",e));
       }
+    });
+    
+    // Auto-start checklist when piece is selected
+    document.getElementById("piece-selector").addEventListener("change",()=>{
+      startChecklist();
     });
 
     document.getElementById("btn-export-csv").addEventListener("click",exportCSV);
