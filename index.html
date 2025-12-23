@@ -1182,11 +1182,11 @@
                 <div class="kpi-value" id="kpi-total-inspecoes">0</div>
               </div>
               <div class="kpi-card">
-                <div class="kpi-label">Itens Aprovados</div>
+                <div class="kpi-label">Peças Aprovadas</div>
                 <div class="kpi-value" style="color:#28b649;" id="kpi-aprovados">0</div>
               </div>
               <div class="kpi-card">
-                <div class="kpi-label">Itens Reprovados</div>
+                <div class="kpi-label">Peças Reprovadas</div>
                 <div class="kpi-value" style="color:#E81C24;" id="kpi-reprovados">0</div>
               </div>
               <div class="kpi-card">
@@ -2795,7 +2795,7 @@
       dashboardChart = new Chart(ctx,{
         type:"doughnut",
         data:{
-          labels:["Aprovados","Retrabalho"],
+          labels:["Peças Boas","Peças Reprovadas"],
           datasets:[{
             data:[0,0],
             backgroundColor:["#28b649","#E81C24"],
@@ -2817,14 +2817,24 @@
         data:{
           labels:[],
           datasets:[{
-            label:"Defeitos",
+            label:"Peças Reprovadas",
             data:[],
             backgroundColor:"#E81C24",
             borderColor:"#c41820",
             borderWidth:1
           }]
         },
-        options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}
+        options:{
+          responsive:true,
+          maintainAspectRatio:true,
+          plugins:{
+            legend:{display:true,position:'top'},
+            title:{display:false}
+          },
+          scales:{
+            y:{beginAtZero:true,ticks:{precision:0}}
+          }
+        }
       });
     }
   }
@@ -2838,14 +2848,24 @@
         data:{
           labels:[],
           datasets:[{
-            label:"Defeitos",
+            label:"Peças Reprovadas",
             data:[],
             backgroundColor:"#1844F0",
             borderColor:"#0f34d0",
             borderWidth:1
           }]
         },
-        options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}
+        options:{
+          responsive:true,
+          maintainAspectRatio:true,
+          plugins:{
+            legend:{display:true,position:'top'},
+            title:{display:false}
+          },
+          scales:{
+            y:{beginAtZero:true,ticks:{precision:0}}
+          }
+        }
       });
     }
   }
@@ -2859,14 +2879,24 @@
         data:{
           labels:[],
           datasets:[{
-            label:"Defeitos",
+            label:"Ocorrências",
             data:[],
             backgroundColor:"#f59f00",
             borderColor:"#d98200",
             borderWidth:1
           }]
         },
-        options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}
+        options:{
+          responsive:true,
+          maintainAspectRatio:true,
+          plugins:{
+            legend:{display:true,position:'top'},
+            title:{display:false}
+          },
+          scales:{
+            y:{beginAtZero:true,ticks:{precision:0}}
+          }
+        }
       });
     }
   }
@@ -2981,50 +3011,45 @@
       return true;
     });
 
-    // Calculate KPIs
+    // Calculate KPIs - piece-level aggregation
     let totalInsp = filtered.length;
-    let aprovados = 0;
-    let reprovados = 0;
-    let embarcadas = 0;
-    let retrabalho = 0;
+    let pecasBoas = 0;  // Pieces with all OK items
+    let pecasReprovadas = 0;  // Pieces with at least one NOK item
     const defectsByStation = {};
     const defectsByClient = {};
     const defectsByFailure = {};
 
     filtered.forEach(i=>{
-      (i.itens||[]).forEach(it=>{
-        if(it.status==="OK"){
-          aprovados++;
-          embarcadas++;
-        }else{
-          reprovados++;
-          
-          // Count defects by station
-          if(i.station){
-            defectsByStation[i.station] = (defectsByStation[i.station]||0)+1;
-          }
-          
-          // Count defects by client
-          if(i.client){
-            defectsByClient[i.client] = (defectsByClient[i.client]||0)+1;
-          }
-          
-          // Count defects by failure mode
-          if(it.failureMode){
+      const itens = i.itens || [];
+      const hasNOK = itens.some(it => it.status === "NOK");
+      
+      if(hasNOK){
+        // Piece is rejected if it has ANY NOK item
+        pecasReprovadas++;
+        
+        // Count this rejected piece once per station/client
+        if(i.station){
+          defectsByStation[i.station] = (defectsByStation[i.station]||0)+1;
+        }
+        
+        if(i.client){
+          defectsByClient[i.client] = (defectsByClient[i.client]||0)+1;
+        }
+        
+        // Count all failure modes found in this piece
+        itens.forEach(it=>{
+          if(it.status === "NOK" && it.failureMode){
             defectsByFailure[it.failureMode] = (defectsByFailure[it.failureMode]||0)+1;
           }
-          
-          if(it.encaminhamento==="retrabalho"){
-            retrabalho++;
-          }else{
-            embarcadas++;
-          }
-        }
-      });
+        });
+      }else{
+        // Piece is good if ALL items are OK
+        pecasBoas++;
+      }
     });
 
-    const totalItens = aprovados + reprovados;
-    const percentDefects = totalItens > 0 ? ((reprovados/totalItens)*100).toFixed(1) : "0.0";
+    const totalPecas = pecasBoas + pecasReprovadas;
+    const percentDefects = totalPecas > 0 ? ((pecasReprovadas/totalPecas)*100).toFixed(1) : "0.0";
 
     // Update KPIs
     const kpiTotal = document.getElementById("kpi-total-inspecoes");
@@ -3033,13 +3058,13 @@
     const kpiPercent = document.getElementById("kpi-percent-defeitos");
     
     if(kpiTotal) kpiTotal.textContent = totalInsp;
-    if(kpiAprovados) kpiAprovados.textContent = aprovados;
-    if(kpiReprovados) kpiReprovados.textContent = reprovados;
+    if(kpiAprovados) kpiAprovados.textContent = pecasBoas;
+    if(kpiReprovados) kpiReprovados.textContent = pecasReprovadas;
     if(kpiPercent) kpiPercent.textContent = `${percentDefects}%`;
 
-    // Update charts
+    // Update doughnut chart - showing good vs rejected pieces
     if(dashboardChart){
-      dashboardChart.data.datasets[0].data = [embarcadas, retrabalho];
+      dashboardChart.data.datasets[0].data = [pecasBoas, pecasReprovadas];
       dashboardChart.update();
     }
 
