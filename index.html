@@ -626,6 +626,12 @@
     font-weight:600;
   }
 
+  .piece-client{
+    font-size:11px;
+    color:#666;
+    margin-top:4px;
+  }
+
   .piece-item-row{
     display:flex;
     justify-content:space-between;
@@ -993,6 +999,13 @@
               </div>
             </div>
             <div class="form-group">
+              <label for="piece-client-input">Cliente *</label>
+              <select id="piece-client-input">
+                <option value="">Selecione o cliente</option>
+                <option value="CAT CAMPO LARGO">CAT CAMPO LARGO</option>
+              </select>
+            </div>
+            <div class="form-group">
               <label>
                 <input type="checkbox" id="piece-has-serial-input">
                 Peça possui serial number?
@@ -1188,6 +1201,7 @@
             image: null,
             imageUrl: data.imageUrl || null,
             hasSerialNumber: data.hasSerialNumber || false,
+            client: data.client || "",
             items: (data.items || []).map(it => ({
               name: it.name,
               description: it.description,
@@ -1278,7 +1292,8 @@
         description: piece.description,
         imageUrl,
         items: itemsToSave,
-        hasSerialNumber: piece.hasSerialNumber || false
+        hasSerialNumber: piece.hasSerialNumber || false,
+        client: piece.client || ""
       });
     }
 
@@ -2088,10 +2103,14 @@
       const row = document.createElement("div");
       row.className="piece-row";
       const src = getPieceImageSrc(p);
+      const clientDisplay = p.client ? `<div class="piece-client">Cliente: ${p.client}</div>` : "";
       row.innerHTML = `
         <div class="piece-row-left">
           <div class="piece-thumb">${src?`<img src="${src}">`:""}</div>
-          <div class="piece-label">${p.code} — ${p.description||""}</div>
+          <div>
+            <div class="piece-label">${p.code} — ${p.description||""}</div>
+            ${clientDisplay}
+          </div>
         </div>
         <div>
           <button class="btn-icon btn-edit" data-idx="${idx}">Editar</button>
@@ -2725,16 +2744,17 @@
       const code = document.getElementById("piece-code-input").value.trim();
       const desc = document.getElementById("piece-desc-input").value.trim();
       const file = document.getElementById("piece-image-input").files[0];
+      const client = document.getElementById("piece-client-input").value.trim();
       const hasSerial = document.getElementById("piece-has-serial-input").checked;
-      if(!code || !desc || !file){
-        alert("Preencha código, descrição e imagem.");
+      if(!code || !desc || !file || !client){
+        alert("Preencha código, descrição, imagem e cliente.");
         return;
       }
       if(pieces.some(p=>p.code===code)){
         alert("Já existe uma peça com esse código.");
         return;
       }
-      const newPiece = {code,description:desc,image:file,imageUrl:null,items:[],hasSerialNumber:hasSerial};
+      const newPiece = {code,description:desc,image:file,imageUrl:null,items:[],hasSerialNumber:hasSerial,client:client};
       pieces.push(newPiece);
       renderPieces();
       renderChecklistSelectors();
@@ -2765,6 +2785,7 @@
       document.getElementById("piece-code-input").value="";
       document.getElementById("piece-desc-input").value="";
       document.getElementById("piece-image-input").value="";
+      document.getElementById("piece-client-input").value="";
       document.getElementById("piece-has-serial-input").checked=false;
     });
 
