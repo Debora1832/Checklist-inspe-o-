@@ -3808,13 +3808,10 @@
 
       const mediaType = file.type.startsWith('image/') ? 'image' : 'video';
       const newItem = {
-        id: "bib" + Date.now(),
+        id: "bib" + Date.now() + "_" + Math.random().toString(36).substr(2, 9),
         piece: pieceName,
         media: file,
-        mediaType: mediaType,
-        video: null,
-        videoUrl: null,
-        imageUrl: null
+        mediaType: mediaType
       };
 
       bibliotecaItems.push(newItem);
