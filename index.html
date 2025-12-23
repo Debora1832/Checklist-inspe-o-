@@ -224,6 +224,12 @@
   .sidebar-item.active::before{
     background:#1844F0;
   }
+  .sidebar-icon{
+    font-size:18px;
+    width:20px;
+    text-align:center;
+    flex-shrink:0;
+  }
   .sidebar-label{
     flex:1;
     text-align:left;
@@ -878,21 +884,27 @@
 
       <nav class="sidebar-menu">
         <button class="sidebar-item active" data-screen="checklist" onclick="selectSidebar('checklist')">
+          <span class="sidebar-icon">✓</span>
           <span class="sidebar-label">Checklist</span>
         </button>
         <button class="sidebar-item" data-screen="inspectors" onclick="selectSidebar('inspectors')">
+          <span class="sidebar-icon">👤</span>
           <span class="sidebar-label">Inspetores</span>
         </button>
         <button class="sidebar-item" data-screen="pieces" onclick="selectSidebar('pieces')">
+          <span class="sidebar-icon">📦</span>
           <span class="sidebar-label">Peças & Itens</span>
         </button>
         <button class="sidebar-item" data-screen="dashboard" onclick="selectSidebar('dashboard')">
+          <span class="sidebar-icon">📊</span>
           <span class="sidebar-label">Dashboard</span>
         </button>
         <button class="sidebar-item" data-screen="reports" onclick="selectSidebar('reports')">
+          <span class="sidebar-icon">📄</span>
           <span class="sidebar-label">Relatórios</span>
         </button>
         <button class="sidebar-item" data-screen="biblioteca" onclick="selectSidebar('biblioteca')" aria-label="Ir para página de Biblioteca de Inspeções">
+          <span class="sidebar-icon">📚</span>
           <span class="sidebar-label">Biblioteca de Inspeções</span>
         </button>
       </nav>
@@ -1618,6 +1630,13 @@
 
   // Navegação entre telas
   function selectSidebar(screenId){
+    // Block navigation if checklist is active (checklist execution is visible)
+    const checklistExecution = document.getElementById("checklist-execution");
+    if(checklistExecution && !checklistExecution.classList.contains("hide")){
+      alert("Você precisa finalizar ou cancelar o checklist atual antes de navegar para outra página.");
+      return;
+    }
+    
     document.querySelectorAll(".sidebar-item").forEach(btn=>{
       btn.classList.toggle("active", btn.dataset.screen===screenId);
     });
@@ -1820,8 +1839,14 @@
     pieceSel.innerHTML = '<option value="" disabled selected>Selecionar peça</option>' +
       pieces.map(p=>`<option value="${p.code}">${p.code}</option>`).join("");
 
+    // Always ensure piece selection card is visible and execution is hidden
+    const selectionCard = document.getElementById("piece-selection-card");
     const exec = document.getElementById("checklist-execution");
+    if(selectionCard) selectionCard.classList.remove("hide");
     if(exec) exec.classList.add("hide");
+    
+    // Expand sidebar when showing checklist selection
+    expandSidebar();
   }
 
   function startChecklist(){
