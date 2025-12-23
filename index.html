@@ -970,10 +970,45 @@
                 <label for="piece-client-input">Cliente</label>
                 <select id="piece-client-input">
                   <option value="">Selecione o cliente</option>
-                  <option value="Cliente A">Cliente A</option>
-                  <option value="Cliente B">Cliente B</option>
-                  <option value="Cliente C">Cliente C</option>
-                  <option value="Outro">Outro</option>
+                  <option value="AGCO Canoas">AGCO Canoas</option>
+                  <option value="AGCO Mogi">AGCO Mogi</option>
+                  <option value="AGCO Santa Rosa">AGCO Santa Rosa</option>
+                  <option value="Agritech Indaiatuba">Agritech Indaiatuba</option>
+                  <option value="Caterpillar Campo Largo">Caterpillar Campo Largo</option>
+                  <option value="Caterpillar Piracicaba">Caterpillar Piracicaba</option>
+                  <option value="Caterpillar Piracicaba Reposição">Caterpillar Piracicaba Reposição</option>
+                  <option value="CNH Curitiba">CNH Curitiba</option>
+                  <option value="CNH Reposição Sorocaba">CNH Reposição Sorocaba</option>
+                  <option value="CNH Sorocaba">CNH Sorocaba</option>
+                  <option value="DAF Ponta Grossa">DAF Ponta Grossa</option>
+                  <option value="Dana Industrias">Dana Industrias</option>
+                  <option value="Deere Hitachi – Indaiatuba">Deere Hitachi – Indaiatuba</option>
+                  <option value="Flamma">Flamma</option>
+                  <option value="Gedore">Gedore</option>
+                  <option value="GTS">GTS</option>
+                  <option value="Horsch do Brasil">Horsch do Brasil</option>
+                  <option value="Iveco Sete Lagoas">Iveco Sete Lagoas</option>
+                  <option value="John Deere Catalão">John Deere Catalão</option>
+                  <option value="John Deere Horizontina">John Deere Horizontina</option>
+                  <option value="John Deere Indaiatuba">John Deere Indaiatuba</option>
+                  <option value="John Deere Montenegro">John Deere Montenegro</option>
+                  <option value="John Deere Reposição Campinas">John Deere Reposição Campinas</option>
+                  <option value="Landini – Contagem / MG">Landini – Contagem / MG</option>
+                  <option value="Maxion Cruzeiro">Maxion Cruzeiro</option>
+                  <option value="Mercedes Juiz de Fora">Mercedes Juiz de Fora</option>
+                  <option value="Mercedes São Bernardo do Campo">Mercedes São Bernardo do Campo</option>
+                  <option value="Metalsa Campo Largo">Metalsa Campo Largo</option>
+                  <option value="Metalsa Osasco">Metalsa Osasco</option>
+                  <option value="MWM">MWM</option>
+                  <option value="Renault SJP">Renault SJP</option>
+                  <option value="Scania Reposição Vinhedos">Scania Reposição Vinhedos</option>
+                  <option value="Scania São Bernardo do Campo">Scania São Bernardo do Campo</option>
+                  <option value="Solinftec">Solinftec</option>
+                  <option value="Tatu">Tatu</option>
+                  <option value="Volvo CE Pederneiras">Volvo CE Pederneiras</option>
+                  <option value="Volvo Curitiba">Volvo Curitiba</option>
+                  <option value="Volvo Pederneiras">Volvo Pederneiras</option>
+                  <option value="Volvo Reposição">Volvo Reposição</option>
                 </select>
               </div>
             </div>
@@ -982,11 +1017,13 @@
                 <label for="piece-station-input">Estação/Linha</label>
                 <select id="piece-station-input">
                   <option value="">Selecione a estação</option>
-                  <option value="Linha 1">Linha 1</option>
-                  <option value="Linha 2">Linha 2</option>
-                  <option value="Linha 3">Linha 3</option>
-                  <option value="Área de Montagem">Área de Montagem</option>
-                  <option value="Outro">Outro</option>
+                  <option value="Solda Robô 1 / Solda Projeção">Solda Robô 1 / Solda Projeção</option>
+                  <option value="Jato Automático">Jato Automático</option>
+                  <option value="Mesa Desempeno">Mesa Desempeno</option>
+                  <option value="Tratamento Superficial">Tratamento Superficial</option>
+                  <option value="Jato">Jato</option>
+                  <option value="Calibragem / Estanqueidade / Acabamento">Calibragem / Estanqueidade / Acabamento</option>
+                  <option value="Solda Manual / Solda Extra Pesada">Solda Manual / Solda Extra Pesada</option>
                 </select>
               </div>
               <div class="form-group">
@@ -1025,18 +1062,65 @@
                 <textarea id="item-desc-input" rows="2" placeholder="Descreva o que deve ser verificado"></textarea>
               </div>
               <div class="form-group">
-                <label for="item-failure-modes-input">Modos de falha possíveis</label>
-                <select id="item-failure-modes-input" multiple style="height:120px;">
-                  <option value="Dimensional">Dimensional</option>
-                  <option value="Visual">Visual</option>
-                  <option value="Acabamento">Acabamento</option>
-                  <option value="Material">Material</option>
-                  <option value="Montagem">Montagem</option>
-                  <option value="Soldagem">Soldagem</option>
-                  <option value="Pintura">Pintura</option>
-                  <option value="Outro">Outro</option>
+                <label for="item-failure-mode-input">Modo de falha</label>
+                <select id="item-failure-mode-input">
+                  <option value="">Selecione o modo de falha</option>
+                  <option value="Ângulo fora do especificado">Ângulo fora do especificado</option>
+                  <option value="Backlog interno">Backlog interno</option>
+                  <option value="Borra de e-coat">Borra de e-coat</option>
+                  <option value="Camada fora do especificado">Camada fora do especificado</option>
+                  <option value="Componente soldado deslocado">Componente soldado deslocado</option>
+                  <option value="Componente soldado invertido">Componente soldado invertido</option>
+                  <option value="Comprimento do cordão de solda fora do especificado">Comprimento do cordão de solda fora do especificado</option>
+                  <option value="Contaminação">Contaminação</option>
+                  <option value="Corpo ou cabeceira invertida">Corpo ou cabeceira invertida</option>
+                  <option value="Cravamento irregular – parafuso / porca / pino / porca">Cravamento irregular – parafuso / porca / pino / porca</option>
+                  <option value="Dimensional fora do especificado">Dimensional fora do especificado</option>
+                  <option value="Dobra invertida">Dobra invertida</option>
+                  <option value="Emenda deficiente">Emenda deficiente</option>
+                  <option value="Espaçamento entre componentes">Espaçamento entre componentes</option>
+                  <option value="Excesso de pó">Excesso de pó</option>
+                  <option value="Falha no corte da peça">Falha no corte da peça</option>
+                  <option value="Falha no mascaramento / proteção">Falha no mascaramento / proteção</option>
+                  <option value="Falta de cordão de solda">Falta de cordão de solda</option>
+                  <option value="Falta de cura">Falta de cura</option>
+                  <option value="Falta de operação (rosca, chanfro, furo, montagem)">Falta de operação (rosca, chanfro, furo, montagem)</option>
+                  <option value="Falta de penetração de solda">Falta de penetração de solda</option>
+                  <option value="Ficha tratamento superficial FTS errada">Ficha tratamento superficial FTS errada</option>
+                  <option value="Gap">Gap</option>
+                  <option value="Gravação fora do especificado">Gravação fora do especificado</option>
+                  <option value="Identificação incorreta">Identificação incorreta</option>
+                  <option value="Inclusão de arame de solda">Inclusão de arame de solda</option>
+                  <option value="Logística – peça enviada fora do programa de entrega">Logística – peça enviada fora do programa de entrega</option>
+                  <option value="Má formação do rebite">Má formação do rebite</option>
+                  <option value="Matéria-prima não conforme (riscos, marcas, etc.)">Matéria-prima não conforme (riscos, marcas, etc.)</option>
+                  <option value="Montagem incorreta">Montagem incorreta</option>
+                  <option value="Mordedura">Mordedura</option>
+                  <option value="Operação incompleta (rosca, chanfro, furo, etc.)">Operação incompleta (rosca, chanfro, furo, etc.)</option>
+                  <option value="Oxidação">Oxidação</option>
+                  <option value="Peças com componentes fora do especificado">Peças com componentes fora do especificado</option>
+                  <option value="Peças com trincas">Peças com trincas</option>
+                  <option value="Peças danificadas em processo (marcas e riscos, etc.)">Peças danificadas em processo (marcas e riscos, etc.)</option>
+                  <option value="Peças faltando componentes">Peças faltando componentes</option>
+                  <option value="Peças misturadas">Peças misturadas</option>
+                  <option value="Perna da solda filete abaixo da medida">Perna da solda filete abaixo da medida</option>
+                  <option value="Pintura escorrida">Pintura escorrida</option>
+                  <option value="Pintura com casca de laranja">Pintura com casca de laranja</option>
+                  <option value="Pintura cratera">Pintura cratera</option>
+                  <option value="Pintura com desplacamento">Pintura com desplacamento</option>
+                  <option value="Pintura com olho de peixe">Pintura com olho de peixe</option>
+                  <option value="Pintura com sujeira">Pintura com sujeira</option>
+                  <option value="Pintura danificada">Pintura danificada</option>
+                  <option value="Pintura falhada">Pintura falhada</option>
+                  <option value="Pintura fervida">Pintura fervida</option>
+                  <option value="Plano de embalagem fora do especificado">Plano de embalagem fora do especificado</option>
+                  <option value="Porosidade">Porosidade</option>
+                  <option value="Rebarbas">Rebarbas</option>
+                  <option value="Respingos">Respingos</option>
+                  <option value="Rosca danificada">Rosca danificada</option>
+                  <option value="Roscas / furos com tinta e/ou sujeiras">Roscas / furos com tinta e/ou sujeiras</option>
+                  <option value="Solda com sobreposição">Solda com sobreposição</option>
                 </select>
-                <small style="color:#666;font-size:11px;display:block;margin-top:4px;">Use Ctrl/Cmd para selecionar múltiplos modos</small>
               </div>
               <div class="form-group">
                 <label for="item-image-input">Imagem do item</label>
@@ -1356,7 +1440,7 @@
         itemsToSave.push({
           name: it.name,
           description: it.description,
-          failureModes: it.failureModes || [],
+          failureMode: it.failureMode || "",
           imageUrl: itemImageUrl
         });
       }
@@ -1820,24 +1904,72 @@
 
       if(st.status==="NOK"){
         const extraDiv = wrap.querySelector(`#extra-${idx}`);
-        const itemFailureModes = item.failureModes || [];
-        const failureModeOptions = itemFailureModes.length > 0
-          ? itemFailureModes.map(fm=>`<option value="${fm}" ${st.failureMode===fm?"selected":""}>${fm}</option>`).join("")
+        // Support both old (failureModes array) and new (failureMode string) format
+        const itemFailureMode = item.failureMode || (item.failureModes && item.failureModes[0]) || "";
+        const failureModeOptions = itemFailureMode
+          ? `<option value="${itemFailureMode}" ${st.failureMode===itemFailureMode?"selected":""}>${itemFailureMode}</option>`
           : `
-            <option value="Dimensional" ${st.failureMode==="Dimensional"?"selected":""}>Dimensional</option>
-            <option value="Visual" ${st.failureMode==="Visual"?"selected":""}>Visual</option>
-            <option value="Acabamento" ${st.failureMode==="Acabamento"?"selected":""}>Acabamento</option>
-            <option value="Material" ${st.failureMode==="Material"?"selected":""}>Material</option>
-            <option value="Montagem" ${st.failureMode==="Montagem"?"selected":""}>Montagem</option>
-            <option value="Soldagem" ${st.failureMode==="Soldagem"?"selected":""}>Soldagem</option>
-            <option value="Pintura" ${st.failureMode==="Pintura"?"selected":""}>Pintura</option>
-            <option value="Outro" ${st.failureMode==="Outro"?"selected":""}>Outro</option>
+            <option value="Ângulo fora do especificado" ${st.failureMode==="Ângulo fora do especificado"?"selected":""}>Ângulo fora do especificado</option>
+            <option value="Backlog interno" ${st.failureMode==="Backlog interno"?"selected":""}>Backlog interno</option>
+            <option value="Borra de e-coat" ${st.failureMode==="Borra de e-coat"?"selected":""}>Borra de e-coat</option>
+            <option value="Camada fora do especificado" ${st.failureMode==="Camada fora do especificado"?"selected":""}>Camada fora do especificado</option>
+            <option value="Componente soldado deslocado" ${st.failureMode==="Componente soldado deslocado"?"selected":""}>Componente soldado deslocado</option>
+            <option value="Componente soldado invertido" ${st.failureMode==="Componente soldado invertido"?"selected":""}>Componente soldado invertido</option>
+            <option value="Comprimento do cordão de solda fora do especificado" ${st.failureMode==="Comprimento do cordão de solda fora do especificado"?"selected":""}>Comprimento do cordão de solda fora do especificado</option>
+            <option value="Contaminação" ${st.failureMode==="Contaminação"?"selected":""}>Contaminação</option>
+            <option value="Corpo ou cabeceira invertida" ${st.failureMode==="Corpo ou cabeceira invertida"?"selected":""}>Corpo ou cabeceira invertida</option>
+            <option value="Cravamento irregular – parafuso / porca / pino / porca" ${st.failureMode==="Cravamento irregular – parafuso / porca / pino / porca"?"selected":""}>Cravamento irregular – parafuso / porca / pino / porca</option>
+            <option value="Dimensional fora do especificado" ${st.failureMode==="Dimensional fora do especificado"?"selected":""}>Dimensional fora do especificado</option>
+            <option value="Dobra invertida" ${st.failureMode==="Dobra invertida"?"selected":""}>Dobra invertida</option>
+            <option value="Emenda deficiente" ${st.failureMode==="Emenda deficiente"?"selected":""}>Emenda deficiente</option>
+            <option value="Espaçamento entre componentes" ${st.failureMode==="Espaçamento entre componentes"?"selected":""}>Espaçamento entre componentes</option>
+            <option value="Excesso de pó" ${st.failureMode==="Excesso de pó"?"selected":""}>Excesso de pó</option>
+            <option value="Falha no corte da peça" ${st.failureMode==="Falha no corte da peça"?"selected":""}>Falha no corte da peça</option>
+            <option value="Falha no mascaramento / proteção" ${st.failureMode==="Falha no mascaramento / proteção"?"selected":""}>Falha no mascaramento / proteção</option>
+            <option value="Falta de cordão de solda" ${st.failureMode==="Falta de cordão de solda"?"selected":""}>Falta de cordão de solda</option>
+            <option value="Falta de cura" ${st.failureMode==="Falta de cura"?"selected":""}>Falta de cura</option>
+            <option value="Falta de operação (rosca, chanfro, furo, montagem)" ${st.failureMode==="Falta de operação (rosca, chanfro, furo, montagem)"?"selected":""}>Falta de operação (rosca, chanfro, furo, montagem)</option>
+            <option value="Falta de penetração de solda" ${st.failureMode==="Falta de penetração de solda"?"selected":""}>Falta de penetração de solda</option>
+            <option value="Ficha tratamento superficial FTS errada" ${st.failureMode==="Ficha tratamento superficial FTS errada"?"selected":""}>Ficha tratamento superficial FTS errada</option>
+            <option value="Gap" ${st.failureMode==="Gap"?"selected":""}>Gap</option>
+            <option value="Gravação fora do especificado" ${st.failureMode==="Gravação fora do especificado"?"selected":""}>Gravação fora do especificado</option>
+            <option value="Identificação incorreta" ${st.failureMode==="Identificação incorreta"?"selected":""}>Identificação incorreta</option>
+            <option value="Inclusão de arame de solda" ${st.failureMode==="Inclusão de arame de solda"?"selected":""}>Inclusão de arame de solda</option>
+            <option value="Logística – peça enviada fora do programa de entrega" ${st.failureMode==="Logística – peça enviada fora do programa de entrega"?"selected":""}>Logística – peça enviada fora do programa de entrega</option>
+            <option value="Má formação do rebite" ${st.failureMode==="Má formação do rebite"?"selected":""}>Má formação do rebite</option>
+            <option value="Matéria-prima não conforme (riscos, marcas, etc.)" ${st.failureMode==="Matéria-prima não conforme (riscos, marcas, etc.)"?"selected":""}>Matéria-prima não conforme (riscos, marcas, etc.)</option>
+            <option value="Montagem incorreta" ${st.failureMode==="Montagem incorreta"?"selected":""}>Montagem incorreta</option>
+            <option value="Mordedura" ${st.failureMode==="Mordedura"?"selected":""}>Mordedura</option>
+            <option value="Operação incompleta (rosca, chanfro, furo, etc.)" ${st.failureMode==="Operação incompleta (rosca, chanfro, furo, etc.)"?"selected":""}>Operação incompleta (rosca, chanfro, furo, etc.)</option>
+            <option value="Oxidação" ${st.failureMode==="Oxidação"?"selected":""}>Oxidação</option>
+            <option value="Peças com componentes fora do especificado" ${st.failureMode==="Peças com componentes fora do especificado"?"selected":""}>Peças com componentes fora do especificado</option>
+            <option value="Peças com trincas" ${st.failureMode==="Peças com trincas"?"selected":""}>Peças com trincas</option>
+            <option value="Peças danificadas em processo (marcas e riscos, etc.)" ${st.failureMode==="Peças danificadas em processo (marcas e riscos, etc.)"?"selected":""}>Peças danificadas em processo (marcas e riscos, etc.)</option>
+            <option value="Peças faltando componentes" ${st.failureMode==="Peças faltando componentes"?"selected":""}>Peças faltando componentes</option>
+            <option value="Peças misturadas" ${st.failureMode==="Peças misturadas"?"selected":""}>Peças misturadas</option>
+            <option value="Perna da solda filete abaixo da medida" ${st.failureMode==="Perna da solda filete abaixo da medida"?"selected":""}>Perna da solda filete abaixo da medida</option>
+            <option value="Pintura escorrida" ${st.failureMode==="Pintura escorrida"?"selected":""}>Pintura escorrida</option>
+            <option value="Pintura com casca de laranja" ${st.failureMode==="Pintura com casca de laranja"?"selected":""}>Pintura com casca de laranja</option>
+            <option value="Pintura cratera" ${st.failureMode==="Pintura cratera"?"selected":""}>Pintura cratera</option>
+            <option value="Pintura com desplacamento" ${st.failureMode==="Pintura com desplacamento"?"selected":""}>Pintura com desplacamento</option>
+            <option value="Pintura com olho de peixe" ${st.failureMode==="Pintura com olho de peixe"?"selected":""}>Pintura com olho de peixe</option>
+            <option value="Pintura com sujeira" ${st.failureMode==="Pintura com sujeira"?"selected":""}>Pintura com sujeira</option>
+            <option value="Pintura danificada" ${st.failureMode==="Pintura danificada"?"selected":""}>Pintura danificada</option>
+            <option value="Pintura falhada" ${st.failureMode==="Pintura falhada"?"selected":""}>Pintura falhada</option>
+            <option value="Pintura fervida" ${st.failureMode==="Pintura fervida"?"selected":""}>Pintura fervida</option>
+            <option value="Plano de embalagem fora do especificado" ${st.failureMode==="Plano de embalagem fora do especificado"?"selected":""}>Plano de embalagem fora do especificado</option>
+            <option value="Porosidade" ${st.failureMode==="Porosidade"?"selected":""}>Porosidade</option>
+            <option value="Rebarbas" ${st.failureMode==="Rebarbas"?"selected":""}>Rebarbas</option>
+            <option value="Respingos" ${st.failureMode==="Respingos"?"selected":""}>Respingos</option>
+            <option value="Rosca danificada" ${st.failureMode==="Rosca danificada"?"selected":""}>Rosca danificada</option>
+            <option value="Roscas / furos com tinta e/ou sujeiras" ${st.failureMode==="Roscas / furos com tinta e/ou sujeiras"?"selected":""}>Roscas / furos com tinta e/ou sujeiras</option>
+            <option value="Solda com sobreposição" ${st.failureMode==="Solda com sobreposição"?"selected":""}>Solda com sobreposição</option>
           `;
         
         extraDiv.innerHTML = `
           <div class="checklist-extra">
             <label>Modo de falha (obrigatório):</label>
-            <select id="failure-mode-${idx}" style="width:100%;padding:6px 8px;margin-top:4px;margin-bottom:6px;border:1px solid #cbd3e3;border-radius:4px;font-size:13px;">
+            <select id="failure-mode-${idx}" style="width:100%;padding:6px 8px;margin-top:4px;margin-bottom:6px;border:1px solid #cbd3e3;border-radius:4px;font-size:13px;max-height:150px;overflow-y:auto;">
               <option value="">Selecione o modo de falha</option>
               ${failureModeOptions}
             </select>
@@ -2306,21 +2438,58 @@
         <label>Cliente</label>
         <select id="modal-piece-client">
           <option value="">Selecione o cliente</option>
-          <option value="Cliente A" ${p.client==="Cliente A"?"selected":""}>Cliente A</option>
-          <option value="Cliente B" ${p.client==="Cliente B"?"selected":""}>Cliente B</option>
-          <option value="Cliente C" ${p.client==="Cliente C"?"selected":""}>Cliente C</option>
-          <option value="Outro" ${p.client==="Outro"?"selected":""}>Outro</option>
+          <option value="AGCO Canoas" ${p.client==="AGCO Canoas"?"selected":""}>AGCO Canoas</option>
+          <option value="AGCO Mogi" ${p.client==="AGCO Mogi"?"selected":""}>AGCO Mogi</option>
+          <option value="AGCO Santa Rosa" ${p.client==="AGCO Santa Rosa"?"selected":""}>AGCO Santa Rosa</option>
+          <option value="Agritech Indaiatuba" ${p.client==="Agritech Indaiatuba"?"selected":""}>Agritech Indaiatuba</option>
+          <option value="Caterpillar Campo Largo" ${p.client==="Caterpillar Campo Largo"?"selected":""}>Caterpillar Campo Largo</option>
+          <option value="Caterpillar Piracicaba" ${p.client==="Caterpillar Piracicaba"?"selected":""}>Caterpillar Piracicaba</option>
+          <option value="Caterpillar Piracicaba Reposição" ${p.client==="Caterpillar Piracicaba Reposição"?"selected":""}>Caterpillar Piracicaba Reposição</option>
+          <option value="CNH Curitiba" ${p.client==="CNH Curitiba"?"selected":""}>CNH Curitiba</option>
+          <option value="CNH Reposição Sorocaba" ${p.client==="CNH Reposição Sorocaba"?"selected":""}>CNH Reposição Sorocaba</option>
+          <option value="CNH Sorocaba" ${p.client==="CNH Sorocaba"?"selected":""}>CNH Sorocaba</option>
+          <option value="DAF Ponta Grossa" ${p.client==="DAF Ponta Grossa"?"selected":""}>DAF Ponta Grossa</option>
+          <option value="Dana Industrias" ${p.client==="Dana Industrias"?"selected":""}>Dana Industrias</option>
+          <option value="Deere Hitachi – Indaiatuba" ${p.client==="Deere Hitachi – Indaiatuba"?"selected":""}>Deere Hitachi – Indaiatuba</option>
+          <option value="Flamma" ${p.client==="Flamma"?"selected":""}>Flamma</option>
+          <option value="Gedore" ${p.client==="Gedore"?"selected":""}>Gedore</option>
+          <option value="GTS" ${p.client==="GTS"?"selected":""}>GTS</option>
+          <option value="Horsch do Brasil" ${p.client==="Horsch do Brasil"?"selected":""}>Horsch do Brasil</option>
+          <option value="Iveco Sete Lagoas" ${p.client==="Iveco Sete Lagoas"?"selected":""}>Iveco Sete Lagoas</option>
+          <option value="John Deere Catalão" ${p.client==="John Deere Catalão"?"selected":""}>John Deere Catalão</option>
+          <option value="John Deere Horizontina" ${p.client==="John Deere Horizontina"?"selected":""}>John Deere Horizontina</option>
+          <option value="John Deere Indaiatuba" ${p.client==="John Deere Indaiatuba"?"selected":""}>John Deere Indaiatuba</option>
+          <option value="John Deere Montenegro" ${p.client==="John Deere Montenegro"?"selected":""}>John Deere Montenegro</option>
+          <option value="John Deere Reposição Campinas" ${p.client==="John Deere Reposição Campinas"?"selected":""}>John Deere Reposição Campinas</option>
+          <option value="Landini – Contagem / MG" ${p.client==="Landini – Contagem / MG"?"selected":""}>Landini – Contagem / MG</option>
+          <option value="Maxion Cruzeiro" ${p.client==="Maxion Cruzeiro"?"selected":""}>Maxion Cruzeiro</option>
+          <option value="Mercedes Juiz de Fora" ${p.client==="Mercedes Juiz de Fora"?"selected":""}>Mercedes Juiz de Fora</option>
+          <option value="Mercedes São Bernardo do Campo" ${p.client==="Mercedes São Bernardo do Campo"?"selected":""}>Mercedes São Bernardo do Campo</option>
+          <option value="Metalsa Campo Largo" ${p.client==="Metalsa Campo Largo"?"selected":""}>Metalsa Campo Largo</option>
+          <option value="Metalsa Osasco" ${p.client==="Metalsa Osasco"?"selected":""}>Metalsa Osasco</option>
+          <option value="MWM" ${p.client==="MWM"?"selected":""}>MWM</option>
+          <option value="Renault SJP" ${p.client==="Renault SJP"?"selected":""}>Renault SJP</option>
+          <option value="Scania Reposição Vinhedos" ${p.client==="Scania Reposição Vinhedos"?"selected":""}>Scania Reposição Vinhedos</option>
+          <option value="Scania São Bernardo do Campo" ${p.client==="Scania São Bernardo do Campo"?"selected":""}>Scania São Bernardo do Campo</option>
+          <option value="Solinftec" ${p.client==="Solinftec"?"selected":""}>Solinftec</option>
+          <option value="Tatu" ${p.client==="Tatu"?"selected":""}>Tatu</option>
+          <option value="Volvo CE Pederneiras" ${p.client==="Volvo CE Pederneiras"?"selected":""}>Volvo CE Pederneiras</option>
+          <option value="Volvo Curitiba" ${p.client==="Volvo Curitiba"?"selected":""}>Volvo Curitiba</option>
+          <option value="Volvo Pederneiras" ${p.client==="Volvo Pederneiras"?"selected":""}>Volvo Pederneiras</option>
+          <option value="Volvo Reposição" ${p.client==="Volvo Reposição"?"selected":""}>Volvo Reposição</option>
         </select>
       </div>
       <div class="form-group">
         <label>Estação/Linha</label>
         <select id="modal-piece-station">
           <option value="">Selecione a estação</option>
-          <option value="Linha 1" ${p.station==="Linha 1"?"selected":""}>Linha 1</option>
-          <option value="Linha 2" ${p.station==="Linha 2"?"selected":""}>Linha 2</option>
-          <option value="Linha 3" ${p.station==="Linha 3"?"selected":""}>Linha 3</option>
-          <option value="Área de Montagem" ${p.station==="Área de Montagem"?"selected":""}>Área de Montagem</option>
-          <option value="Outro" ${p.station==="Outro"?"selected":""}>Outro</option>
+          <option value="Solda Robô 1 / Solda Projeção" ${p.station==="Solda Robô 1 / Solda Projeção"?"selected":""}>Solda Robô 1 / Solda Projeção</option>
+          <option value="Jato Automático" ${p.station==="Jato Automático"?"selected":""}>Jato Automático</option>
+          <option value="Mesa Desempeno" ${p.station==="Mesa Desempeno"?"selected":""}>Mesa Desempeno</option>
+          <option value="Tratamento Superficial" ${p.station==="Tratamento Superficial"?"selected":""}>Tratamento Superficial</option>
+          <option value="Jato" ${p.station==="Jato"?"selected":""}>Jato</option>
+          <option value="Calibragem / Estanqueidade / Acabamento" ${p.station==="Calibragem / Estanqueidade / Acabamento"?"selected":""}>Calibragem / Estanqueidade / Acabamento</option>
+          <option value="Solda Manual / Solda Extra Pesada" ${p.station==="Solda Manual / Solda Extra Pesada"?"selected":""}>Solda Manual / Solda Extra Pesada</option>
         </select>
       </div>
       <div class="form-group">
@@ -2408,11 +2577,67 @@
   function openEditItemModal(pieceIdx,idx){
     const item = pieces[pieceIdx].items[idx];
     const src = getItemImageSrc(item) || "";
-    const failureModes = item.failureModes || [];
+    const failureMode = item.failureMode || item.failureModes?.[0] || ""; // Support old data format
     
-    const allModes = ["Dimensional","Visual","Acabamento","Material","Montagem","Soldagem","Pintura","Outro"];
+    const allModes = [
+      "Ângulo fora do especificado",
+      "Backlog interno",
+      "Borra de e-coat",
+      "Camada fora do especificado",
+      "Componente soldado deslocado",
+      "Componente soldado invertido",
+      "Comprimento do cordão de solda fora do especificado",
+      "Contaminação",
+      "Corpo ou cabeceira invertida",
+      "Cravamento irregular – parafuso / porca / pino / porca",
+      "Dimensional fora do especificado",
+      "Dobra invertida",
+      "Emenda deficiente",
+      "Espaçamento entre componentes",
+      "Excesso de pó",
+      "Falha no corte da peça",
+      "Falha no mascaramento / proteção",
+      "Falta de cordão de solda",
+      "Falta de cura",
+      "Falta de operação (rosca, chanfro, furo, montagem)",
+      "Falta de penetração de solda",
+      "Ficha tratamento superficial FTS errada",
+      "Gap",
+      "Gravação fora do especificado",
+      "Identificação incorreta",
+      "Inclusão de arame de solda",
+      "Logística – peça enviada fora do programa de entrega",
+      "Má formação do rebite",
+      "Matéria-prima não conforme (riscos, marcas, etc.)",
+      "Montagem incorreta",
+      "Mordedura",
+      "Operação incompleta (rosca, chanfro, furo, etc.)",
+      "Oxidação",
+      "Peças com componentes fora do especificado",
+      "Peças com trincas",
+      "Peças danificadas em processo (marcas e riscos, etc.)",
+      "Peças faltando componentes",
+      "Peças misturadas",
+      "Perna da solda filete abaixo da medida",
+      "Pintura escorrida",
+      "Pintura com casca de laranja",
+      "Pintura cratera",
+      "Pintura com desplacamento",
+      "Pintura com olho de peixe",
+      "Pintura com sujeira",
+      "Pintura danificada",
+      "Pintura falhada",
+      "Pintura fervida",
+      "Plano de embalagem fora do especificado",
+      "Porosidade",
+      "Rebarbas",
+      "Respingos",
+      "Rosca danificada",
+      "Roscas / furos com tinta e/ou sujeiras",
+      "Solda com sobreposição"
+    ];
     const modeOptions = allModes.map(mode => 
-      `<option value="${mode}" ${failureModes.includes(mode)?"selected":""}>${mode}</option>`
+      `<option value="${mode}" ${failureMode===mode?"selected":""}>${mode}</option>`
     ).join("");
     
     showModal(`
@@ -2429,11 +2654,11 @@
         <textarea id="modal-item-desc" rows="2">${item.description||""}</textarea>
       </div>
       <div class="form-group">
-        <label>Modos de falha possíveis</label>
-        <select id="modal-item-failure-modes" multiple style="height:120px;width:100%;padding:6px;border:1px solid #cbd3e3;border-radius:4px;font-size:13px;">
+        <label>Modo de falha</label>
+        <select id="modal-item-failure-mode" style="width:100%;padding:6px;border:1px solid #cbd3e3;border-radius:4px;font-size:13px;">
+          <option value="">Selecione o modo de falha</option>
           ${modeOptions}
         </select>
-        <small style="color:#666;font-size:11px;display:block;margin-top:4px;">Use Ctrl/Cmd para selecionar múltiplos modos</small>
       </div>
       <div class="form-group">
         <label>Imagem</label>
@@ -2453,18 +2678,19 @@
       const name = document.getElementById("modal-item-name").value.trim();
       const desc = document.getElementById("modal-item-desc").value.trim();
       const file = document.getElementById("modal-item-img").files[0];
-      const failureModesSelect = document.getElementById("modal-item-failure-modes");
-      const newFailureModes = Array.from(failureModesSelect.selectedOptions).map(opt=>opt.value);
+      const failureModeSelect = document.getElementById("modal-item-failure-mode");
+      const newFailureMode = failureModeSelect.value;
       
       if(!name || !desc){ alert("Preencha nome e descrição."); return; }
-      if(newFailureModes.length === 0){
-        alert("Selecione pelo menos um modo de falha possível.");
+      if(!newFailureMode){
+        alert("Selecione o modo de falha.");
         return;
       }
       
       item.name=name; 
       item.description=desc;
-      item.failureModes=newFailureModes;
+      item.failureMode=newFailureMode;
+      delete item.failureModes; // Remove old field if exists
       if(file){ item.image=file; item.imageUrl=null; }
       closeModal();
       renderPieceItemsList(pieceIdx);
@@ -3180,23 +3406,23 @@
       const name = document.getElementById("item-name-input").value.trim();
       const desc = document.getElementById("item-desc-input").value.trim();
       const file = document.getElementById("item-image-input").files[0];
-      const failureModesSelect = document.getElementById("item-failure-modes-input");
-      const failureModes = Array.from(failureModesSelect.selectedOptions).map(opt=>opt.value);
+      const failureModeSelect = document.getElementById("item-failure-mode-input");
+      const failureMode = failureModeSelect.value;
       
       if(!name || !desc || !file){
         alert("Preencha nome, descrição e imagem do item.");
         return;
       }
-      if(failureModes.length === 0){
-        alert("Selecione pelo menos um modo de falha possível.");
+      if(!failureMode){
+        alert("Selecione o modo de falha.");
         return;
       }
       
-      pieces[pieceIdx].items.push({name,description:desc,failureModes,image:file,imageUrl:null});
+      pieces[pieceIdx].items.push({name,description:desc,failureMode,image:file,imageUrl:null});
       document.getElementById("item-name-input").value="";
       document.getElementById("item-desc-input").value="";
       document.getElementById("item-image-input").value="";
-      failureModesSelect.selectedIndex = -1; // Clear selection
+      failureModeSelect.value = ""; // Clear selection
       renderPieceItemsList(pieceIdx);
       if(window.fbApi && window.fbApi.savePiece){
         window.fbApi.savePiece(pieces[pieceIdx]).catch(e=>console.error("Erro salvar peça Firebase",e));
