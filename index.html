@@ -3763,10 +3763,76 @@
       body.appendChild(grid);
     }
 
+    // Add "Adicionar Material" button for admins
+    if (currentUser && currentUser.role === "admin") {
+      const addMaterialBtn = document.createElement("button");
+      addMaterialBtn.className = "btn-primary";
+      addMaterialBtn.textContent = "+ Adicionar Material";
+      addMaterialBtn.style.cssText = "width:100%;margin-top:16px;";
+      addMaterialBtn.onclick = (e) => {
+        e.stopPropagation();
+        document.body.removeChild(modal);
+        openAddMaterialForPieceModal(pieceName);
+      };
+      body.appendChild(addMaterialBtn);
+    }
+
     content.appendChild(header);
     content.appendChild(body);
     modal.appendChild(content);
     document.body.appendChild(modal);
+  }
+
+  function openAddMaterialForPieceModal(pieceName) {
+    showModal(`
+      <div class="modal-header">
+        <div class="modal-title">Adicionar Material para ${escapeHtml(pieceName)}</div>
+        <button class="modal-close-btn">&times;</button>
+      </div>
+      <div class="form-group" style="margin-top:10px;">
+        <label>Vídeo ou Imagem *</label>
+        <input type="file" id="modal-add-material-file" accept="video/*,image/*">
+      </div>
+      <div style="margin-top:12px;text-align:right;">
+        <button class="btn-secondary" onclick="closeModal()">Cancelar</button>
+        <button class="btn-primary" id="modal-add-material-save">Adicionar</button>
+      </div>
+    `);
+
+    document.getElementById("modal-add-material-save").addEventListener("click", async () => {
+      const file = document.getElementById("modal-add-material-file").files[0];
+      if (!file) {
+        alert("Selecione um vídeo ou imagem.");
+        return;
+      }
+
+      const mediaType = file.type.startsWith('image/') ? 'image' : 'video';
+      const newItem = {
+        id: "bib" + Date.now(),
+        piece: pieceName,
+        media: file,
+        mediaType: mediaType,
+        video: null,
+        videoUrl: null,
+        imageUrl: null
+      };
+
+      bibliotecaItems.push(newItem);
+      closeModal();
+      renderBiblioteca();
+
+      if (window.fbApi && window.fbApi.saveBibliotecaItem) {
+        try {
+          const saved = await window.fbApi.saveBibliotecaItem(newItem);
+          const idx = bibliotecaItems.findIndex(i => i.id === newItem.id);
+          if (idx >= 0) bibliotecaItems[idx] = saved;
+          renderBiblioteca();
+        } catch (e) {
+          console.error("Erro salvar material na biblioteca Firebase", e);
+          alert("Erro ao salvar material. Tente novamente.");
+        }
+      }
+    });
   }
 
   async function initAppAfterLogin(){
