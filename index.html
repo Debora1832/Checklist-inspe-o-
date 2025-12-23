@@ -2561,14 +2561,14 @@
     const clientFilter = document.getElementById("filter-client");
     if(clientFilter){
       clientFilter.innerHTML = '<option value="">Todos</option>' +
-        Array.from(clientSet).map(c=>`<option value="${c}">${c}</option>`).join("");
+        Array.from(clientSet).map(c=>`<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("");
     }
 
     // Populate pieces
     const itemFilter = document.getElementById("filter-item");
     if(itemFilter){
       itemFilter.innerHTML = '<option value="">Todas</option>' +
-        pieces.map(p=>`<option value="${p.code}">${p.code}</option>`).join("");
+        pieces.map(p=>`<option value="${escapeHtml(p.code)}">${escapeHtml(p.code)}</option>`).join("");
     }
 
     // Populate failure modes
@@ -2581,14 +2581,14 @@
     const failureFilter = document.getElementById("filter-failure-mode");
     if(failureFilter){
       failureFilter.innerHTML = '<option value="">Todos</option>' +
-        Array.from(failureModes).map(f=>`<option value="${f}">${f}</option>`).join("");
+        Array.from(failureModes).map(f=>`<option value="${escapeHtml(f)}">${escapeHtml(f)}</option>`).join("");
     }
 
     // Populate inspectors
     const inspectorFilter = document.getElementById("filter-inspector");
     if(inspectorFilter){
       inspectorFilter.innerHTML = '<option value="">Todos</option>' +
-        inspectors.map(i=>`<option value="${i.name}">${i.name}</option>`).join("");
+        inspectors.map(i=>`<option value="${escapeHtml(i.name)}">${escapeHtml(i.name)}</option>`).join("");
     }
   }
 
@@ -2605,7 +2605,22 @@
       // Date filter
       if(startDate || endDate){
         const [d,m,y] = (i.date||"").split("/");
-        const inspDate = new Date(parseInt(y),parseInt(m)-1,parseInt(d));
+        const day = parseInt(d);
+        const month = parseInt(m);
+        const year = parseInt(y);
+        
+        // Validate date components
+        if(isNaN(day) || isNaN(month) || isNaN(year) || day < 1 || day > 31 || month < 1 || month > 12){
+          return false; // Skip invalid dates
+        }
+        
+        const inspDate = new Date(year, month-1, day);
+        
+        // Check if date is valid
+        if(isNaN(inspDate.getTime())){
+          return false; // Skip invalid dates
+        }
+        
         if(startDate){
           const start = new Date(startDate);
           if(inspDate < start) return false;
@@ -2699,24 +2714,39 @@
     if(chartByStation){
       const stationLabels = Object.keys(defectsByStation).sort();
       const stationData = stationLabels.map(s=>defectsByStation[s]);
-      chartByStation.data.labels = stationLabels.length ? stationLabels : ['Sem dados'];
-      chartByStation.data.datasets[0].data = stationData.length ? stationData : [0];
+      if(stationLabels.length){
+        chartByStation.data.labels = stationLabels;
+        chartByStation.data.datasets[0].data = stationData;
+      }else{
+        chartByStation.data.labels = [];
+        chartByStation.data.datasets[0].data = [];
+      }
       chartByStation.update();
     }
 
     if(chartByClient){
       const clientLabels = Object.keys(defectsByClient).sort();
       const clientData = clientLabels.map(c=>defectsByClient[c]);
-      chartByClient.data.labels = clientLabels.length ? clientLabels : ['Sem dados'];
-      chartByClient.data.datasets[0].data = clientData.length ? clientData : [0];
+      if(clientLabels.length){
+        chartByClient.data.labels = clientLabels;
+        chartByClient.data.datasets[0].data = clientData;
+      }else{
+        chartByClient.data.labels = [];
+        chartByClient.data.datasets[0].data = [];
+      }
       chartByClient.update();
     }
 
     if(chartByFailure){
       const failureLabels = Object.keys(defectsByFailure).sort();
       const failureData = failureLabels.map(f=>defectsByFailure[f]);
-      chartByFailure.data.labels = failureLabels.length ? failureLabels : ['Sem dados'];
-      chartByFailure.data.datasets[0].data = failureData.length ? failureData : [0];
+      if(failureLabels.length){
+        chartByFailure.data.labels = failureLabels;
+        chartByFailure.data.datasets[0].data = failureData;
+      }else{
+        chartByFailure.data.labels = [];
+        chartByFailure.data.datasets[0].data = [];
+      }
       chartByFailure.update();
     }
   }
@@ -3075,10 +3105,10 @@
       });
       
       if(clientList){
-        clientList.innerHTML = Array.from(clientSet).map(c=>`<option value="${c}">`).join("");
+        clientList.innerHTML = Array.from(clientSet).map(c=>`<option value="${escapeHtml(c)}">`).join("");
       }
       if(stationList){
-        stationList.innerHTML = Array.from(stationSet).map(s=>`<option value="${s}">`).join("");
+        stationList.innerHTML = Array.from(stationSet).map(s=>`<option value="${escapeHtml(s)}">`).join("");
       }
     }
     updateDataLists();
