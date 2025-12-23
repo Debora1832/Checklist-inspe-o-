@@ -1062,8 +1062,9 @@
                 <textarea id="item-desc-input" rows="2" placeholder="Descreva o que deve ser verificado"></textarea>
               </div>
               <div class="form-group">
-                <label for="item-failure-modes-input">Modos de falha possíveis</label>
-                <select id="item-failure-modes-input" multiple style="height:180px;">
+                <label for="item-failure-mode-input">Modo de falha</label>
+                <select id="item-failure-mode-input">
+                  <option value="">Selecione o modo de falha</option>
                   <option value="Ângulo fora do especificado">Ângulo fora do especificado</option>
                   <option value="Backlog interno">Backlog interno</option>
                   <option value="Borra de e-coat">Borra de e-coat</option>
@@ -1120,7 +1121,6 @@
                   <option value="Roscas / furos com tinta e/ou sujeiras">Roscas / furos com tinta e/ou sujeiras</option>
                   <option value="Solda com sobreposição">Solda com sobreposição</option>
                 </select>
-                <small style="color:#666;font-size:11px;display:block;margin-top:4px;">Use Ctrl/Cmd para selecionar múltiplos modos</small>
               </div>
               <div class="form-group">
                 <label for="item-image-input">Imagem do item</label>
@@ -1440,7 +1440,7 @@
         itemsToSave.push({
           name: it.name,
           description: it.description,
-          failureModes: it.failureModes || [],
+          failureMode: it.failureMode || "",
           imageUrl: itemImageUrl
         });
       }
@@ -1904,9 +1904,10 @@
 
       if(st.status==="NOK"){
         const extraDiv = wrap.querySelector(`#extra-${idx}`);
-        const itemFailureModes = item.failureModes || [];
-        const failureModeOptions = itemFailureModes.length > 0
-          ? itemFailureModes.map(fm=>`<option value="${fm}" ${st.failureMode===fm?"selected":""}>${fm}</option>`).join("")
+        // Support both old (failureModes array) and new (failureMode string) format
+        const itemFailureMode = item.failureMode || (item.failureModes && item.failureModes[0]) || "";
+        const failureModeOptions = itemFailureMode
+          ? `<option value="${itemFailureMode}" ${st.failureMode===itemFailureMode?"selected":""}>${itemFailureMode}</option>`
           : `
             <option value="Ângulo fora do especificado" ${st.failureMode==="Ângulo fora do especificado"?"selected":""}>Ângulo fora do especificado</option>
             <option value="Backlog interno" ${st.failureMode==="Backlog interno"?"selected":""}>Backlog interno</option>
@@ -2576,7 +2577,7 @@
   function openEditItemModal(pieceIdx,idx){
     const item = pieces[pieceIdx].items[idx];
     const src = getItemImageSrc(item) || "";
-    const failureModes = item.failureModes || [];
+    const failureMode = item.failureMode || item.failureModes?.[0] || ""; // Support old data format
     
     const allModes = [
       "Ângulo fora do especificado",
@@ -2636,7 +2637,7 @@
       "Solda com sobreposição"
     ];
     const modeOptions = allModes.map(mode => 
-      `<option value="${mode}" ${failureModes.includes(mode)?"selected":""}>${mode}</option>`
+      `<option value="${mode}" ${failureMode===mode?"selected":""}>${mode}</option>`
     ).join("");
     
     showModal(`
@@ -2653,11 +2654,11 @@
         <textarea id="modal-item-desc" rows="2">${item.description||""}</textarea>
       </div>
       <div class="form-group">
-        <label>Modos de falha possíveis</label>
-        <select id="modal-item-failure-modes" multiple style="height:180px;width:100%;padding:6px;border:1px solid #cbd3e3;border-radius:4px;font-size:13px;">
+        <label>Modo de falha</label>
+        <select id="modal-item-failure-mode" style="width:100%;padding:6px;border:1px solid #cbd3e3;border-radius:4px;font-size:13px;">
+          <option value="">Selecione o modo de falha</option>
           ${modeOptions}
         </select>
-        <small style="color:#666;font-size:11px;display:block;margin-top:4px;">Use Ctrl/Cmd para selecionar múltiplos modos</small>
       </div>
       <div class="form-group">
         <label>Imagem</label>
@@ -2677,18 +2678,19 @@
       const name = document.getElementById("modal-item-name").value.trim();
       const desc = document.getElementById("modal-item-desc").value.trim();
       const file = document.getElementById("modal-item-img").files[0];
-      const failureModesSelect = document.getElementById("modal-item-failure-modes");
-      const newFailureModes = Array.from(failureModesSelect.selectedOptions).map(opt=>opt.value);
+      const failureModeSelect = document.getElementById("modal-item-failure-mode");
+      const newFailureMode = failureModeSelect.value;
       
       if(!name || !desc){ alert("Preencha nome e descrição."); return; }
-      if(newFailureModes.length === 0){
-        alert("Selecione pelo menos um modo de falha possível.");
+      if(!newFailureMode){
+        alert("Selecione o modo de falha.");
         return;
       }
       
       item.name=name; 
       item.description=desc;
-      item.failureModes=newFailureModes;
+      item.failureMode=newFailureMode;
+      delete item.failureModes; // Remove old field if exists
       if(file){ item.image=file; item.imageUrl=null; }
       closeModal();
       renderPieceItemsList(pieceIdx);
@@ -3404,23 +3406,23 @@
       const name = document.getElementById("item-name-input").value.trim();
       const desc = document.getElementById("item-desc-input").value.trim();
       const file = document.getElementById("item-image-input").files[0];
-      const failureModesSelect = document.getElementById("item-failure-modes-input");
-      const failureModes = Array.from(failureModesSelect.selectedOptions).map(opt=>opt.value);
+      const failureModeSelect = document.getElementById("item-failure-mode-input");
+      const failureMode = failureModeSelect.value;
       
       if(!name || !desc || !file){
         alert("Preencha nome, descrição e imagem do item.");
         return;
       }
-      if(failureModes.length === 0){
-        alert("Selecione pelo menos um modo de falha possível.");
+      if(!failureMode){
+        alert("Selecione o modo de falha.");
         return;
       }
       
-      pieces[pieceIdx].items.push({name,description:desc,failureModes,image:file,imageUrl:null});
+      pieces[pieceIdx].items.push({name,description:desc,failureMode,image:file,imageUrl:null});
       document.getElementById("item-name-input").value="";
       document.getElementById("item-desc-input").value="";
       document.getElementById("item-image-input").value="";
-      failureModesSelect.selectedIndex = -1; // Clear selection
+      failureModeSelect.value = ""; // Clear selection
       renderPieceItemsList(pieceIdx);
       if(window.fbApi && window.fbApi.savePiece){
         window.fbApi.savePiece(pieces[pieceIdx]).catch(e=>console.error("Erro salvar peça Firebase",e));
