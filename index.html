@@ -766,17 +766,82 @@
     font-weight:700;
     color:#003366;
   }
-  .biblioteca-video-box{
+  .biblioteca-media-box{
     width:100%;
     aspect-ratio:16/9;
     background:#e0e5f0;
     border-radius:4px;
     overflow:hidden;
+    cursor:pointer;
+    position:relative;
   }
-  .biblioteca-video-box video{
+  .biblioteca-media-box:hover{
+    opacity:0.9;
+  }
+  .biblioteca-media-box video,
+  .biblioteca-media-box img{
     width:100%;
     height:100%;
     object-fit:contain;
+  }
+  .biblioteca-play-overlay{
+    position:absolute;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    background:rgba(0,0,0,0.7);
+    color:#fff;
+    border-radius:50%;
+    width:60px;
+    height:60px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:30px;
+    pointer-events:none;
+  }
+  .biblioteca-media-modal{
+    position:fixed;
+    top:0;
+    left:0;
+    right:0;
+    bottom:0;
+    background:rgba(0,0,0,0.9);
+    z-index:10000;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+  }
+  .biblioteca-media-modal-content{
+    max-width:90vw;
+    max-height:90vh;
+    position:relative;
+  }
+  .biblioteca-media-modal video,
+  .biblioteca-media-modal img{
+    max-width:100%;
+    max-height:90vh;
+    display:block;
+  }
+  .biblioteca-media-modal-close{
+    position:absolute;
+    top:-40px;
+    right:0;
+    background:#fff;
+    border:none;
+    border-radius:50%;
+    width:36px;
+    height:36px;
+    font-size:24px;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#003366;
+  }
+  .biblioteca-media-modal-close:hover{
+    background:#e0e5f0;
   }
   .biblioteca-actions{
     display:flex;
@@ -1311,8 +1376,8 @@
           <div class="card" id="biblioteca-admin-form">
             <h2 class="screen-title">Biblioteca de Inspeções</h2>
             <p id="biblioteca-description" style="font-size:13px;color:#555;margin-bottom:16px;">
-              Adicione vídeos tutoriais demonstrando como inspecionar cada peça. 
-              Os vídeos servem como material de treinamento e consulta para os inspetores.
+              Adicione vídeos e imagens de referência demonstrando como inspecionar cada peça. 
+              O material serve como treinamento e consulta para os inspetores.
             </p>
             <div class="grid-2">
               <div class="form-group">
@@ -1322,15 +1387,15 @@
                 </select>
               </div>
               <div class="form-group">
-                <label for="biblioteca-video-input">Vídeo de inspeção *</label>
-                <input type="file" id="biblioteca-video-input" accept="video/*" aria-required="true" aria-describedby="biblioteca-description">
+                <label for="biblioteca-media-input">Vídeo ou Imagem *</label>
+                <input type="file" id="biblioteca-media-input" accept="video/*,image/*" aria-required="true" aria-describedby="biblioteca-description">
               </div>
             </div>
-            <button class="btn-primary" id="btn-add-biblioteca" aria-label="Adicionar vídeo tutorial à biblioteca">Adicionar vídeo tutorial</button>
+            <button class="btn-primary" id="btn-add-biblioteca" aria-label="Adicionar material de referência à biblioteca">Adicionar material</button>
           </div>
 
           <div class="card mt-16">
-            <h3 class="card-title">Vídeos tutoriais cadastrados</h3>
+            <h3 class="card-title">Material de referência cadastrado</h3>
             <div id="biblioteca-list" class="biblioteca-grid"></div>
           </div>
         </section>
@@ -1550,7 +1615,9 @@
           items.push({
             id: d.id,
             piece: data.piece || "",
-            videoUrl: data.videoUrl || null
+            videoUrl: data.videoUrl || null,
+            imageUrl: data.imageUrl || null,
+            mediaType: data.mediaType || 'video' // 'video' or 'image'
           });
         });
       } catch (err) {
@@ -1562,15 +1629,31 @@
     async function saveBibliotecaItem(item) {
       if (!item || !item.piece) return;
       let videoUrl = item.videoUrl || null;
-      if (item.video instanceof File) {
-        const ext = (item.video.name && item.video.name.split(".").pop()) || "mp4";
-        // Sanitize piece name to prevent path traversal - only allow alphanumeric and underscores
+      let imageUrl = item.imageUrl || null;
+      let mediaType = item.mediaType || 'video';
+      
+      if (item.media instanceof File) {
+        const ext = (item.media.name && item.media.name.split(".").pop()) || "mp4";
         const sanitizedPiece = item.piece.replace(/[^a-zA-Z0-9]/g, '_');
-        videoUrl = await uploadFileAndGetUrl(`biblioteca/${sanitizedPiece}_${Date.now()}.${ext}`, item.video);
+        const mediaUrl = await uploadFileAndGetUrl(`biblioteca/${sanitizedPiece}_${Date.now()}.${ext}`, item.media);
+        
+        // Determine if it's video or image based on file type
+        if (item.media.type.startsWith('video/')) {
+          videoUrl = mediaUrl;
+          imageUrl = null;
+          mediaType = 'video';
+        } else if (item.media.type.startsWith('image/')) {
+          imageUrl = mediaUrl;
+          videoUrl = null;
+          mediaType = 'image';
+        }
       }
+      
       const docData = {
         piece: item.piece,
-        videoUrl
+        videoUrl,
+        imageUrl,
+        mediaType
       };
       const ref = await addDoc(collection(db, "biblioteca"), docData);
       return { id: ref.id, ...docData };
@@ -1593,7 +1676,7 @@
   let inspectors = []; // { name, pinHash, photoUrl? }
   let inspections = [];
   let inspectorPhotos = {}; // nome -> base64 local
-  let bibliotecaItems = []; // { id, piece, video?, videoUrl? }
+  let bibliotecaItems = []; // { id, piece, media?, mediaType?, videoUrl?, imageUrl? }
 
   let currentChecklistPiece = null;
   let checklistItemStates = [];
@@ -3216,10 +3299,53 @@
       .replace(/'/g, '&#039;');
   }
 
-  function getBibliotecaVideoSrc(item){
+  function getBibliotecaMediaSrc(item){
     if(!item) return null;
-    if(item.video instanceof File) return URL.createObjectURL(item.video);
+    if(item.media instanceof File) return URL.createObjectURL(item.media);
+    if(item.video instanceof File) return URL.createObjectURL(item.video); // backward compat
+    if(item.mediaType === 'image') return item.imageUrl || null;
     return item.videoUrl || null;
+  }
+
+  function openBibliotecaMediaModal(item){
+    const mediaSrc = getBibliotecaMediaSrc(item);
+    if(!mediaSrc) return;
+    
+    const modal = document.createElement('div');
+    modal.className = 'biblioteca-media-modal';
+    modal.onclick = (e) => {
+      if(e.target === modal) modal.remove();
+    };
+    
+    const content = document.createElement('div');
+    content.className = 'biblioteca-media-modal-content';
+    
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'biblioteca-media-modal-close';
+    closeBtn.innerHTML = '&times;';
+    closeBtn.onclick = () => modal.remove();
+    
+    let mediaElement;
+    if(item.mediaType === 'image'){
+      mediaElement = document.createElement('img');
+      mediaElement.src = mediaSrc;
+      mediaElement.alt = item.piece;
+    } else {
+      mediaElement = document.createElement('video');
+      mediaElement.controls = true;
+      mediaElement.autoplay = true;
+      mediaElement.style.cssText = 'background:#000;';
+      mediaElement.src = mediaSrc;
+      
+      // Determine video type from file extension
+      const ext = mediaSrc.split('.').pop().split('?')[0].toLowerCase();
+      mediaElement.type = ext === 'webm' ? 'video/webm' : ext === 'ogg' ? 'video/ogg' : 'video/mp4';
+    }
+    
+    content.appendChild(closeBtn);
+    content.appendChild(mediaElement);
+    modal.appendChild(content);
+    document.body.appendChild(modal);
   }
 
   function renderBiblioteca(){
@@ -3244,7 +3370,7 @@
     }
 
     if(!bibliotecaItems.length){
-      listDiv.innerHTML = '<div style="font-size:13px;color:#666;padding:20px;text-align:center;">Nenhum vídeo tutorial cadastrado na biblioteca.</div>';
+      listDiv.innerHTML = '<div style="font-size:13px;color:#666;padding:20px;text-align:center;">Nenhum material cadastrado na biblioteca.</div>';
       return;
     }
 
@@ -3257,30 +3383,42 @@
       titleDiv.className = "biblioteca-card-title";
       titleDiv.textContent = item.piece;
       
-      // Create video box
-      const videoBox = document.createElement("div");
-      videoBox.className = "biblioteca-video-box";
+      // Create media box
+      const mediaBox = document.createElement("div");
+      mediaBox.className = "biblioteca-media-box";
+      mediaBox.onclick = () => openBibliotecaMediaModal(item);
       
-      const videoSrc = getBibliotecaVideoSrc(item);
-      if(videoSrc){
-        const video = document.createElement("video");
-        video.controls = true;
-        video.style.cssText = "width:100%;height:100%;object-fit:contain;background:#000;";
-        video.src = videoSrc;
-        // Determine video type from file extension or use generic video type
-        const ext = videoSrc.split('.').pop().split('?')[0].toLowerCase();
-        video.type = ext === 'webm' ? 'video/webm' : ext === 'ogg' ? 'video/ogg' : 'video/mp4';
-        video.textContent = "Seu navegador não suporta vídeos.";
-        videoBox.appendChild(video);
+      const mediaSrc = getBibliotecaMediaSrc(item);
+      if(mediaSrc){
+        if(item.mediaType === 'image'){
+          const img = document.createElement("img");
+          img.src = mediaSrc;
+          img.alt = item.piece;
+          mediaBox.appendChild(img);
+        } else {
+          const video = document.createElement("video");
+          video.style.cssText = "width:100%;height:100%;object-fit:contain;background:#000;pointer-events:none;";
+          video.src = mediaSrc;
+          const ext = mediaSrc.split('.').pop().split('?')[0].toLowerCase();
+          video.type = ext === 'webm' ? 'video/webm' : ext === 'ogg' ? 'video/ogg' : 'video/mp4';
+          
+          // Add play overlay for videos
+          const playOverlay = document.createElement("div");
+          playOverlay.className = "biblioteca-play-overlay";
+          playOverlay.innerHTML = "▶";
+          
+          mediaBox.appendChild(video);
+          mediaBox.appendChild(playOverlay);
+        }
       }else{
-        const noVideo = document.createElement("div");
-        noVideo.style.cssText = "display:flex;align-items:center;justify-content:center;height:100%;color:#666;";
-        noVideo.textContent = "Sem vídeo";
-        videoBox.appendChild(noVideo);
+        const noMedia = document.createElement("div");
+        noMedia.style.cssText = "display:flex;align-items:center;justify-content:center;height:100%;color:#666;";
+        noMedia.textContent = "Sem mídia";
+        mediaBox.appendChild(noMedia);
       }
       
       card.appendChild(titleDiv);
-      card.appendChild(videoBox);
+      card.appendChild(mediaBox);
       
       // Only show edit/delete buttons for admins
       if(currentUser && currentUser.role === "admin"){
@@ -3327,8 +3465,8 @@
 
     // Limpar form (somente para admin)
     if(currentUser && currentUser.role === "admin"){
-      const videoInput = document.getElementById("biblioteca-video-input");
-      if(videoInput) videoInput.value = "";
+      const mediaInput = document.getElementById("biblioteca-media-input");
+      if(mediaInput) mediaInput.value = "";
       if(pieceSelect) pieceSelect.value = "";
     }
   }
@@ -3336,11 +3474,11 @@
   function openEditBibliotecaModal(id){
     const item = bibliotecaItems.find(i=>i.id===id);
     if(!item) return;
-    const videoSrc = getBibliotecaVideoSrc(item) || "";
+    const mediaSrc = getBibliotecaMediaSrc(item) || "";
     
     // Use utility function for HTML escaping
     const escapedPiece = escapeHtml(item.piece);
-    const escapedVideoSrc = escapeHtml(videoSrc);
+    const escapedMediaSrc = escapeHtml(mediaSrc);
     
     // Build piece selector options
     const pieceOptions = pieces.map(p=>{
@@ -3351,7 +3489,7 @@
     
     showModal(`
       <div class="modal-header">
-        <div class="modal-title">Editar Vídeo Tutorial</div>
+        <div class="modal-title">Editar Material de Referência</div>
         <button class="modal-close-btn">&times;</button>
       </div>
       <div class="form-group" style="margin-top:10px;">
@@ -3361,15 +3499,18 @@
         </select>
       </div>
       <div class="form-group">
-        <label>Vídeo</label>
-        <input type="file" id="modal-biblioteca-video" accept="video/*">
+        <label>Vídeo ou Imagem</label>
+        <input type="file" id="modal-biblioteca-media" accept="video/*,image/*">
       </div>
-      ${videoSrc ? `
+      ${mediaSrc ? `
         <div style="margin-top:6px;">
-          <video controls style="max-width:100%;max-height:200px;border-radius:4px;">
-            <source src="${escapedVideoSrc}" type="video/mp4">
-            Seu navegador não suporta vídeos.
-          </video>
+          ${item.mediaType === 'image' ? 
+            `<img src="${escapedMediaSrc}" style="max-width:100%;max-height:200px;border-radius:4px;" alt="${escapedPiece}">` :
+            `<video controls style="max-width:100%;max-height:200px;border-radius:4px;">
+              <source src="${escapedMediaSrc}" type="video/mp4">
+              Seu navegador não suporta vídeos.
+            </video>`
+          }
         </div>` : ""}
       <div style="margin-top:12px;text-align:right;">
         <button class="btn-secondary" onclick="closeModal()">Cancelar</button>
@@ -3379,13 +3520,17 @@
 
     document.getElementById("modal-biblioteca-save").addEventListener("click",async()=>{
       const newPiece = document.getElementById("modal-biblioteca-piece").value;
-      const file = document.getElementById("modal-biblioteca-video").files[0];
+      const file = document.getElementById("modal-biblioteca-media").files[0];
       if(!newPiece){ alert("Selecione uma peça."); return; }
       
       item.piece = newPiece;
       if(file){ 
-        item.video = file; 
-        item.videoUrl = null; 
+        item.media = file;
+        item.video = null; // clear old video field
+        item.videoUrl = null;
+        item.imageUrl = null;
+        // Determine media type
+        item.mediaType = file.type.startsWith('image/') ? 'image' : 'video';
       }
       
       closeModal();
@@ -3490,11 +3635,11 @@
         window.fbApi.savePiece(newPiece).catch(e=>console.error("Erro salvar peça Firebase",e));
       }
       
-      // Auto-sync to biblioteca (create entry without video)
+      // Auto-sync to biblioteca (create entry without media)
       const pieceName = `${code} - ${desc}`;
       const existingBibliotecaItem = bibliotecaItems.find(b=>b.piece===pieceName);
       if(!existingBibliotecaItem){
-        const bibliotecaEntry = { piece: pieceName, video: null, videoUrl: null };
+        const bibliotecaEntry = { piece: pieceName, media: null, videoUrl: null, imageUrl: null, mediaType: 'video' };
         if(window.fbApi && window.fbApi.saveBibliotecaItem){
           try{
             const saved = await window.fbApi.saveBibliotecaItem(bibliotecaEntry);
@@ -3586,20 +3731,26 @@
     // Biblioteca de Inspeções
     document.getElementById("btn-add-biblioteca").addEventListener("click",async()=>{
       const pieceCode = document.getElementById("biblioteca-piece-select").value;
-      const file = document.getElementById("biblioteca-video-input").files[0];
+      const file = document.getElementById("biblioteca-media-input").files[0];
       
       if(!pieceCode || !file){
-        alert("Selecione uma peça e um vídeo.");
+        alert("Selecione uma peça e um arquivo (vídeo ou imagem).");
         return;
       }
+
+      // Determine media type
+      const mediaType = file.type.startsWith('image/') ? 'image' : 'video';
 
       // Find or update existing biblioteca item
       const existingItem = bibliotecaItems.find(b=>b.piece===pieceCode);
       
       if(existingItem){
-        // Update existing item with video
-        existingItem.video = file;
+        // Update existing item with new media
+        existingItem.media = file;
+        existingItem.video = null; // clear old field
         existingItem.videoUrl = null;
+        existingItem.imageUrl = null;
+        existingItem.mediaType = mediaType;
         
         if(window.fbApi && window.fbApi.deleteBibliotecaItem && window.fbApi.saveBibliotecaItem){
           try{
@@ -3614,7 +3765,7 @@
         }
       }else{
         // Create new item
-        const newItem = { piece: pieceCode, video: file, videoUrl: null };
+        const newItem = { piece: pieceCode, media: file, mediaType, videoUrl: null, imageUrl: null };
         
         if(window.fbApi && window.fbApi.saveBibliotecaItem){
           try{
