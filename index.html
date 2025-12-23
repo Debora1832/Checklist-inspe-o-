@@ -1163,6 +1163,7 @@
             description: data.description,
             image: null,
             imageUrl: data.imageUrl || null,
+            hasSerialNumber: data.hasSerialNumber || false,
             items: (data.items || []).map(it => ({
               name: it.name,
               description: it.description,
@@ -1208,6 +1209,7 @@
             inspector: data.inspector,
             piece: data.piece,
             descricao: data.descricao || "",
+            serialNumber: data.serialNumber || "",
             itens: (data.itens || []).map(it => ({
               status: it.status,
               motivo: it.motivo,
@@ -1251,7 +1253,8 @@
         code: piece.code,
         description: piece.description,
         imageUrl,
-        items: itemsToSave
+        items: itemsToSave,
+        hasSerialNumber: piece.hasSerialNumber || false
       });
     }
 
@@ -1291,6 +1294,7 @@
         inspector: inspec.inspector,
         piece: inspec.piece,
         descricao: inspec.descricao || "",
+        serialNumber: inspec.serialNumber || "",
         itens: itensToSave
       };
       const ref = await addDoc(collection(db, "inspections"), docData);
