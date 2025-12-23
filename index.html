@@ -137,6 +137,11 @@
     flex-direction:column;
     padding:16px 12px;
     box-shadow:4px 0 14px rgba(0,0,0,.35);
+    transition:width 0.3s ease;
+  }
+  .sidebar.collapsed{
+    width:60px;
+    padding:16px 8px;
   }
 
   .sidebar-logo{
@@ -145,6 +150,9 @@
     gap:8px;
     margin-bottom:18px;
     padding:0 4px;
+  }
+  .sidebar.collapsed .sidebar-logo{
+    justify-content:center;
   }
   .sidebar-logo-mark{
     width:30px;
@@ -159,6 +167,12 @@
   }
   .sidebar-logo-text{
     line-height:1.05;
+    transition:opacity 0.3s ease;
+  }
+  .sidebar.collapsed .sidebar-logo-text{
+    opacity:0;
+    width:0;
+    overflow:hidden;
   }
   .sidebar-logo-main{
     font-weight:800;
@@ -213,6 +227,13 @@
   .sidebar-label{
     flex:1;
     text-align:left;
+    white-space:nowrap;
+    transition:opacity 0.3s ease;
+  }
+  .sidebar.collapsed .sidebar-label{
+    opacity:0;
+    width:0;
+    overflow:hidden;
   }
 
   .sidebar-footer{
@@ -221,6 +242,12 @@
     opacity:0.8;
     padding:8px 4px;
     line-height:1.4;
+    transition:opacity 0.3s ease;
+  }
+  .sidebar.collapsed .sidebar-footer{
+    opacity:0;
+    height:0;
+    overflow:hidden;
   }
 
   /* MAIN / HEADER */
@@ -937,7 +964,10 @@
             <div id="cl-piece-image-box" class="piece-image-box">[Imagem da peça]</div>
             <div id="piece-serial-number-section" style="margin-top:16px;margin-bottom:16px;"></div>
             <div id="checklist-item-list"></div>
-            <button class="btn-primary mt-16" id="btn-finish-checklist">Finalizar inspeção</button>
+            <div style="display:flex;gap:12px;margin-top:16px;">
+              <button class="btn-secondary" id="btn-cancel-checklist">Cancelar</button>
+              <button class="btn-primary" style="flex:1;" id="btn-finish-checklist">Finalizar inspeção</button>
+            </div>
             <div id="checklist-nok-library" class="checklist-nok-library mt-16"></div>
           </div>
         </section>
@@ -1831,6 +1861,9 @@
     document.getElementById("piece-selection-card").classList.add("hide");
     document.getElementById("checklist-execution").classList.remove("hide");
     
+    // Collapse sidebar when checklist opens
+    collapseSidebar();
+    
     renderChecklistExecution();
   }
 
@@ -2195,7 +2228,50 @@
     document.getElementById("piece-selection-card").classList.remove("hide");
     const exec = document.getElementById("checklist-execution");
     if(exec) exec.classList.add("hide");
+    
+    // Expand sidebar when returning to piece selection
+    expandSidebar();
+    
     window.scrollTo({top:0,behavior:"smooth"});
+  }
+
+  function cancelChecklist(){
+    if(!confirm("Deseja cancelar esta inspeção? Todos os dados não salvos serão perdidos.")){
+      return;
+    }
+    
+    // Reset all state
+    const pieceSel = document.getElementById("piece-selector");
+    if(pieceSel) pieceSel.value = "";
+    currentChecklistPiece = null;
+    checklistItemStates = [];
+    currentPieceSerialNumber = "";
+    currentClient = "";
+    currentStation = "";
+    
+    // Show piece selection card again and hide checklist
+    document.getElementById("piece-selection-card").classList.remove("hide");
+    const exec = document.getElementById("checklist-execution");
+    if(exec) exec.classList.add("hide");
+    
+    // Expand sidebar when returning to piece selection
+    expandSidebar();
+    
+    window.scrollTo({top:0,behavior:"smooth"});
+  }
+
+  function collapseSidebar(){
+    const sidebar = document.querySelector(".sidebar");
+    if(sidebar){
+      sidebar.classList.add("collapsed");
+    }
+  }
+
+  function expandSidebar(){
+    const sidebar = document.querySelector(".sidebar");
+    if(sidebar){
+      sidebar.classList.remove("collapsed");
+    }
   }
 
   // Inspetores (fotos locais)
@@ -3330,6 +3406,7 @@
 
     // Auto-start checklist when piece is selected (event listener added later in this function)
     document.getElementById("btn-finish-checklist").addEventListener("click",finishChecklist);
+    document.getElementById("btn-cancel-checklist").addEventListener("click",cancelChecklist);
 
     document.getElementById("btn-add-inspector").addEventListener("click",()=>{
       const name = document.getElementById("insp-name-input").value.trim();
