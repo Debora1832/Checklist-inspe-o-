@@ -848,6 +848,117 @@
     gap:6px;
     margin-top:4px;
   }
+  .biblioteca-materials-count{
+    position:absolute;
+    top:8px;
+    right:8px;
+    background:rgba(0,51,102,0.9);
+    color:#fff;
+    padding:4px 10px;
+    border-radius:12px;
+    font-size:12px;
+    font-weight:600;
+  }
+  .biblioteca-materials-modal{
+    position:fixed;
+    top:0;
+    left:0;
+    right:0;
+    bottom:0;
+    background:rgba(0,0,0,0.85);
+    z-index:9999;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:40px 20px 20px;
+    overflow-y:auto;
+  }
+  .biblioteca-materials-modal-content{
+    background:#fff;
+    border-radius:8px;
+    max-width:900px;
+    width:100%;
+    max-height:90vh;
+    overflow-y:auto;
+    position:relative;
+  }
+  .biblioteca-materials-modal-header{
+    padding:20px;
+    border-bottom:1px solid #d6ddeb;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    position:sticky;
+    top:0;
+    background:#fff;
+    z-index:1;
+  }
+  .biblioteca-materials-modal-title{
+    font-size:18px;
+    font-weight:700;
+    color:#003366;
+  }
+  .biblioteca-materials-modal-close-btn{
+    background:none;
+    border:none;
+    font-size:28px;
+    cursor:pointer;
+    color:#666;
+    padding:0;
+    width:32px;
+    height:32px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .biblioteca-materials-modal-close-btn:hover{
+    color:#003366;
+  }
+  .biblioteca-materials-modal-body{
+    padding:20px;
+  }
+  .biblioteca-materials-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
+    gap:16px;
+  }
+  .biblioteca-material-item{
+    border:1px solid #d6ddeb;
+    border-radius:4px;
+    overflow:hidden;
+    cursor:pointer;
+    position:relative;
+  }
+  .biblioteca-material-item:hover{
+    box-shadow:0 2px 8px rgba(0,51,102,0.15);
+  }
+  .biblioteca-material-thumb{
+    width:100%;
+    aspect-ratio:16/9;
+    background:#e0e5f0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    position:relative;
+  }
+  .biblioteca-material-thumb video,
+  .biblioteca-material-thumb img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+  }
+  .biblioteca-material-type-badge{
+    position:absolute;
+    bottom:8px;
+    left:8px;
+    background:rgba(0,0,0,0.7);
+    color:#fff;
+    padding:4px 8px;
+    border-radius:4px;
+    font-size:11px;
+    font-weight:600;
+    text-transform:uppercase;
+  }
 
   /* MODAL */
 
@@ -3374,94 +3485,75 @@
       return;
     }
 
-    bibliotecaItems.forEach(item=>{
+    // Group biblioteca items by piece
+    const groupedByPiece = {};
+    bibliotecaItems.forEach(item => {
+      if(!groupedByPiece[item.piece]) {
+        groupedByPiece[item.piece] = [];
+      }
+      groupedByPiece[item.piece].push(item);
+    });
+
+    // Render one card per piece
+    Object.keys(groupedByPiece).forEach(pieceName => {
+      const items = groupedByPiece[pieceName];
       const card = document.createElement("div");
       card.className = "biblioteca-card";
       
       // Create title element safely
       const titleDiv = document.createElement("div");
       titleDiv.className = "biblioteca-card-title";
-      titleDiv.textContent = item.piece;
+      titleDiv.textContent = pieceName;
       
-      // Create media box
+      // Create media box - show piece reference image
       const mediaBox = document.createElement("div");
       mediaBox.className = "biblioteca-media-box";
-      mediaBox.onclick = () => openBibliotecaMediaModal(item);
+      mediaBox.onclick = () => openBibliotecaMaterialsModal(pieceName, items);
       
-      const mediaSrc = getBibliotecaMediaSrc(item);
-      if(mediaSrc){
-        if(item.mediaType === 'image'){
-          const img = document.createElement("img");
-          img.src = mediaSrc;
-          img.alt = item.piece;
-          mediaBox.appendChild(img);
-        } else {
-          const video = document.createElement("video");
-          video.style.cssText = "width:100%;height:100%;object-fit:contain;background:#000;pointer-events:none;";
-          video.src = mediaSrc;
-          const ext = mediaSrc.split('.').pop().split('?')[0].toLowerCase();
-          video.type = ext === 'webm' ? 'video/webm' : ext === 'ogg' ? 'video/ogg' : 'video/mp4';
-          
-          // Add play overlay for videos
-          const playOverlay = document.createElement("div");
-          playOverlay.className = "biblioteca-play-overlay";
-          playOverlay.innerHTML = "▶";
-          
-          mediaBox.appendChild(video);
-          mediaBox.appendChild(playOverlay);
-        }
-      }else{
-        const noMedia = document.createElement("div");
-        noMedia.style.cssText = "display:flex;align-items:center;justify-content:center;height:100%;color:#666;";
-        noMedia.textContent = "Sem mídia";
-        mediaBox.appendChild(noMedia);
+      // Find the piece to get reference image
+      const piece = pieces.find(p => `${p.code} - ${p.description||""}` === pieceName);
+      if(piece && piece.imageUrl) {
+        const img = document.createElement("img");
+        img.src = piece.imageUrl;
+        img.alt = pieceName;
+        img.style.cssText = "width:100%;height:100%;object-fit:cover;";
+        mediaBox.appendChild(img);
+      } else {
+        const noImage = document.createElement("div");
+        noImage.style.cssText = "display:flex;align-items:center;justify-content:center;height:100%;color:#666;background:#e0e5f0;";
+        noImage.textContent = "Sem foto de referência";
+        mediaBox.appendChild(noImage);
       }
+      
+      // Add materials count badge
+      const countBadge = document.createElement("div");
+      countBadge.className = "biblioteca-materials-count";
+      countBadge.textContent = `${items.length} ${items.length === 1 ? 'material' : 'materiais'}`;
+      mediaBox.appendChild(countBadge);
       
       card.appendChild(titleDiv);
       card.appendChild(mediaBox);
       
-      // Only show edit/delete buttons for admins
+      // Only show admin actions for the piece (not individual materials)
       if(currentUser && currentUser.role === "admin"){
         const actionsDiv = document.createElement("div");
         actionsDiv.className = "biblioteca-actions";
         
-        const editBtn = document.createElement("button");
-        editBtn.className = "btn-icon btn-edit";
-        editBtn.textContent = "Editar";
-        editBtn.dataset.id = item.id;
+        const manageBtn = document.createElement("button");
+        manageBtn.className = "btn-icon";
+        manageBtn.textContent = "Gerenciar Materiais";
+        manageBtn.style.cssText = "flex:1;background:#1844F0;color:#fff;";
+        manageBtn.onclick = (e) => {
+          e.stopPropagation();
+          openBibliotecaMaterialsModal(pieceName, items);
+        };
         
-        const deleteBtn = document.createElement("button");
-        deleteBtn.className = "btn-icon btn-delete";
-        deleteBtn.textContent = "Remover";
-        deleteBtn.dataset.id = item.id;
-        
-        actionsDiv.appendChild(editBtn);
-        actionsDiv.appendChild(deleteBtn);
+        actionsDiv.appendChild(manageBtn);
         card.appendChild(actionsDiv);
       }
       
       listDiv.appendChild(card);
     });
-
-    // Only add event listeners for admin buttons
-    if(currentUser && currentUser.role === "admin"){
-      listDiv.querySelectorAll(".btn-edit").forEach(btn=>{
-        btn.addEventListener("click",()=>openEditBibliotecaModal(btn.dataset.id));
-      });
-      listDiv.querySelectorAll(".btn-delete").forEach(btn=>{
-        btn.addEventListener("click",async()=>{
-          const id = btn.dataset.id;
-          const item = bibliotecaItems.find(i=>i.id===id);
-          if(!item) return;
-          if(!confirm(`Remover "${item.piece}" da biblioteca?`)) return;
-          bibliotecaItems = bibliotecaItems.filter(i=>i.id!==id);
-          renderBiblioteca();
-          if(window.fbApi && window.fbApi.deleteBibliotecaItem){
-            window.fbApi.deleteBibliotecaItem(id).catch(e=>console.error("Erro deletar biblioteca Firebase",e));
-          }
-        });
-      });
-    }
 
     // Limpar form (somente para admin)
     if(currentUser && currentUser.role === "admin"){
@@ -3547,6 +3639,134 @@
         }
       }
     });
+  }
+
+  function openBibliotecaMaterialsModal(pieceName, items) {
+    // Create modal container
+    const modal = document.createElement("div");
+    modal.className = "biblioteca-materials-modal";
+    modal.onclick = (e) => {
+      if (e.target === modal) {
+        document.body.removeChild(modal);
+      }
+    };
+
+    // Create modal content
+    const content = document.createElement("div");
+    content.className = "biblioteca-materials-modal-content";
+
+    // Header
+    const header = document.createElement("div");
+    header.className = "biblioteca-materials-modal-header";
+    
+    const title = document.createElement("div");
+    title.className = "biblioteca-materials-modal-title";
+    title.textContent = pieceName;
+    
+    const closeBtn = document.createElement("button");
+    closeBtn.className = "biblioteca-materials-modal-close-btn";
+    closeBtn.innerHTML = "&times;";
+    closeBtn.onclick = () => document.body.removeChild(modal);
+    
+    header.appendChild(title);
+    header.appendChild(closeBtn);
+
+    // Body
+    const body = document.createElement("div");
+    body.className = "biblioteca-materials-modal-body";
+
+    if (!items || items.length === 0) {
+      body.innerHTML = '<div style="text-align:center;color:#666;padding:40px;">Nenhum material disponível para esta peça.</div>';
+    } else {
+      const grid = document.createElement("div");
+      grid.className = "biblioteca-materials-grid";
+
+      items.forEach(item => {
+        const materialItem = document.createElement("div");
+        materialItem.className = "biblioteca-material-item";
+        materialItem.onclick = () => openBibliotecaMediaModal(item);
+
+        const thumb = document.createElement("div");
+        thumb.className = "biblioteca-material-thumb";
+
+        const mediaSrc = getBibliotecaMediaSrc(item);
+        if (mediaSrc) {
+          if (item.mediaType === 'image') {
+            const img = document.createElement("img");
+            img.src = mediaSrc;
+            img.alt = pieceName;
+            thumb.appendChild(img);
+          } else {
+            const video = document.createElement("video");
+            video.style.cssText = "width:100%;height:100%;object-fit:cover;pointer-events:none;";
+            video.src = mediaSrc;
+            thumb.appendChild(video);
+
+            const playOverlay = document.createElement("div");
+            playOverlay.className = "biblioteca-play-overlay";
+            playOverlay.innerHTML = "▶";
+            playOverlay.style.cssText = "width:40px;height:40px;font-size:20px;";
+            thumb.appendChild(playOverlay);
+          }
+
+          const typeBadge = document.createElement("div");
+          typeBadge.className = "biblioteca-material-type-badge";
+          typeBadge.textContent = item.mediaType === 'image' ? 'Imagem' : 'Vídeo';
+          thumb.appendChild(typeBadge);
+        } else {
+          const noMedia = document.createElement("div");
+          noMedia.style.cssText = "display:flex;align-items:center;justify-content:center;height:100%;color:#666;";
+          noMedia.textContent = "Sem mídia";
+          thumb.appendChild(noMedia);
+        }
+
+        materialItem.appendChild(thumb);
+
+        // Admin actions
+        if (currentUser && currentUser.role === "admin") {
+          const actions = document.createElement("div");
+          actions.style.cssText = "padding:8px;display:flex;gap:6px;background:#f9fbff;";
+
+          const editBtn = document.createElement("button");
+          editBtn.className = "btn-icon";
+          editBtn.textContent = "Editar";
+          editBtn.style.cssText = "flex:1;font-size:12px;padding:4px 8px;";
+          editBtn.onclick = (e) => {
+            e.stopPropagation();
+            document.body.removeChild(modal);
+            openEditBibliotecaModal(item.id);
+          };
+
+          const deleteBtn = document.createElement("button");
+          deleteBtn.className = "btn-icon btn-delete";
+          deleteBtn.textContent = "Remover";
+          deleteBtn.style.cssText = "flex:1;font-size:12px;padding:4px 8px;";
+          deleteBtn.onclick = async (e) => {
+            e.stopPropagation();
+            if (!confirm(`Remover este material?`)) return;
+            bibliotecaItems = bibliotecaItems.filter(i => i.id !== item.id);
+            document.body.removeChild(modal);
+            renderBiblioteca();
+            if (window.fbApi && window.fbApi.deleteBibliotecaItem) {
+              window.fbApi.deleteBibliotecaItem(item.id).catch(e => console.error("Erro deletar biblioteca Firebase", e));
+            }
+          };
+
+          actions.appendChild(editBtn);
+          actions.appendChild(deleteBtn);
+          materialItem.appendChild(actions);
+        }
+
+        grid.appendChild(materialItem);
+      });
+
+      body.appendChild(grid);
+    }
+
+    content.appendChild(header);
+    content.appendChild(body);
+    modal.appendChild(content);
+    document.body.appendChild(modal);
   }
 
   async function initAppAfterLogin(){
