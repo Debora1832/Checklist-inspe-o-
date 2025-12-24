@@ -3205,9 +3205,18 @@
   }
 
   function ensureChartByStation(){
-    const ctx = document.getElementById("chart-by-station")?.getContext("2d");
-    if(!ctx) return;
+    const canvas = document.getElementById("chart-by-station");
+    if(!canvas) {
+      console.log('Canvas chart-by-station not found');
+      return;
+    }
+    const ctx = canvas.getContext("2d");
+    if(!ctx) {
+      console.log('Context for chart-by-station not available');
+      return;
+    }
     if(!chartByStation){
+      console.log('Creating chartByStation');
       chartByStation = new Chart(ctx,{
         type:"bar",
         data:{
@@ -3238,9 +3247,18 @@
   }
 
   function ensureChartByClient(){
-    const ctx = document.getElementById("chart-by-client")?.getContext("2d");
-    if(!ctx) return;
+    const canvas = document.getElementById("chart-by-client");
+    if(!canvas) {
+      console.log('Canvas chart-by-client not found');
+      return;
+    }
+    const ctx = canvas.getContext("2d");
+    if(!ctx) {
+      console.log('Context for chart-by-client not available');
+      return;
+    }
     if(!chartByClient){
+      console.log('Creating chartByClient');
       chartByClient = new Chart(ctx,{
         type:"bar",
         data:{
@@ -3271,9 +3289,18 @@
   }
 
   function ensureChartByFailure(){
-    const ctx = document.getElementById("chart-by-failure")?.getContext("2d");
-    if(!ctx) return;
+    const canvas = document.getElementById("chart-by-failure");
+    if(!canvas) {
+      console.log('Canvas chart-by-failure not found');
+      return;
+    }
+    const ctx = canvas.getContext("2d");
+    if(!ctx) {
+      console.log('Context for chart-by-failure not available');
+      return;
+    }
     if(!chartByFailure){
+      console.log('Creating chartByFailure');
       chartByFailure = new Chart(ctx,{
         type:"bar",
         data:{
@@ -3460,43 +3487,40 @@
       dashboardChart.update();
     }
 
+    // Update chart by station
     if(chartByStation){
       const stationLabels = Object.keys(defectsByStation).sort();
       const stationData = stationLabels.map(s=>defectsByStation[s]);
-      if(stationLabels.length){
-        chartByStation.data.labels = stationLabels;
-        chartByStation.data.datasets[0].data = stationData;
-      }else{
-        chartByStation.data.labels = [];
-        chartByStation.data.datasets[0].data = [];
-      }
-      chartByStation.update();
+      console.log('Updating chartByStation:', {stationLabels, stationData, defectsByStation});
+      chartByStation.data.labels = stationLabels;
+      chartByStation.data.datasets[0].data = stationData;
+      chartByStation.update('active');
+    } else {
+      console.log('chartByStation not initialized');
     }
 
+    // Update chart by client
     if(chartByClient){
       const clientLabels = Object.keys(defectsByClient).sort();
       const clientData = clientLabels.map(c=>defectsByClient[c]);
-      if(clientLabels.length){
-        chartByClient.data.labels = clientLabels;
-        chartByClient.data.datasets[0].data = clientData;
-      }else{
-        chartByClient.data.labels = [];
-        chartByClient.data.datasets[0].data = [];
-      }
-      chartByClient.update();
+      console.log('Updating chartByClient:', {clientLabels, clientData, defectsByClient});
+      chartByClient.data.labels = clientLabels;
+      chartByClient.data.datasets[0].data = clientData;
+      chartByClient.update('active');
+    } else {
+      console.log('chartByClient not initialized');
     }
 
+    // Update chart by failure mode
     if(chartByFailure){
       const failureLabels = Object.keys(defectsByFailure).sort();
       const failureData = failureLabels.map(f=>defectsByFailure[f]);
-      if(failureLabels.length){
-        chartByFailure.data.labels = failureLabels;
-        chartByFailure.data.datasets[0].data = failureData;
-      }else{
-        chartByFailure.data.labels = [];
-        chartByFailure.data.datasets[0].data = [];
-      }
-      chartByFailure.update();
+      console.log('Updating chartByFailure:', {failureLabels, failureData, defectsByFailure});
+      chartByFailure.data.labels = failureLabels;
+      chartByFailure.data.datasets[0].data = failureData;
+      chartByFailure.update('active');
+    } else {
+      console.log('chartByFailure not initialized');
     }
   }
 
