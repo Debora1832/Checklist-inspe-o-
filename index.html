@@ -1585,7 +1585,7 @@
             items: (data.items || []).map(it => ({
               name: it.name,
               description: it.description,
-              failureModes: it.failureModes || [],
+              failureMode: it.failureMode || "",
               image: null,
               imageUrl: it.imageUrl || null
             }))
