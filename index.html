@@ -3215,35 +3215,38 @@
       console.log('Context for chart-by-station not available');
       return;
     }
-    if(!chartByStation){
-      console.log('Creating chartByStation');
-      chartByStation = new Chart(ctx,{
-        type:"bar",
-        data:{
-          labels:[],
-          datasets:[{
-            label:"Peças Reprovadas",
-            data:[],
-            backgroundColor:"#E81C24",
-            borderColor:"#c41820",
-            borderWidth:1
-          }]
-        },
-        options:{
-          indexAxis: 'y',
-          responsive:true,
-          maintainAspectRatio:false,
-          plugins:{
-            legend:{display:true,position:'top'},
-            title:{display:false}
-          },
-          scales:{
-            x:{beginAtZero:true,ticks:{precision:0}},
-            y:{ticks:{font:{size:11}}}
-          }
-        }
-      });
+    // Destroy existing chart if it exists to force recreation
+    if(chartByStation){
+      chartByStation.destroy();
+      chartByStation = null;
     }
+    console.log('Creating chartByStation');
+    chartByStation = new Chart(ctx,{
+      type:"bar",
+      data:{
+        labels:[],
+        datasets:[{
+          label:"Peças Reprovadas",
+          data:[],
+          backgroundColor:"#E81C24",
+          borderColor:"#c41820",
+          borderWidth:1
+        }]
+      },
+      options:{
+        indexAxis: 'y',
+        responsive:true,
+        maintainAspectRatio:false,
+        plugins:{
+          legend:{display:true,position:'top'},
+          title:{display:false}
+        },
+        scales:{
+          x:{beginAtZero:true,ticks:{precision:0}},
+          y:{ticks:{font:{size:11}}}
+        }
+      }
+    });
   }
 
   function ensureChartByClient(){
@@ -3257,35 +3260,38 @@
       console.log('Context for chart-by-client not available');
       return;
     }
-    if(!chartByClient){
-      console.log('Creating chartByClient');
-      chartByClient = new Chart(ctx,{
-        type:"bar",
-        data:{
-          labels:[],
-          datasets:[{
-            label:"Peças Reprovadas",
-            data:[],
-            backgroundColor:"#1844F0",
-            borderColor:"#0f34d0",
-            borderWidth:1
-          }]
-        },
-        options:{
-          indexAxis: 'y',
-          responsive:true,
-          maintainAspectRatio:false,
-          plugins:{
-            legend:{display:true,position:'top'},
-            title:{display:false}
-          },
-          scales:{
-            x:{beginAtZero:true,ticks:{precision:0}},
-            y:{ticks:{font:{size:11}}}
-          }
-        }
-      });
+    // Destroy existing chart if it exists to force recreation
+    if(chartByClient){
+      chartByClient.destroy();
+      chartByClient = null;
     }
+    console.log('Creating chartByClient');
+    chartByClient = new Chart(ctx,{
+      type:"bar",
+      data:{
+        labels:[],
+        datasets:[{
+          label:"Peças Reprovadas",
+          data:[],
+          backgroundColor:"#1844F0",
+          borderColor:"#0f34d0",
+          borderWidth:1
+        }]
+      },
+      options:{
+        indexAxis: 'y',
+        responsive:true,
+        maintainAspectRatio:false,
+        plugins:{
+          legend:{display:true,position:'top'},
+          title:{display:false}
+        },
+        scales:{
+          x:{beginAtZero:true,ticks:{precision:0}},
+          y:{ticks:{font:{size:11}}}
+        }
+      }
+    });
   }
 
   function ensureChartByFailure(){
@@ -3299,48 +3305,54 @@
       console.log('Context for chart-by-failure not available');
       return;
     }
-    if(!chartByFailure){
-      console.log('Creating chartByFailure');
-      chartByFailure = new Chart(ctx,{
-        type:"bar",
-        data:{
-          labels:[],
-          datasets:[{
-            label:"Ocorrências",
-            data:[],
-            backgroundColor:"#f59f00",
-            borderColor:"#d98200",
-            borderWidth:1
-          }]
-        },
-        options:{
-          indexAxis: 'y',
-          responsive:true,
-          maintainAspectRatio:false,
-          plugins:{
-            legend:{display:true,position:'top'},
-            title:{display:false}
-          },
-          scales:{
-            x:{beginAtZero:true,ticks:{precision:0}},
-            y:{ticks:{font:{size:11}}}
-          }
-        }
-      });
+    // Destroy existing chart if it exists to force recreation
+    if(chartByFailure){
+      chartByFailure.destroy();
+      chartByFailure = null;
     }
+    console.log('Creating chartByFailure');
+    chartByFailure = new Chart(ctx,{
+      type:"bar",
+      data:{
+        labels:[],
+        datasets:[{
+          label:"Ocorrências",
+          data:[],
+          backgroundColor:"#f59f00",
+          borderColor:"#d98200",
+          borderWidth:1
+        }]
+      },
+      options:{
+        indexAxis: 'y',
+        responsive:true,
+        maintainAspectRatio:false,
+        plugins:{
+          legend:{display:true,position:'top'},
+          title:{display:false}
+        },
+        scales:{
+          x:{beginAtZero:true,ticks:{precision:0}},
+          y:{ticks:{font:{size:11}}}
+        }
+      }
+    });
   }
 
   function renderDashboard(){
-    ensureDashboardChart();
-    ensureChartByStation();
-    ensureChartByClient();
-    ensureChartByFailure();
-    
-    // Populate filter dropdowns
-    populateDashboardFilters();
-    
-    // Apply filters and render data
-    applyDashboardFilters();
+    // Use setTimeout to ensure DOM is ready and visible
+    setTimeout(() => {
+      ensureDashboardChart();
+      ensureChartByStation();
+      ensureChartByClient();
+      ensureChartByFailure();
+      
+      // Populate filter dropdowns
+      populateDashboardFilters();
+      
+      // Apply filters and render data
+      applyDashboardFilters();
+    }, 100);
   }
 
   function populateDashboardFilters(){
