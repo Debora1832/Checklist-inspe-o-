@@ -1507,8 +1507,8 @@
                 </select>
               </div>
               <div class="form-group">
-                <label for="biblioteca-media-input">Vídeo ou Imagem *</label>
-                <input type="file" id="biblioteca-media-input" accept="video/*,image/*" aria-required="true" aria-describedby="biblioteca-description">
+                <label for="biblioteca-media-input">Vídeo, Imagem ou PDF *</label>
+<input type="file" id="biblioteca-media-input" accept="video/*,image/*,application/pdf" aria-required="true" aria-describedby="biblioteca-description">
               </div>
             </div>
             <button class="btn-primary" id="btn-add-biblioteca" aria-label="Adicionar material de referência à biblioteca">Adicionar material</button>
@@ -1913,7 +1913,7 @@
   let inspectors = []; // { name, pinHash, photoUrl? }
   let inspections = [];
   let inspectorPhotos = {}; // nome -> base64 local
-  let bibliotecaItems = []; // { id, piece, media?, mediaType?, videoUrl?, imageUrl? }
+  let bibliotecaItems = []; // { id, piece, media?, mediaType?, videoUrl?, imageUrl?, pdfUrl? }
 
   let currentChecklistPiece = null;
   let checklistItemStates = [];
@@ -3659,6 +3659,7 @@
     if(item.media instanceof File) return URL.createObjectURL(item.media);
     if(item.video instanceof File) return URL.createObjectURL(item.video); // backward compat
     if(item.mediaType === 'image') return item.imageUrl || null;
+    if(item.mediaType === 'pdf') return item.pdfUrl || null;
     return item.videoUrl || null;
   }
 
@@ -3685,6 +3686,11 @@
       mediaElement = document.createElement('img');
       mediaElement.src = mediaSrc;
       mediaElement.alt = item.piece;
+    } else if(item.mediaType === 'pdf'){
+      mediaElement = document.createElement('iframe');
+      mediaElement.src = mediaSrc;
+      mediaElement.style.cssText = 'width:100%;height:100%;border:none;';
+      mediaElement.type = 'application/pdf';
     } else {
       mediaElement = document.createElement('video');
       mediaElement.controls = true;
@@ -3835,13 +3841,15 @@
         </select>
       </div>
       <div class="form-group">
-        <label>Vídeo ou Imagem</label>
-        <input type="file" id="modal-biblioteca-media" accept="video/*,image/*">
+        <label>Vídeo, Imagem ou PDF</label>
+        <input type="file" id="modal-biblioteca-media" accept="video/*,image/*,application/pdf">
       </div>
       ${mediaSrc ? `
         <div style="margin-top:6px;">
           ${item.mediaType === 'image' ? 
             `<img src="${escapedMediaSrc}" style="max-width:100%;max-height:200px;border-radius:4px;" alt="${escapedPiece}">` :
+            item.mediaType === 'pdf' ?
+            `<iframe src="${escapedMediaSrc}" style="width:100%;height:200px;border:1px solid #ddd;border-radius:4px;" type="application/pdf"></iframe>` :
             `<video controls style="max-width:100%;max-height:200px;border-radius:4px;">
               <source src="${escapedMediaSrc}" type="video/mp4">
               Seu navegador não suporta vídeos.
@@ -3865,8 +3873,15 @@
         item.video = null; // clear old video field
         item.videoUrl = null;
         item.imageUrl = null;
+        item.pdfUrl = null;
         // Determine media type
-        item.mediaType = file.type.startsWith('image/') ? 'image' : 'video';
+        if(file.type.startsWith('image/')){
+          item.mediaType = 'image';
+        }else if(file.type === 'application/pdf'){
+          item.mediaType = 'pdf';
+        }else{
+          item.mediaType = 'video';
+        }
       }
       
       closeModal();
@@ -3940,7 +3955,14 @@
             img.src = mediaSrc;
             img.alt = pieceName;
             thumb.appendChild(img);
+          } else if (item.mediaType === 'pdf') {
+            // PDF thumbnail - show icon
+            const pdfIcon = document.createElement("div");
+            pdfIcon.style.cssText = "display:flex;align-items:center;justify-content:center;height:100%;background:#f0f0f0;font-size:48px;";
+            pdfIcon.innerHTML = "📄";
+            thumb.appendChild(pdfIcon);
           } else {
+            // Video
             const video = document.createElement("video");
             video.style.cssText = "width:100%;height:100%;object-fit:cover;pointer-events:none;";
             video.src = mediaSrc;
@@ -3955,7 +3977,10 @@
 
           const typeBadge = document.createElement("div");
           typeBadge.className = "biblioteca-material-type-badge";
-          typeBadge.textContent = item.mediaType === 'image' ? 'Imagem' : 'Vídeo';
+          let typeText = 'Vídeo';
+          if(item.mediaType === 'image') typeText = 'Imagem';
+          if(item.mediaType === 'pdf') typeText = 'PDF';
+          typeBadge.textContent = typeText;
           thumb.appendChild(typeBadge);
         } else {
           const noMedia = document.createElement("div");
@@ -4034,8 +4059,8 @@
         <button class="modal-close-btn">&times;</button>
       </div>
       <div class="form-group" style="margin-top:10px;">
-        <label>Vídeo ou Imagem *</label>
-        <input type="file" id="modal-add-material-file" accept="video/*,image/*">
+        <label>Vídeo, Imagem ou PDF *</label>
+        <input type="file" id="modal-add-material-file" accept="video/*,image/*,application/pdf">
       </div>
       <div style="margin-top:12px;text-align:right;">
         <button class="btn-secondary" onclick="closeModal()">Cancelar</button>
@@ -4046,11 +4071,17 @@
     document.getElementById("modal-add-material-save").addEventListener("click", async () => {
       const file = document.getElementById("modal-add-material-file").files[0];
       if (!file) {
-        alert("Selecione um vídeo ou imagem.");
+        alert("Selecione um vídeo, imagem ou PDF.");
         return;
       }
 
-      const mediaType = file.type.startsWith('image/') ? 'image' : 'video';
+      let mediaType = 'video';
+      if(file.type.startsWith('image/')){
+        mediaType = 'image';
+      }else if(file.type === 'application/pdf'){
+        mediaType = 'pdf';
+      }
+      
       const newItem = {
         id: "bib" + Date.now() + "_" + Math.random().toString(36).substr(2, 9),
         piece: pieceName,
@@ -4261,12 +4292,17 @@
       const file = document.getElementById("biblioteca-media-input").files[0];
       
       if(!pieceCode || !file){
-        alert("Selecione uma peça e um arquivo (vídeo ou imagem).");
+        alert("Selecione uma peça e um arquivo (vídeo, imagem ou PDF).");
         return;
       }
 
       // Determine media type
-      const mediaType = file.type.startsWith('image/') ? 'image' : 'video';
+      let mediaType = 'video';
+      if(file.type.startsWith('image/')){
+        mediaType = 'image';
+      }else if(file.type === 'application/pdf'){
+        mediaType = 'pdf';
+      }
 
       // Find or update existing biblioteca item
       const existingItem = bibliotecaItems.find(b=>b.piece===pieceCode);
@@ -4277,6 +4313,7 @@
         existingItem.video = null; // clear old field
         existingItem.videoUrl = null;
         existingItem.imageUrl = null;
+        existingItem.pdfUrl = null;
         existingItem.mediaType = mediaType;
         
         if(window.fbApi && window.fbApi.deleteBibliotecaItem && window.fbApi.saveBibliotecaItem){
@@ -4292,7 +4329,7 @@
         }
       }else{
         // Create new item
-        const newItem = { piece: pieceCode, media: file, mediaType, videoUrl: null, imageUrl: null };
+        const newItem = { piece: pieceCode, media: file, mediaType, videoUrl: null, imageUrl: null, pdfUrl: null };
         
         if(window.fbApi && window.fbApi.saveBibliotecaItem){
           try{
