@@ -3460,43 +3460,31 @@
       dashboardChart.update();
     }
 
+    // Update chart by station
     if(chartByStation){
       const stationLabels = Object.keys(defectsByStation).sort();
       const stationData = stationLabels.map(s=>defectsByStation[s]);
-      if(stationLabels.length){
-        chartByStation.data.labels = stationLabels;
-        chartByStation.data.datasets[0].data = stationData;
-      }else{
-        chartByStation.data.labels = [];
-        chartByStation.data.datasets[0].data = [];
-      }
-      chartByStation.update();
+      chartByStation.data.labels = stationLabels;
+      chartByStation.data.datasets[0].data = stationData;
+      chartByStation.update('active');
     }
 
+    // Update chart by client
     if(chartByClient){
       const clientLabels = Object.keys(defectsByClient).sort();
       const clientData = clientLabels.map(c=>defectsByClient[c]);
-      if(clientLabels.length){
-        chartByClient.data.labels = clientLabels;
-        chartByClient.data.datasets[0].data = clientData;
-      }else{
-        chartByClient.data.labels = [];
-        chartByClient.data.datasets[0].data = [];
-      }
-      chartByClient.update();
+      chartByClient.data.labels = clientLabels;
+      chartByClient.data.datasets[0].data = clientData;
+      chartByClient.update('active');
     }
 
+    // Update chart by failure mode
     if(chartByFailure){
       const failureLabels = Object.keys(defectsByFailure).sort();
       const failureData = failureLabels.map(f=>defectsByFailure[f]);
-      if(failureLabels.length){
-        chartByFailure.data.labels = failureLabels;
-        chartByFailure.data.datasets[0].data = failureData;
-      }else{
-        chartByFailure.data.labels = [];
-        chartByFailure.data.datasets[0].data = [];
-      }
-      chartByFailure.update();
+      chartByFailure.data.labels = failureLabels;
+      chartByFailure.data.datasets[0].data = failureData;
+      chartByFailure.update('active');
     }
   }
 
