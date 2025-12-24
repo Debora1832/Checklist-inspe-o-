@@ -1686,7 +1686,23 @@
 
     async function deletePiece(code) {
       if (!code) return;
+      // Delete the piece
       await deleteDoc(doc(db, "pieces", code));
+      
+      // Also delete all biblioteca items associated with this piece
+      try {
+        const bibliotecaSnapshot = await getDocs(collection(db, "biblioteca"));
+        const deletePromises = [];
+        bibliotecaSnapshot.docs.forEach(d => {
+          const data = d.data();
+          if (data.piece === code) {
+            deletePromises.push(deleteDoc(doc(db, "biblioteca", d.id)));
+          }
+        });
+        await Promise.all(deletePromises);
+      } catch (e) {
+        console.error("Erro ao deletar materiais da biblioteca:", e);
+      }
     }
 
     async function setInspectors(list) {
@@ -2815,6 +2831,11 @@
         pieces.splice(idx,1);
         renderPieces();
         renderChecklistSelectors();
+        
+        // Also remove biblioteca items for this piece from local array
+        bibliotecaItems = bibliotecaItems.filter(item => item.piece !== p.code);
+        renderBiblioteca();
+        
         if(window.fbApi && window.fbApi.deletePiece){
           window.fbApi.deletePiece(p.code).catch(e=>console.error("Erro delete piece Firebase",e));
         }
