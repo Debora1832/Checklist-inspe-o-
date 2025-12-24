@@ -719,6 +719,11 @@
     display:flex;
     justify-content:center;
     padding:6px 0 10px;
+    min-height:200px;
+    position:relative;
+  }
+  .chart-wrapper canvas{
+    max-height:200px;
   }
 
   .report-controls{
@@ -1413,35 +1418,34 @@
                 <div class="kpi-value" id="kpi-percent-defeitos">0%</div>
               </div>
             </div>
-          </div>
 
-          <!-- Gráficos -->
-          <div class="grid-2 mt-16">
-            <div class="card">
-              <h3 class="card-title">Defeitos por Estação</h3>
-              <div class="chart-wrapper">
-                <canvas id="chart-by-station" width="300" height="250"></canvas>
-              </div>
-            </div>
-            <div class="card">
-              <h3 class="card-title">Defeitos por Cliente</h3>
-              <div class="chart-wrapper">
-                <canvas id="chart-by-client" width="300" height="250"></canvas>
+            <!-- Status de Inspeção (Gráfico de Rosca) -->
+            <div style="margin-bottom:16px;">
+              <h3 class="card-title" style="margin-bottom:12px;">Status de Inspeção</h3>
+              <div style="max-width:400px;margin:0 auto;">
+                <canvas id="dashboard-chart" width="400" height="200"></canvas>
               </div>
             </div>
           </div>
 
-          <div class="grid-2 mt-16">
-            <div class="card">
-              <h3 class="card-title">Defeitos por Modo de Falha</h3>
+          <!-- Gráficos de Defeitos -->
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-top:16px;">
+            <div class="card" style="padding:16px;">
+              <h3 class="card-title" style="font-size:14px;margin-bottom:8px;">Defeitos por Estação</h3>
               <div class="chart-wrapper">
-                <canvas id="chart-by-failure" width="300" height="250"></canvas>
+                <canvas id="chart-by-station" width="280" height="180"></canvas>
               </div>
             </div>
-            <div class="card">
-              <h3 class="card-title">Status de Inspeção</h3>
+            <div class="card" style="padding:16px;">
+              <h3 class="card-title" style="font-size:14px;margin-bottom:8px;">Defeitos por Cliente</h3>
               <div class="chart-wrapper">
-                <canvas id="dashboard-chart" width="300" height="250"></canvas>
+                <canvas id="chart-by-client" width="280" height="180"></canvas>
+              </div>
+            </div>
+            <div class="card" style="padding:16px;">
+              <h3 class="card-title" style="font-size:14px;margin-bottom:8px;">Defeitos por Modo de Falha</h3>
+              <div class="chart-wrapper">
+                <canvas id="chart-by-failure" width="280" height="180"></canvas>
               </div>
             </div>
           </div>
@@ -1781,6 +1785,107 @@
   <!-- SCRIPT PRINCIPAL (UI) -->
   <script>
   const ADMIN_PIN = "qualidade2025";
+
+  // Production data lists
+  const PRODUCTION_CLIENTS = [
+    "AGCO Canoas",
+    "AGCO Mogi",
+    "AGCO Santa Rosa",
+    "Agritech Indaiatuba",
+    "Caterpillar Campo Largo",
+    "Caterpillar Piracicaba",
+    "Caterpillar Piracicaba Reposição",
+    "CNH Curitiba",
+    "CNH Reposição Sorocaba",
+    "CNH Sorocaba",
+    "DAF Ponta Grossa",
+    "Dana Industrias",
+    "Deere Hitachi – Indaiatuba",
+    "Flamma",
+    "Gedore",
+    "GTS",
+    "Horsch do Brasil",
+    "Iveco Sete Lagoas",
+    "John Deere Catalão",
+    "John Deere Horizontina",
+    "John Deere Indaiatuba",
+    "John Deere Montenegro",
+    "John Deere Reposição Campinas",
+    "Landini – Contagem / MG",
+    "Maxion Cruzeiro",
+    "Mercedes Juiz de Fora",
+    "Mercedes São Bernardo do Campo",
+    "Metalsa Campo Largo",
+    "Metalsa Osasco",
+    "MWM",
+    "Renault SJP",
+    "Scania Reposição Vinhedos",
+    "Scania São Bernardo do Campo",
+    "Solinftec",
+    "Tatu",
+    "Volvo CE Pederneiras",
+    "Volvo Curitiba",
+    "Volvo Pederneiras",
+    "Volvo Reposição"
+  ];
+
+  const PRODUCTION_FAILURE_MODES = [
+    "Ângulo fora do especificado",
+    "Backlog interno",
+    "Borra de e-coat",
+    "Camada fora do especificado",
+    "Componente soldado deslocado",
+    "Componente soldado invertido",
+    "Comprimento do cordão de solda fora do especificado",
+    "Contaminação",
+    "Corpo ou cabeceira invertida",
+    "Cravamento irregular – parafuso / porca / pino / porca",
+    "Dimensional fora do especificado",
+    "Dobra invertida",
+    "Emenda deficiente",
+    "Espaçamento entre componentes",
+    "Excesso de pó",
+    "Falha no corte da peça",
+    "Falha no mascaramento / proteção",
+    "Falta de cordão de solda",
+    "Falta de cura",
+    "Falta de operação (rosca, chanfro, furo, montagem)",
+    "Falta de penetração de solda",
+    "Ficha tratamento superficial FTS errada",
+    "Gap",
+    "Gravação fora do especificado",
+    "Identificação incorreta",
+    "Inclusão de arame de solda",
+    "Logística – peça enviada fora do programa de entrega",
+    "Má formação do rebite",
+    "Matéria-prima não conforme (riscos, marcas, etc.)",
+    "Montagem incorreta",
+    "Mordedura",
+    "Operação incompleta (rosca, chanfro, furo, etc.)",
+    "Oxidação",
+    "Peças com componentes fora do especificado",
+    "Peças com trincas",
+    "Peças danificadas em processo (marcas e riscos, etc.)",
+    "Peças faltando componentes",
+    "Peças misturadas",
+    "Perna da solda filete abaixo da medida",
+    "Pintura escorrida",
+    "Pintura com casca de laranja",
+    "Pintura cratera",
+    "Pintura com desplacamento",
+    "Pintura com olho de peixe",
+    "Pintura com sujeira",
+    "Pintura danificada",
+    "Pintura falhada",
+    "Pintura fervida",
+    "Plano de embalagem fora do especificado",
+    "Porosidade",
+    "Rebarbas",
+    "Respingos",
+    "Rosca danificada",
+    "Roscas / furos com tinta e/ou sujeiras",
+    "Solda com sobreposição"
+  ];
 
   // Estado principal
   let pieces = [];
@@ -3094,7 +3199,7 @@
             borderWidth:2
           }]
         },
-        options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{display:true,position:'bottom'}}}
+        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'bottom'}}}
       });
     }
   }
@@ -3116,14 +3221,16 @@
           }]
         },
         options:{
+          indexAxis: 'y',
           responsive:true,
-          maintainAspectRatio:true,
+          maintainAspectRatio:false,
           plugins:{
             legend:{display:true,position:'top'},
             title:{display:false}
           },
           scales:{
-            y:{beginAtZero:true,ticks:{precision:0}}
+            x:{beginAtZero:true,ticks:{precision:0}},
+            y:{ticks:{font:{size:11}}}
           }
         }
       });
@@ -3147,14 +3254,16 @@
           }]
         },
         options:{
+          indexAxis: 'y',
           responsive:true,
-          maintainAspectRatio:true,
+          maintainAspectRatio:false,
           plugins:{
             legend:{display:true,position:'top'},
             title:{display:false}
           },
           scales:{
-            y:{beginAtZero:true,ticks:{precision:0}}
+            x:{beginAtZero:true,ticks:{precision:0}},
+            y:{ticks:{font:{size:11}}}
           }
         }
       });
@@ -3178,14 +3287,16 @@
           }]
         },
         options:{
+          indexAxis: 'y',
           responsive:true,
-          maintainAspectRatio:true,
+          maintainAspectRatio:false,
           plugins:{
             legend:{display:true,position:'top'},
             title:{display:false}
           },
           scales:{
-            y:{beginAtZero:true,ticks:{precision:0}}
+            x:{beginAtZero:true,ticks:{precision:0}},
+            y:{ticks:{font:{size:11}}}
           }
         }
       });
@@ -3206,35 +3317,25 @@
   }
 
   function populateDashboardFilters(){
-    // Populate clients
-    const clientSet = new Set();
-    inspections.forEach(i=>{
-      if(i.client) clientSet.add(i.client);
-    });
+    // Populate clients - use production list
     const clientFilter = document.getElementById("filter-client");
     if(clientFilter){
       clientFilter.innerHTML = '<option value="">Todos</option>' +
-        Array.from(clientSet).map(c=>`<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("");
+        PRODUCTION_CLIENTS.map(c=>`<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("");
     }
 
-    // Populate pieces
+    // Populate pieces - from registered pieces
     const itemFilter = document.getElementById("filter-item");
     if(itemFilter){
       itemFilter.innerHTML = '<option value="">Todas</option>' +
-        pieces.map(p=>`<option value="${escapeHtml(p.code)}">${escapeHtml(p.code)}</option>`).join("");
+        pieces.map(p=>`<option value="${escapeHtml(p.code)}">${escapeHtml(p.code)} - ${escapeHtml(p.description||"")}</option>`).join("");
     }
 
-    // Populate failure modes
-    const failureModes = new Set();
-    inspections.forEach(i=>{
-      (i.itens||[]).forEach(it=>{
-        if(it.failureMode) failureModes.add(it.failureMode);
-      });
-    });
+    // Populate failure modes - use production list
     const failureFilter = document.getElementById("filter-failure-mode");
     if(failureFilter){
       failureFilter.innerHTML = '<option value="">Todos</option>' +
-        Array.from(failureModes).map(f=>`<option value="${escapeHtml(f)}">${escapeHtml(f)}</option>`).join("");
+        PRODUCTION_FAILURE_MODES.map(f=>`<option value="${escapeHtml(f)}">${escapeHtml(f)}</option>`).join("");
     }
 
     // Populate inspectors
@@ -4198,4 +4299,3 @@
   </script>
 </body>
 </html>
-
