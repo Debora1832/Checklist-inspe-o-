@@ -1679,12 +1679,16 @@
             date: data.date,
             inspector: data.inspector,
             piece: data.piece,
+            client: data.client || "",
+            station: data.station || "",
             descricao: data.descricao || "",
             itens: (data.itens || []).map(it => ({
               status: it.status,
               motivo: it.motivo,
+              failureMode: it.failureMode || "",
               encaminhamento: it.encaminhamento,
               nome_terceiro: it.nome_terceiro || "",
+              descricao_retrabalho: it.descricao_retrabalho || "",
               foto: null,
               fotoUrl: it.fotoUrl || null
             }))
@@ -1773,8 +1777,10 @@
         itensToSave.push({
           status: it.status,
           motivo: it.motivo,
+          failureMode: it.failureMode || "",
           encaminhamento: it.encaminhamento,
           nome_terceiro: it.nome_terceiro || "",
+          descricao_retrabalho: it.descricao_retrabalho || "",
           fotoUrl
         });
       }
@@ -1782,6 +1788,8 @@
         date: inspec.date,
         inspector: inspec.inspector,
         piece: inspec.piece,
+        client: inspec.client || "",
+        station: inspec.station || "",
         descricao: inspec.descricao || "",
         itens: itensToSave
       };
