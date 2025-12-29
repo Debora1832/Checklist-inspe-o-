@@ -3345,15 +3345,15 @@
       console.log('Canvas chart-by-station not found');
       return;
     }
+    // Only create chart if it doesn't exist
+    if(chartByStation){
+      console.log('chartByStation already exists');
+      return;
+    }
     const ctx = canvas.getContext("2d");
     if(!ctx) {
       console.log('Context for chart-by-station not available');
       return;
-    }
-    // Destroy existing chart if it exists to force recreation
-    if(chartByStation){
-      chartByStation.destroy();
-      chartByStation = null;
     }
     console.log('Creating chartByStation');
     chartByStation = new Chart(ctx,{
@@ -3390,15 +3390,15 @@
       console.log('Canvas chart-by-client not found');
       return;
     }
+    // Only create chart if it doesn't exist
+    if(chartByClient){
+      console.log('chartByClient already exists');
+      return;
+    }
     const ctx = canvas.getContext("2d");
     if(!ctx) {
       console.log('Context for chart-by-client not available');
       return;
-    }
-    // Destroy existing chart if it exists to force recreation
-    if(chartByClient){
-      chartByClient.destroy();
-      chartByClient = null;
     }
     console.log('Creating chartByClient');
     chartByClient = new Chart(ctx,{
@@ -3435,15 +3435,15 @@
       console.log('Canvas chart-by-failure not found');
       return;
     }
+    // Only create chart if it doesn't exist
+    if(chartByFailure){
+      console.log('chartByFailure already exists');
+      return;
+    }
     const ctx = canvas.getContext("2d");
     if(!ctx) {
       console.log('Context for chart-by-failure not available');
       return;
-    }
-    // Destroy existing chart if it exists to force recreation
-    if(chartByFailure){
-      chartByFailure.destroy();
-      chartByFailure = null;
     }
     console.log('Creating chartByFailure');
     chartByFailure = new Chart(ctx,{
@@ -3480,15 +3480,15 @@
       console.log('Canvas chart-monthly-volume not found');
       return;
     }
+    // Only create chart if it doesn't exist
+    if(chartMonthlyVolume){
+      console.log('chartMonthlyVolume already exists');
+      return;
+    }
     const ctx = canvas.getContext("2d");
     if(!ctx) {
       console.log('Cannot get 2D context for chart-monthly-volume');
       return;
-    }
-    // Destroy existing chart if it exists to force recreation
-    if(chartMonthlyVolume){
-      chartMonthlyVolume.destroy();
-      chartMonthlyVolume = null;
     }
     console.log('Creating chartMonthlyVolume');
     chartMonthlyVolume = new Chart(ctx,{
