@@ -1090,6 +1090,10 @@
           <span class="sidebar-icon">▶</span>
           <span class="sidebar-label">Biblioteca de Inspeções</span>
         </button>
+        <button class="sidebar-item" data-screen="settings" onclick="selectSidebar('settings')" aria-label="Ir para página de Configurações">
+          <span class="sidebar-icon">⚙</span>
+          <span class="sidebar-label">Configurações</span>
+        </button>
       </nav>
 
       <div class="sidebar-footer">
@@ -1145,13 +1149,6 @@
                   <label style="font-size:13px;font-weight:600;color:#003366;">Estação/Linha:</label>
                   <select id="cl-piece-station-select" style="padding:6px;border:1px solid #c8d3e6;border-radius:4px;font-size:13px;">
                     <option value="">Selecione a estação</option>
-                    <option value="Solda Robô 1 / Solda Projeção">Solda Robô 1 / Solda Projeção</option>
-                    <option value="Jato Automático">Jato Automático</option>
-                    <option value="Mesa Desempeno">Mesa Desempeno</option>
-                    <option value="Tratamento Superficial">Tratamento Superficial</option>
-                    <option value="Jato">Jato</option>
-                    <option value="Calibragem / Estanqueidade / Acabamento">Calibragem / Estanqueidade / Acabamento</option>
-                    <option value="Solda Manual / Solda Extra Pesada">Solda Manual / Solda Extra Pesada</option>
                   </select>
                 </div>
               </div>
@@ -1527,6 +1524,46 @@
           <div class="card mt-16">
             <h3 class="card-title">Material de referência cadastrado</h3>
             <div id="biblioteca-list" class="biblioteca-grid"></div>
+          </div>
+        </section>
+
+        <!-- TELA: CONFIGURAÇÕES -->
+        <section id="settings" class="screen">
+          <div class="card">
+            <h2 class="screen-title">Configurações do Sistema</h2>
+            <p style="font-size:13px;color:#555;margin-bottom:20px;">
+              Gerencie as listas de clientes, modos de falha e estações/linhas usadas no sistema.
+            </p>
+            
+            <!-- Gerenciar Clientes -->
+            <div style="margin-bottom:32px;">
+              <h3 class="card-title" style="font-size:16px;margin-bottom:12px;">Clientes</h3>
+              <div style="display:flex;gap:10px;margin-bottom:12px;">
+                <input type="text" id="new-client-input" placeholder="Nome do cliente" style="flex:1;padding:8px 10px;border:1px solid #cbd3e3;border-radius:4px;font-size:13px;">
+                <button class="btn-primary" onclick="addClient()" style="padding:8px 16px;">Adicionar</button>
+              </div>
+              <div id="clients-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:8px;"></div>
+            </div>
+
+            <!-- Gerenciar Modos de Falha -->
+            <div style="margin-bottom:32px;">
+              <h3 class="card-title" style="font-size:16px;margin-bottom:12px;">Modos de Falha</h3>
+              <div style="display:flex;gap:10px;margin-bottom:12px;">
+                <input type="text" id="new-failure-mode-input" placeholder="Nome do modo de falha" style="flex:1;padding:8px 10px;border:1px solid #cbd3e3;border-radius:4px;font-size:13px;">
+                <button class="btn-primary" onclick="addFailureMode()" style="padding:8px 16px;">Adicionar</button>
+              </div>
+              <div id="failure-modes-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:8px;"></div>
+            </div>
+
+            <!-- Gerenciar Estações/Linhas -->
+            <div>
+              <h3 class="card-title" style="font-size:16px;margin-bottom:12px;">Estações/Linhas</h3>
+              <div style="display:flex;gap:10px;margin-bottom:12px;">
+                <input type="text" id="new-station-input" placeholder="Nome da estação/linha" style="flex:1;padding:8px 10px;border:1px solid #cbd3e3;border-radius:4px;font-size:13px;">
+                <button class="btn-primary" onclick="addStation()" style="padding:8px 16px;">Adicionar</button>
+              </div>
+              <div id="stations-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:8px;"></div>
+            </div>
           </div>
         </section>
 
@@ -1918,6 +1955,16 @@
     "Solda com sobreposição"
   ];
 
+  const PRODUCTION_STATIONS = [
+    "Solda Robô 1 / Solda Projeção",
+    "Jato Automático",
+    "Mesa Desempeno",
+    "Tratamento Superficial",
+    "Jato",
+    "Calibragem / Estanqueidade / Acabamento",
+    "Solda Manual / Solda Extra Pesada"
+  ];
+
   // Estado principal
   let pieces = [];
   let inspectors = []; // { name, pinHash, photoUrl? }
@@ -1982,6 +2029,7 @@
     if(screenId==="reports") renderReports();
     if(screenId==="dashboard") renderDashboard();
     if(screenId==="biblioteca") renderBiblioteca();
+    if(screenId==="settings") renderSettings();
   }
   window.selectSidebar = selectSidebar;
 
@@ -2060,15 +2108,18 @@
     // Hide/show menu items based on user role
     const inspectorsBtn = document.querySelector('[data-screen="inspectors"]');
     const piecesBtn = document.querySelector('[data-screen="pieces"]');
+    const settingsBtn = document.querySelector('[data-screen="settings"]');
     
     if(currentUser && currentUser.role === "inspector"){
-      // Hide Inspetores and Peças & Itens for inspectors
+      // Hide Inspetores, Peças & Itens, and Configurações for inspectors
       if(inspectorsBtn) inspectorsBtn.style.display = "none";
       if(piecesBtn) piecesBtn.style.display = "none";
+      if(settingsBtn) settingsBtn.style.display = "none";
     } else {
       // Show all menu items for admins
       if(inspectorsBtn) inspectorsBtn.style.display = "";
       if(piecesBtn) piecesBtn.style.display = "";
+      if(settingsBtn) settingsBtn.style.display = "";
     }
   }
 
@@ -2234,9 +2285,13 @@
     // Display client from piece
     document.getElementById("cl-piece-client").textContent = piece.client || "-";
     
-    // Setup station dropdown
+    // Setup station dropdown with dynamic stations
     const stationSelect = document.getElementById("cl-piece-station-select");
     if(stationSelect){
+      stationSelect.innerHTML = '<option value="">Selecione a estação</option>' +
+        PRODUCTION_STATIONS.map(station => 
+          `<option value="${escapeHtml(station)}">${escapeHtml(station)}</option>`
+        ).join("");
       stationSelect.value = currentStation || "";
       stationSelect.addEventListener("change",()=>{
         currentStation = stationSelect.value;
@@ -4134,6 +4189,200 @@
       }
     });
   }
+
+  // ===== SETTINGS / CONFIGURAÇÕES =====
+  
+  function renderSettings(){
+    const clientsList = document.getElementById("clients-list");
+    const failureModesList = document.getElementById("failure-modes-list");
+    const stationsList = document.getElementById("stations-list");
+    
+    if(!clientsList || !failureModesList || !stationsList) return;
+    
+    // Render Clients
+    clientsList.innerHTML = PRODUCTION_CLIENTS.map((client, idx) => `
+      <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:#f8f9fa;border:1px solid #e0e5f0;border-radius:4px;">
+        <span style="flex:1;font-size:13px;">${escapeHtml(client)}</span>
+        <button class="btn-icon" onclick="editClient(${idx})" style="padding:4px 8px;font-size:12px;">Editar</button>
+        <button class="btn-icon" onclick="deleteClient(${idx})" style="padding:4px 8px;font-size:12px;background:#dc3545;">Excluir</button>
+      </div>
+    `).join("");
+    
+    // Render Failure Modes
+    failureModesList.innerHTML = PRODUCTION_FAILURE_MODES.map((mode, idx) => `
+      <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:#f8f9fa;border:1px solid #e0e5f0;border-radius:4px;">
+        <span style="flex:1;font-size:13px;">${escapeHtml(mode)}</span>
+        <button class="btn-icon" onclick="editFailureMode(${idx})" style="padding:4px 8px;font-size:12px;">Editar</button>
+        <button class="btn-icon" onclick="deleteFailureMode(${idx})" style="padding:4px 8px;font-size:12px;background:#dc3545;">Excluir</button>
+      </div>
+    `).join("");
+    
+    // Render Stations
+    stationsList.innerHTML = PRODUCTION_STATIONS.map((station, idx) => `
+      <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:#f8f9fa;border:1px solid #e0e5f0;border-radius:4px;">
+        <span style="flex:1;font-size:13px;">${escapeHtml(station)}</span>
+        <button class="btn-icon" onclick="editStation(${idx})" style="padding:4px 8px;font-size:12px;">Editar</button>
+        <button class="btn-icon" onclick="deleteStation(${idx})" style="padding:4px 8px;font-size:12px;background:#dc3545;">Excluir</button>
+      </div>
+    `).join("");
+  }
+  window.renderSettings = renderSettings;
+  
+  function addClient(){
+    const input = document.getElementById("new-client-input");
+    if(!input) return;
+    
+    const name = input.value.trim();
+    if(!name){
+      alert("Digite o nome do cliente");
+      return;
+    }
+    
+    if(PRODUCTION_CLIENTS.includes(name)){
+      alert("Este cliente já existe");
+      return;
+    }
+    
+    PRODUCTION_CLIENTS.push(name);
+    PRODUCTION_CLIENTS.sort();
+    input.value = "";
+    renderSettings();
+    alert("Cliente adicionado com sucesso!");
+  }
+  window.addClient = addClient;
+  
+  function editClient(idx){
+    const current = PRODUCTION_CLIENTS[idx];
+    const newName = prompt("Editar cliente:", current);
+    
+    if(newName === null) return;
+    if(!newName.trim()){
+      alert("O nome não pode estar vazio");
+      return;
+    }
+    
+    PRODUCTION_CLIENTS[idx] = newName.trim();
+    PRODUCTION_CLIENTS.sort();
+    renderSettings();
+    alert("Cliente atualizado com sucesso!");
+  }
+  window.editClient = editClient;
+  
+  function deleteClient(idx){
+    const client = PRODUCTION_CLIENTS[idx];
+    if(!confirm(`Tem certeza que deseja excluir o cliente "${client}"?\n\nAtenção: Esta ação não pode ser desfeita.`)){
+      return;
+    }
+    
+    PRODUCTION_CLIENTS.splice(idx, 1);
+    renderSettings();
+    alert("Cliente excluído com sucesso!");
+  }
+  window.deleteClient = deleteClient;
+  
+  function addFailureMode(){
+    const input = document.getElementById("new-failure-mode-input");
+    if(!input) return;
+    
+    const name = input.value.trim();
+    if(!name){
+      alert("Digite o nome do modo de falha");
+      return;
+    }
+    
+    if(PRODUCTION_FAILURE_MODES.includes(name)){
+      alert("Este modo de falha já existe");
+      return;
+    }
+    
+    PRODUCTION_FAILURE_MODES.push(name);
+    PRODUCTION_FAILURE_MODES.sort();
+    input.value = "";
+    renderSettings();
+    alert("Modo de falha adicionado com sucesso!");
+  }
+  window.addFailureMode = addFailureMode;
+  
+  function editFailureMode(idx){
+    const current = PRODUCTION_FAILURE_MODES[idx];
+    const newName = prompt("Editar modo de falha:", current);
+    
+    if(newName === null) return;
+    if(!newName.trim()){
+      alert("O nome não pode estar vazio");
+      return;
+    }
+    
+    PRODUCTION_FAILURE_MODES[idx] = newName.trim();
+    PRODUCTION_FAILURE_MODES.sort();
+    renderSettings();
+    alert("Modo de falha atualizado com sucesso!");
+  }
+  window.editFailureMode = editFailureMode;
+  
+  function deleteFailureMode(idx){
+    const mode = PRODUCTION_FAILURE_MODES[idx];
+    if(!confirm(`Tem certeza que deseja excluir o modo de falha "${mode}"?\n\nAtenção: Esta ação não pode ser desfeita.`)){
+      return;
+    }
+    
+    PRODUCTION_FAILURE_MODES.splice(idx, 1);
+    renderSettings();
+    alert("Modo de falha excluído com sucesso!");
+  }
+  window.deleteFailureMode = deleteFailureMode;
+  
+  function addStation(){
+    const input = document.getElementById("new-station-input");
+    if(!input) return;
+    
+    const name = input.value.trim();
+    if(!name){
+      alert("Digite o nome da estação/linha");
+      return;
+    }
+    
+    if(PRODUCTION_STATIONS.includes(name)){
+      alert("Esta estação/linha já existe");
+      return;
+    }
+    
+    PRODUCTION_STATIONS.push(name);
+    PRODUCTION_STATIONS.sort();
+    input.value = "";
+    renderSettings();
+    alert("Estação/linha adicionada com sucesso!");
+  }
+  window.addStation = addStation;
+  
+  function editStation(idx){
+    const current = PRODUCTION_STATIONS[idx];
+    const newName = prompt("Editar estação/linha:", current);
+    
+    if(newName === null) return;
+    if(!newName.trim()){
+      alert("O nome não pode estar vazio");
+      return;
+    }
+    
+    PRODUCTION_STATIONS[idx] = newName.trim();
+    PRODUCTION_STATIONS.sort();
+    renderSettings();
+    alert("Estação/linha atualizada com sucesso!");
+  }
+  window.editStation = editStation;
+  
+  function deleteStation(idx){
+    const station = PRODUCTION_STATIONS[idx];
+    if(!confirm(`Tem certeza que deseja excluir a estação/linha "${station}"?\n\nAtenção: Esta ação não pode ser desfeita.`)){
+      return;
+    }
+    
+    PRODUCTION_STATIONS.splice(idx, 1);
+    renderSettings();
+    alert("Estação/linha excluída com sucesso!");
+  }
+  window.deleteStation = deleteStation;
 
   async function initAppAfterLogin(){
     loadInspectorPhotosFromLocalStorage();
