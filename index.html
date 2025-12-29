@@ -2434,8 +2434,8 @@
             </div>
             ${st.encaminhamento==="retrabalho" ? `
               <div style="margin-top:6px;">
-                <label>Descrição do retrabalho (obrigatório):</label>
-                <textarea id="retrabalho-desc-${idx}" style="width:100%;padding:8px;margin-top:4px;border:1px solid #cbd3e3;border-radius:4px;font-size:13px;min-height:60px;resize:vertical;">${st.descricaoRetrabalho||""}</textarea>
+                <label>Numero da op de retrabalho:</label>
+                <input type="number" id="retrabalho-desc-${idx}" value="${st.descricaoRetrabalho||""}" style="width:100%;padding:8px;margin-top:4px;border:1px solid #cbd3e3;border-radius:4px;font-size:13px;">
               </div>
             `:""}
             ${st.encaminhamento==="terceiro" ? `
@@ -2535,7 +2535,7 @@
               <div><strong>${c.ins.date}</strong></div>
               <div>Inspetor: ${c.inspector || c.ins.inspector}</div>
               <div style="margin-top:4px;">${c.motivo||""}</div>
-              ${c.encaminhamento==="retrabalho" && c.descricao_retrabalho ? `<div style="margin-top:4px;padding:4px;background:#fff3cd;border-radius:3px;"><strong>Retrabalho:</strong> ${c.descricao_retrabalho}</div>` : ""}
+              ${c.encaminhamento==="retrabalho" && c.descricao_retrabalho ? `<div style="margin-top:4px;padding:4px;background:#fff3cd;border-radius:3px;"><strong>Nº OP Retrabalho:</strong> ${c.descricao_retrabalho}</div>` : ""}
               ${src?`<img src="${src}" onclick="showImageModal('${src}')">`:""}
             </div>
           `;
@@ -2590,7 +2590,7 @@
           return;
         }
         if(st.encaminhamento==="retrabalho" && !st.descricaoRetrabalho?.trim()){
-          alert("Preencha a descrição do retrabalho em todos os itens encaminhados para retrabalho.");
+          alert("Preencha o número da OP de retrabalho em todos os itens encaminhados para retrabalho.");
           return;
         }
       }
