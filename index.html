@@ -2432,6 +2432,12 @@
               <label><input type="radio" name="enc-${idx}" value="retrabalho" ${st.encaminhamento==="retrabalho"?"checked":""}> Encaminhar para retrabalho</label><br>
               <label><input type="radio" name="enc-${idx}" value="terceiro" ${st.encaminhamento==="terceiro"?"checked":""}> Aprovado por terceiro</label>
             </div>
+            ${st.encaminhamento==="retrabalho" ? `
+              <div style="margin-top:6px;">
+                <label>Descrição do retrabalho (obrigatório):</label>
+                <textarea id="retrabalho-desc-${idx}" style="width:100%;padding:8px;margin-top:4px;border:1px solid #cbd3e3;border-radius:4px;font-size:13px;min-height:60px;resize:vertical;">${st.descricaoRetrabalho||""}</textarea>
+              </div>
+            `:""}
             ${st.encaminhamento==="terceiro" ? `
               <div style="margin-top:6px;">
                 <label>Nome / matrícula do aprovador:</label>
@@ -2450,6 +2456,7 @@
         const fotoInput = extraDiv.querySelector(`#foto-${idx}`);
         const radios = extraDiv.querySelectorAll(`input[name="enc-${idx}"]`);
         const terceiro = extraDiv.querySelector(`#terceiro-${idx}`);
+        const retrabalhoDesc = extraDiv.querySelector(`#retrabalho-desc-${idx}`);
 
         failureModeSelect.addEventListener("change",()=>{
           checklistItemStates[idx].failureMode = failureModeSelect.value;
@@ -2472,6 +2479,11 @@
             checklistItemStates[idx].nomeTerceiro = terceiro.value;
           });
         }
+        if(retrabalhoDesc){
+          retrabalhoDesc.addEventListener("input",()=>{
+            checklistItemStates[idx].descricaoRetrabalho = retrabalhoDesc.value;
+          });
+        }
       }
     });
 
@@ -2486,6 +2498,8 @@
           checklistItemStates[idx].fotoUrl=null;
           checklistItemStates[idx].encaminhamento="";
           checklistItemStates[idx].nomeTerceiro="";
+          checklistItemStates[idx].descricaoRetrabalho="";
+          checklistItemStates[idx].failureMode="";
         }
         renderChecklistExecution();
       });
@@ -2521,6 +2535,7 @@
               <div><strong>${c.ins.date}</strong></div>
               <div>Inspetor: ${c.inspector || c.ins.inspector}</div>
               <div style="margin-top:4px;">${c.motivo||""}</div>
+              ${c.encaminhamento==="retrabalho" && c.descricao_retrabalho ? `<div style="margin-top:4px;padding:4px;background:#fff3cd;border-radius:3px;"><strong>Retrabalho:</strong> ${c.descricao_retrabalho}</div>` : ""}
               ${src?`<img src="${src}" onclick="showImageModal('${src}')">`:""}
             </div>
           `;
@@ -2574,6 +2589,10 @@
           alert("Informe o aprovador em todos os itens aprovados por terceiro.");
           return;
         }
+        if(st.encaminhamento==="retrabalho" && !st.descricaoRetrabalho?.trim()){
+          alert("Preencha a descrição do retrabalho em todos os itens encaminhados para retrabalho.");
+          return;
+        }
       }
     }
 
@@ -2593,6 +2612,7 @@
         motivo: s.motivo,
         encaminhamento: s.encaminhamento,
         nome_terceiro: s.nomeTerceiro,
+        descricao_retrabalho: s.descricaoRetrabalho,
         failureMode: s.failureMode || "",
         foto: s.fotoFile,
         fotoUrl: s.fotoUrl
