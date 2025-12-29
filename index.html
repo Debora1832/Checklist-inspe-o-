@@ -3339,30 +3339,34 @@
     }
   }
 
-  function ensureChartByStation(){
+  function createChartByStation(stationLabels, stationData){
     const canvas = document.getElementById("chart-by-station");
     if(!canvas) {
       console.log('Canvas chart-by-station not found');
       return;
     }
-    // Only create chart if it doesn't exist
+    
+    // Always destroy existing chart before creating new one
     if(chartByStation){
-      console.log('chartByStation already exists');
-      return;
+      console.log('Destroying existing chartByStation');
+      chartByStation.destroy();
+      chartByStation = null;
     }
+    
     const ctx = canvas.getContext("2d");
     if(!ctx) {
       console.log('Context for chart-by-station not available');
       return;
     }
-    console.log('Creating chartByStation');
+    
+    console.log('Creating new chartByStation with data:', {stationLabels, stationData});
     chartByStation = new Chart(ctx,{
       type:"bar",
       data:{
-        labels:[],
+        labels: stationLabels,
         datasets:[{
           label:"Peças Reprovadas",
-          data:[],
+          data: stationData,
           backgroundColor:"#E81C24",
           borderColor:"#c41820",
           borderWidth:1
@@ -3384,30 +3388,34 @@
     });
   }
 
-  function ensureChartByClient(){
+  function createChartByClient(clientLabels, clientData){
     const canvas = document.getElementById("chart-by-client");
     if(!canvas) {
       console.log('Canvas chart-by-client not found');
       return;
     }
-    // Only create chart if it doesn't exist
+    
+    // Always destroy existing chart before creating new one
     if(chartByClient){
-      console.log('chartByClient already exists');
-      return;
+      console.log('Destroying existing chartByClient');
+      chartByClient.destroy();
+      chartByClient = null;
     }
+    
     const ctx = canvas.getContext("2d");
     if(!ctx) {
       console.log('Context for chart-by-client not available');
       return;
     }
-    console.log('Creating chartByClient');
+    
+    console.log('Creating new chartByClient with data:', {clientLabels, clientData});
     chartByClient = new Chart(ctx,{
       type:"bar",
       data:{
-        labels:[],
+        labels: clientLabels,
         datasets:[{
           label:"Peças Reprovadas",
-          data:[],
+          data: clientData,
           backgroundColor:"#1844F0",
           borderColor:"#0f34d0",
           borderWidth:1
@@ -3429,30 +3437,34 @@
     });
   }
 
-  function ensureChartByFailure(){
+  function createChartByFailure(failureLabels, failureData){
     const canvas = document.getElementById("chart-by-failure");
     if(!canvas) {
       console.log('Canvas chart-by-failure not found');
       return;
     }
-    // Only create chart if it doesn't exist
+    
+    // Always destroy existing chart before creating new one
     if(chartByFailure){
-      console.log('chartByFailure already exists');
-      return;
+      console.log('Destroying existing chartByFailure');
+      chartByFailure.destroy();
+      chartByFailure = null;
     }
+    
     const ctx = canvas.getContext("2d");
     if(!ctx) {
       console.log('Context for chart-by-failure not available');
       return;
     }
-    console.log('Creating chartByFailure');
+    
+    console.log('Creating new chartByFailure with data:', {failureLabels, failureData});
     chartByFailure = new Chart(ctx,{
       type:"bar",
       data:{
-        labels:[],
+        labels: failureLabels,
         datasets:[{
           label:"Ocorrências",
-          data:[],
+          data: failureData,
           backgroundColor:"#f59f00",
           borderColor:"#d98200",
           borderWidth:1
@@ -3522,15 +3534,12 @@
     // Use setTimeout to ensure DOM is ready and visible
     setTimeout(() => {
       ensureDashboardChart();
-      ensureChartByStation();
-      ensureChartByClient();
-      ensureChartByFailure();
       ensureChartMonthlyVolume();
       
       // Populate filter dropdowns
       populateDashboardFilters();
       
-      // Apply filters and render data
+      // Apply filters and render data (this will create the bar charts with data)
       applyDashboardFilters();
     }, 100);
   }
@@ -3679,41 +3688,23 @@
       dashboardChart.update();
     }
 
-    // Update chart by station
-    if(chartByStation){
-      const stationLabels = Object.keys(defectsByStation).sort();
-      const stationData = stationLabels.map(s=>defectsByStation[s]);
-      console.log('Updating chartByStation:', {stationLabels, stationData, defectsByStation});
-      chartByStation.data.labels = stationLabels;
-      chartByStation.data.datasets[0].data = stationData;
-      chartByStation.update('active');
-    } else {
-      console.log('chartByStation not initialized');
-    }
+    // Update chart by station - recreate with new data
+    const stationLabels = Object.keys(defectsByStation).sort();
+    const stationData = stationLabels.map(s=>defectsByStation[s]);
+    console.log('Recreating chartByStation:', {stationLabels, stationData, defectsByStation});
+    createChartByStation(stationLabels, stationData);
 
-    // Update chart by client
-    if(chartByClient){
-      const clientLabels = Object.keys(defectsByClient).sort();
-      const clientData = clientLabels.map(c=>defectsByClient[c]);
-      console.log('Updating chartByClient:', {clientLabels, clientData, defectsByClient});
-      chartByClient.data.labels = clientLabels;
-      chartByClient.data.datasets[0].data = clientData;
-      chartByClient.update('active');
-    } else {
-      console.log('chartByClient not initialized');
-    }
+    // Update chart by client - recreate with new data
+    const clientLabels = Object.keys(defectsByClient).sort();
+    const clientData = clientLabels.map(c=>defectsByClient[c]);
+    console.log('Recreating chartByClient:', {clientLabels, clientData, defectsByClient});
+    createChartByClient(clientLabels, clientData);
 
-    // Update chart by failure mode
-    if(chartByFailure){
-      const failureLabels = Object.keys(defectsByFailure).sort();
-      const failureData = failureLabels.map(f=>defectsByFailure[f]);
-      console.log('Updating chartByFailure:', {failureLabels, failureData, defectsByFailure});
-      chartByFailure.data.labels = failureLabels;
-      chartByFailure.data.datasets[0].data = failureData;
-      chartByFailure.update('active');
-    } else {
-      console.log('chartByFailure not initialized');
-    }
+    // Update chart by failure mode - recreate with new data
+    const failureLabels = Object.keys(defectsByFailure).sort();
+    const failureData = failureLabels.map(f=>defectsByFailure[f]);
+    console.log('Recreating chartByFailure:', {failureLabels, failureData, defectsByFailure});
+    createChartByFailure(failureLabels, failureData);
 
     // Update monthly volume chart
     if(chartMonthlyVolume){
