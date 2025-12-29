@@ -1171,10 +1171,20 @@
         <section id="inspectors" class="screen">
           <div class="card">
             <h2 class="screen-title">Cadastro de Inspetores</h2>
-            <div class="grid-2">
+            <div class="grid-3">
               <div class="form-group">
                 <label for="insp-name-input">Nome do inspetor</label>
                 <input type="text" id="insp-name-input" placeholder="Ex: João Silva">
+              </div>
+              <div class="form-group">
+                <label for="insp-shift-input">Turno</label>
+                <select id="insp-shift-input">
+                  <option value="">Selecione o turno</option>
+                  <option value="1º Turno">1º Turno</option>
+                  <option value="2º Turno">2º Turno</option>
+                  <option value="3º Turno">3º Turno</option>
+                  <option value="Administrativo">Administrativo</option>
+                </select>
               </div>
               <div class="form-group">
                 <label for="insp-photo-input">Foto do inspetor</label>
@@ -2658,6 +2668,7 @@
     listDiv.innerHTML = "";
     inspectors.forEach(insp=>{
       const name = insp.name;
+      const shift = insp.shift || "Não definido";
       const hasPin = !!insp.pinHash;
       const card = document.createElement("div");
       card.className="inspector-card";
@@ -2668,6 +2679,7 @@
             name.split(" ").map(p=>p[0]).join("")}
         </div>
         <div class="inspector-name">${name}</div>
+        <div class="inspector-pin-status">Turno: ${shift}</div>
         <div class="inspector-pin-status">PIN: ${hasPin ? "Cadastrado" : "Não definido"}</div>
         <div class="inspector-actions">
           <button class="btn-icon btn-edit" data-name="${name}">Editar</button>
@@ -2720,8 +2732,10 @@
     });
 
     const nameInput = document.getElementById("insp-name-input");
+    const shiftInput = document.getElementById("insp-shift-input");
     const photoInput = document.getElementById("insp-photo-input");
     if(nameInput) nameInput.value="";
+    if(shiftInput) shiftInput.value="";
     if(photoInput) photoInput.value="";
 
     // Atualiza também o select da tela de login
@@ -2732,6 +2746,7 @@
     const insp = inspectors.find(i=>i.name===name);
     if(!insp) return;
     const currentPhoto = inspectorPhotos[name] || "";
+    const currentShift = insp.shift || "";
     showModal(`
       <div class="modal-header">
         <div class="modal-title">Editar Inspetor</div>
@@ -2740,6 +2755,16 @@
       <div class="form-group" style="margin-top:10px;">
         <label>Nome</label>
         <input type="text" id="modal-insp-name" value="${insp.name}">
+      </div>
+      <div class="form-group">
+        <label>Turno</label>
+        <select id="modal-insp-shift">
+          <option value="">Selecione o turno</option>
+          <option value="1º Turno" ${currentShift==="1º Turno"?"selected":""}>1º Turno</option>
+          <option value="2º Turno" ${currentShift==="2º Turno"?"selected":""}>2º Turno</option>
+          <option value="3º Turno" ${currentShift==="3º Turno"?"selected":""}>3º Turno</option>
+          <option value="Administrativo" ${currentShift==="Administrativo"?"selected":""}>Administrativo</option>
+        </select>
       </div>
       <div class="form-group">
         <label>Foto</label>
@@ -2757,11 +2782,14 @@
 
     document.getElementById("modal-insp-save").addEventListener("click",()=>{
       const newName = document.getElementById("modal-insp-name").value.trim();
+      const newShift = document.getElementById("modal-insp-shift").value.trim();
       const file = document.getElementById("modal-insp-photo").files[0];
       if(!newName){ alert("Nome não pode ser vazio."); return; }
+      if(!newShift){ alert("Selecione o turno."); return; }
 
       const oldName = insp.name;
       insp.name = newName;
+      insp.shift = newShift;
 
       if(newName!==oldName){
         inspectorPhotos[newName] = inspectorPhotos[oldName];
@@ -4139,15 +4167,17 @@
 
     document.getElementById("btn-add-inspector").addEventListener("click",()=>{
       const name = document.getElementById("insp-name-input").value.trim();
+      const shift = document.getElementById("insp-shift-input").value.trim();
       const file = document.getElementById("insp-photo-input").files[0];
       if(!name){ alert("Informe o nome do inspetor."); return; }
+      if(!shift){ alert("Selecione o turno do inspetor."); return; }
       if(inspectors.some(i=>i.name.toLowerCase()===name.toLowerCase())){
         alert("Já existe um inspetor com esse nome.");
         return;
       }
 
       const addInspector = (photoDataUrl)=>{
-        inspectors.push({ name, pinHash:"" });
+        inspectors.push({ name, pinHash:"", shift });
         if(photoDataUrl) inspectorPhotos[name]=photoDataUrl;
         saveInspectorPhotosToLocalStorage();
         renderInspectors();
