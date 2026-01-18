@@ -3458,17 +3458,27 @@
     const p = pieces[pieceIdx];
     if(!p) return;
     
-    // Support both old (items array) and new (checklists array) structure
-    const checklists = p.checklists || [];
-    
     // Migrate old structure if needed
     if(!p.checklists && p.items && p.items.length > 0){
-      checklists.push({
-        id: "ck_default",
+      p.checklists = [{
+        id: "ck_default_" + Date.now(),
         type: "PDI",
+        process: null,
         items: p.items
-      });
+      }];
+      delete p.items; // Remove old items array
+      // Save migrated structure to Firebase
+      if(window.fbApi && window.fbApi.savePiece){
+        window.fbApi.savePiece(p).catch(e=>console.error("Erro salvar migração Firebase",e));
+      }
     }
+    
+    // Initialize checklists array if it doesn't exist
+    if(!p.checklists){
+      p.checklists = [];
+    }
+    
+    const checklists = p.checklists;
     
     if(checklists.length === 0){
       box.innerHTML = '<div style="padding:12px;color:#666;font-size:13px;">Nenhum checklist cadastrado para esta peça.</div>';
@@ -5237,8 +5247,19 @@
       document.getElementById("item-image-input").value="";
       failureModeSelect.value = ""; // Clear selection
       renderPieceItemsList(pieceIdx);
+      
+      // Save to Firebase
       if(window.fbApi && window.fbApi.savePiece){
-        window.fbApi.savePiece(pieces[pieceIdx]).catch(e=>console.error("Erro salvar peça Firebase",e));
+        window.fbApi.savePiece(pieces[pieceIdx])
+          .then(() => {
+            console.log("Item salvo com sucesso no Firebase");
+          })
+          .catch(e => {
+            console.error("Erro salvar peça Firebase",e);
+            alert("Erro ao salvar item no Firebase. Verifique o console para mais detalhes.");
+          });
+      } else {
+        console.warn("Firebase API não disponível. Item salvo apenas localmente.");
       }
     });
     
