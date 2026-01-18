@@ -1689,6 +1689,7 @@
             piece.checklists = data.checklists.map(ck => ({
               id: ck.id || "ck_" + Date.now(),
               type: ck.type || "PDI",
+              process: ck.process || null,
               items: (ck.items || []).map(it => ({
                 name: it.name,
                 description: it.description,
@@ -1702,6 +1703,7 @@
             piece.checklists = [{
               id: "ck_migrated_" + Date.now(),
               type: "PDI",
+              process: null,
               items: (data.items || []).map(it => ({
                 name: it.name,
                 description: it.description,
@@ -1751,9 +1753,15 @@
             id: d.id,
             date: data.date,
             inspector: data.inspector,
+            plant: data.plant || "",
             piece: data.piece,
             client: data.client || "",
             station: data.station || "",
+            serialNumber: data.serialNumber || "",
+            checklistType: data.checklistType || "",
+            checklistProcess: data.checklistProcess || "",
+            inspectionDuration: data.inspectionDuration || 0,
+            inspectionDurationFormatted: data.inspectionDurationFormatted || "",
             descricao: data.descricao || "",
             itens: (data.itens || []).map(it => ({
               status: it.status,
@@ -1781,21 +1789,35 @@
         const ext = (piece.image.name && piece.image.name.split(".").pop()) || "jpg";
         imageUrl = await uploadFileAndGetUrl(`pieces/${piece.code}/main_${Date.now()}.${ext}`, piece.image);
       }
-      const itemsToSave = [];
-      for (let idx = 0; idx < (piece.items || []).length; idx++) {
-        const it = piece.items[idx];
-        let itemImageUrl = it.imageUrl || null;
-        if (it.image instanceof File) {
-          const ext = (it.image.name && it.image.name.split(".").pop()) || "jpg";
-          itemImageUrl = await uploadFileAndGetUrl(`pieces/${piece.code}/items/${idx}_${Date.now()}.${ext}`, it.image);
+      
+      // Save checklists with their items
+      const checklistsToSave = [];
+      if(piece.checklists && piece.checklists.length > 0){
+        for(const checklist of piece.checklists){
+          const itemsToSave = [];
+          for (let idx = 0; idx < (checklist.items || []).length; idx++) {
+            const it = checklist.items[idx];
+            let itemImageUrl = it.imageUrl || null;
+            if (it.image instanceof File) {
+              const ext = (it.image.name && it.image.name.split(".").pop()) || "jpg";
+              itemImageUrl = await uploadFileAndGetUrl(`pieces/${piece.code}/items/${checklist.id}_${idx}_${Date.now()}.${ext}`, it.image);
+            }
+            itemsToSave.push({
+              name: it.name,
+              description: it.description,
+              failureMode: it.failureMode || "",
+              imageUrl: itemImageUrl
+            });
+          }
+          checklistsToSave.push({
+            id: checklist.id,
+            type: checklist.type,
+            process: checklist.process || null,
+            items: itemsToSave
+          });
         }
-        itemsToSave.push({
-          name: it.name,
-          description: it.description,
-          failureMode: it.failureMode || "",
-          imageUrl: itemImageUrl
-        });
       }
+      
       const ref = doc(db, "pieces", piece.code);
       await setDoc(ref, {
         code: piece.code,
@@ -1804,7 +1826,7 @@
         station: piece.station || "",
         hasSerialNumber: piece.hasSerialNumber || false,
         imageUrl,
-        items: itemsToSave
+        checklists: checklistsToSave
       });
     }
 
@@ -1860,9 +1882,15 @@
       const docData = {
         date: inspec.date,
         inspector: inspec.inspector,
+        plant: inspec.plant || "",
         piece: inspec.piece,
         client: inspec.client || "",
         station: inspec.station || "",
+        serialNumber: inspec.serialNumber || "",
+        checklistType: inspec.checklistType || "",
+        checklistProcess: inspec.checklistProcess || "",
+        inspectionDuration: inspec.inspectionDuration || 0,
+        inspectionDurationFormatted: inspec.inspectionDurationFormatted || "",
         descricao: inspec.descricao || "",
         itens: itensToSave
       };
