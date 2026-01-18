@@ -1159,6 +1159,10 @@
                 <div class="checklist-piece-code" id="cl-piece-code"></div>
                 <div class="checklist-piece-desc" id="cl-piece-desc"></div>
               </div>
+              <div id="inspection-timer" style="display:flex;align-items:center;gap:8px;padding:8px 16px;background:#f0f4f8;border-radius:6px;border:1px solid #c8d3e6;">
+                <span style="font-size:12px;color:#666;">⏱️ Tempo:</span>
+                <span id="timer-display" style="font-size:16px;font-weight:700;color:#003366;font-family:monospace;">00:00:00</span>
+              </div>
             </div>
             <div id="cl-piece-info" style="margin-top:8px;padding:12px;background:#f0f4f8;border-radius:6px;border:1px solid #c8d3e6;">
               <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;font-size:14px;">
@@ -2075,6 +2079,11 @@
   let currentPieceSerialNumber = ""; // Serial number for the current piece being inspected
   let currentClient = ""; // Client for current inspection
   let currentStation = ""; // Station for current inspection
+  
+  // Timer variables
+  let inspectionStartTime = null;
+  let inspectionTimerInterval = null;
+  let inspectionDuration = 0; // Duration in seconds
 
   let dashboardChart = null;
   let chartByStation = null;
@@ -2498,7 +2507,65 @@
     // Collapse sidebar when checklist opens
     collapseSidebar();
     
+    // Start inspection timer
+    startInspectionTimer();
+    
     renderChecklistExecution();
+  }
+  
+  function startInspectionTimer(){
+    // Reset and start timer
+    inspectionStartTime = Date.now();
+    inspectionDuration = 0;
+    updateTimerDisplay();
+    
+    // Clear any existing interval
+    if(inspectionTimerInterval){
+      clearInterval(inspectionTimerInterval);
+    }
+    
+    // Update timer every second
+    inspectionTimerInterval = setInterval(() => {
+      inspectionDuration = Math.floor((Date.now() - inspectionStartTime) / 1000);
+      updateTimerDisplay();
+    }, 1000);
+  }
+  
+  function stopInspectionTimer(){
+    if(inspectionTimerInterval){
+      clearInterval(inspectionTimerInterval);
+      inspectionTimerInterval = null;
+    }
+    // Final duration calculation
+    if(inspectionStartTime){
+      inspectionDuration = Math.floor((Date.now() - inspectionStartTime) / 1000);
+    }
+  }
+  
+  function updateTimerDisplay(){
+    const hours = Math.floor(inspectionDuration / 3600);
+    const minutes = Math.floor((inspectionDuration % 3600) / 60);
+    const seconds = inspectionDuration % 60;
+    
+    const display = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    const timerElement = document.getElementById("timer-display");
+    if(timerElement){
+      timerElement.textContent = display;
+    }
+  }
+  
+  function formatDuration(seconds){
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    
+    if(hours > 0){
+      return `${hours}h ${minutes}m ${secs}s`;
+    } else if(minutes > 0){
+      return `${minutes}m ${secs}s`;
+    } else {
+      return `${secs}s`;
+    }
   }
 
   function renderChecklistExecution(){
@@ -2874,6 +2941,9 @@
     const now = new Date();
     const inspName = currentUser ? currentUser.name : "";
     const inspPlant = currentUser ? currentUser.plant : "";
+    
+    // Stop timer and get final duration
+    stopInspectionTimer();
 
     const inspecToSave = {
       date: now.toLocaleDateString("pt-BR"),
@@ -2884,6 +2954,10 @@
       serialNumber: currentPieceSerialNumber || "",
       client: currentClient || "",
       station: currentStation || "",
+      checklistType: currentChecklistType || "",
+      checklistProcess: currentChecklistProcess || "",
+      inspectionDuration: inspectionDuration, // Duration in seconds
+      inspectionDurationFormatted: formatDuration(inspectionDuration),
       itens: checklistItemStates.map(s=>({
         status: s.status,
         motivo: s.motivo,
@@ -2925,10 +2999,18 @@
     renderDashboard();
     renderChecklistExecution();
 
+    // Reset timer
+    stopInspectionTimer();
+    inspectionDuration = 0;
+    inspectionStartTime = null;
+    updateTimerDisplay();
+
     // resetar seleção e voltar ao início do checklist
     const pieceSel = document.getElementById("piece-selector");
     if(pieceSel) pieceSel.value = "";
     currentChecklistPiece = null;
+    currentChecklistType = null;
+    currentChecklistProcess = null;
     checklistItemStates = [];
     currentPieceSerialNumber = ""; // Reset serial number
     currentClient = ""; // Reset client
@@ -2950,10 +3032,18 @@
       return;
     }
     
+    // Stop and reset timer
+    stopInspectionTimer();
+    inspectionDuration = 0;
+    inspectionStartTime = null;
+    updateTimerDisplay();
+    
     // Reset all state
     const pieceSel = document.getElementById("piece-selector");
     if(pieceSel) pieceSel.value = "";
     currentChecklistPiece = null;
+    currentChecklistType = null;
+    currentChecklistProcess = null;
     checklistItemStates = [];
     currentPieceSerialNumber = "";
     currentClient = "";
@@ -3590,7 +3680,8 @@
     cliente: false,
     estacao: false,
     serialNumber: false,
-    medidas: false
+    medidas: false,
+    tempoInspecao: false
   };
   
   // Carregar configuração salva
@@ -3650,6 +3741,10 @@
             <input type="checkbox" id="cfg-medidas" ${reportConfig.medidas?"checked":""}>
             <span>Medidas Dimensionais</span>
           </label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+            <input type="checkbox" id="cfg-tempoInspecao" ${reportConfig.tempoInspecao?"checked":""}>
+            <span>Tempo de Inspeção</span>
+          </label>
         </div>
         <div style="margin-top:20px;display:flex;gap:8px;justify-content:flex-end;">
           <button class="btn-secondary" onclick="closeModal()">Cancelar</button>
@@ -3668,6 +3763,7 @@
       reportConfig.estacao = document.getElementById("cfg-estacao").checked;
       reportConfig.serialNumber = document.getElementById("cfg-serialNumber").checked;
       reportConfig.medidas = document.getElementById("cfg-medidas").checked;
+      reportConfig.tempoInspecao = document.getElementById("cfg-tempoInspecao").checked;
       
       saveReportConfig();
       closeModal();
@@ -3731,6 +3827,7 @@
     if(reportConfig.estacao) headers.push("Estação");
     if(reportConfig.serialNumber) headers.push("Serial Number");
     if(reportConfig.medidas) headers.push("Medidas");
+    if(reportConfig.tempoInspecao) headers.push("Tempo de Inspeção");
     
     headerRow.innerHTML = headers.map(h=>`<th>${h}</th>`).join("");
     
@@ -3753,6 +3850,10 @@
               .map(it=>it.measurement)
               .join(", ");
             cells.push(`<td>${measurements||"-"}</td>`);
+          }
+          if(reportConfig.tempoInspecao){
+            const duration = i.inspectionDurationFormatted || (i.inspectionDuration ? formatDuration(i.inspectionDuration) : "-");
+            cells.push(`<td>${duration}</td>`);
           }
           return `<tr>${cells.join("")}</tr>`;
         }).join("")
