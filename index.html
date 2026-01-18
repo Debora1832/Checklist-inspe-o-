@@ -1035,12 +1035,30 @@
             </select>
           </div>
           <div class="login-form-group">
+            <label for="login-plant-select">Planta *</label>
+            <select id="login-plant-select">
+              <option value="" disabled selected>Selecione a planta</option>
+              <option value="Matriz">Matriz</option>
+              <option value="Filial">Filial</option>
+              <option value="MG">MG</option>
+            </select>
+          </div>
+          <div class="login-form-group">
             <label for="login-insp-pin">PIN (4 dígitos)</label>
             <input type="password" id="login-insp-pin" maxlength="4" inputmode="numeric" placeholder="••••">
           </div>
         </div>
 
         <div id="login-admin-fields" style="display:none;">
+          <div class="login-form-group">
+            <label for="login-admin-plant-select">Planta *</label>
+            <select id="login-admin-plant-select">
+              <option value="" disabled selected>Selecione a planta</option>
+              <option value="Matriz">Matriz</option>
+              <option value="Filial">Filial</option>
+              <option value="MG">MG</option>
+            </select>
+          </div>
           <div class="login-form-group">
             <label for="login-admin-pin">Senha do administrador</label>
             <input type="password" id="login-admin-pin" placeholder="Digite a senha">
@@ -1992,7 +2010,7 @@
   let chartByFailure = null;
   let chartMonthlyVolume = null;
 
-  let currentUser = null; // { role: "admin"|"inspector", name: string }
+  let currentUser = null; // { role: "admin"|"inspector", name: string, plant: string }
   window._appDataLoaded = false;
 
   // Util: hash SHA-256 para PIN
@@ -2085,11 +2103,12 @@
       .slice(0,2)
       .toUpperCase();
     const roleLabel = currentUser.role === "admin" ? "Admin" : "Inspetor";
+    const plantLabel = currentUser.plant ? ` - ${currentUser.plant}` : "";
 
     container.innerHTML = `
       <div class="header-user-avatar">${initials}</div>
       <div class="header-user-info">
-        <span>${roleLabel}</span>
+        <span>${roleLabel}${plantLabel}</span>
         <span>${currentUser.name}</span>
       </div>
       <div class="header-user-actions">
@@ -2606,10 +2625,12 @@
 
     const now = new Date();
     const inspName = currentUser ? currentUser.name : "";
+    const inspPlant = currentUser ? currentUser.plant : "";
 
     const inspecToSave = {
       date: now.toLocaleDateString("pt-BR"),
       inspector: inspName,
+      plant: inspPlant,
       piece: currentChecklistPiece.code,
       descricao: "Inspeção realizada",
       serialNumber: currentPieceSerialNumber || "",
@@ -4695,13 +4716,21 @@
       loginError.textContent = "";
 
       if(loginMode==="admin"){
+        const plant = document.getElementById("login-admin-plant-select").value.trim();
         const pin = document.getElementById("login-admin-pin").value.trim();
+        
+        if(!plant){
+          loginError.textContent="Selecione a planta.";
+          loginError.style.display="block";
+          return;
+        }
+        
         if(pin !== ADMIN_PIN){
           loginError.textContent="Senha de administrador inválida.";
           loginError.style.display="block";
           return;
         }
-        currentUser = { role:"admin", name:"Administrador" };
+        currentUser = { role:"admin", name:"Administrador", plant: plant };
         document.getElementById("login-screen").style.display="none";
         document.getElementById("app-root").style.display="flex";
         updateHeaderUser();
@@ -4710,12 +4739,21 @@
       }else{
         const sel = document.getElementById("login-insp-select");
         const name = (sel && sel.value) ? sel.value.trim() : "";
+        const plant = document.getElementById("login-plant-select").value.trim();
         const pin = document.getElementById("login-insp-pin").value.trim();
+        
         if(!name || !pin){
           loginError.textContent="Selecione o inspetor e informe o PIN.";
           loginError.style.display="block";
           return;
         }
+        
+        if(!plant){
+          loginError.textContent="Selecione a planta.";
+          loginError.style.display="block";
+          return;
+        }
+        
         if(pin.length !== 4){
           loginError.textContent="O PIN deve ter 4 dígitos.";
           loginError.style.display="block";
@@ -4759,7 +4797,7 @@
             return;
           }
 
-          currentUser = { role:"inspector", name: insp.name };
+          currentUser = { role:"inspector", name: insp.name, plant: plant };
           document.getElementById("login-screen").style.display="none";
           document.getElementById("app-root").style.display="flex";
           updateHeaderUser();
