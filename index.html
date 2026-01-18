@@ -1425,6 +1425,12 @@
                 <input type="date" id="filter-date-end" style="padding:6px 8px;font-size:13px;border:1px solid #cbd3e3;border-radius:4px;width:100%;">
               </div>
               <div class="form-group" style="margin:0;min-width:150px;">
+                <label style="font-size:12px;margin-bottom:4px;">Planta</label>
+                <select id="filter-plant" style="padding:6px 8px;font-size:13px;border:1px solid #cbd3e3;border-radius:4px;width:100%;">
+                  <option value="">Todas</option>
+                </select>
+              </div>
+              <div class="form-group" style="margin:0;min-width:150px;">
                 <label style="font-size:12px;margin-bottom:4px;">Cliente</label>
                 <select id="filter-client" style="padding:6px 8px;font-size:13px;border:1px solid #cbd3e3;border-radius:4px;width:100%;">
                   <option value="">Todos</option>
@@ -4318,6 +4324,14 @@
   }
 
   function populateDashboardFilters(){
+    // Populate plants
+    const plantFilter = document.getElementById("filter-plant");
+    if(plantFilter){
+      const plants = ["Matriz", "Filial", "MG"];
+      plantFilter.innerHTML = '<option value="">Todas</option>' +
+        plants.map(p=>`<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`).join("");
+    }
+
     // Populate clients - use production list
     const clientFilter = document.getElementById("filter-client");
     if(clientFilter){
@@ -4350,6 +4364,7 @@
   function applyDashboardFilters(){
     const startDate = document.getElementById("filter-date-start")?.value || "";
     const endDate = document.getElementById("filter-date-end")?.value || "";
+    const plantFilter = document.getElementById("filter-plant")?.value || "";
     const clientFilter = document.getElementById("filter-client")?.value || "";
     const itemFilter = document.getElementById("filter-item")?.value || "";
     const failureModeFilter = document.getElementById("filter-failure-mode")?.value || "";
@@ -4385,6 +4400,9 @@
           if(inspDate > end) return false;
         }
       }
+      
+      // Plant filter
+      if(plantFilter && i.plant !== plantFilter) return false;
       
       // Client filter
       if(clientFilter && i.client !== clientFilter) return false;
