@@ -1309,9 +1309,7 @@
                   <option value="PDI">PDI</option>
                   <option value="Posto Fixo">Posto Fixo</option>
                   <option value="Linha">Linha</option>
-                  <option value="Dimensional">Dimensional</option>
-                  <option value="Visual">Visual</option>
-                  <option value="Funcional">Funcional</option>
+                  <option value="Inspeção Final">Inspeção Final</option>
                 </select>
               </div>
               <div class="form-group">
@@ -2033,9 +2031,7 @@
     "PDI",
     "Posto Fixo",
     "Linha",
-    "Dimensional",
-    "Visual",
-    "Funcional"
+    "Inspeção Final"
   ];
 
   // Estado principal
@@ -3329,20 +3325,39 @@
     // Render checklists grouped by type
     checklists.forEach((checklist, ckIdx) => {
       const checklistHeader = document.createElement("div");
-      checklistHeader.style.cssText = "background:#e8f2ff;padding:8px 12px;border-radius:4px;margin-top:12px;margin-bottom:6px;font-weight:700;font-size:14px;color:#003366;display:flex;justify-content:space-between;align-items:center;";
+      checklistHeader.style.cssText = "background:#e8f2ff;padding:8px 12px;border-radius:4px;margin-top:12px;margin-bottom:6px;font-weight:700;font-size:14px;color:#003366;display:flex;justify-content:space-between;align-items:center;cursor:pointer;";
       checklistHeader.innerHTML = `
-        <span>📋 ${checklist.type}</span>
+        <span><span id="chevron-${ckIdx}" style="display:inline-block;transition:transform 0.2s;">▶</span> 📋 ${checklist.type}</span>
         <button class="btn-icon btn-delete" data-ck-idx="${ckIdx}" style="padding:4px 8px;font-size:11px;">Remover Checklist</button>
       `;
       box.appendChild(checklistHeader);
       
+      // Create items container (initially hidden)
+      const itemsContainer = document.createElement("div");
+      itemsContainer.id = `items-container-${ckIdx}`;
+      itemsContainer.style.display = "none";
+      box.appendChild(itemsContainer);
+      
       // Add delete checklist handler
-      checklistHeader.querySelector(".btn-delete").addEventListener("click", () => {
+      checklistHeader.querySelector(".btn-delete").addEventListener("click", (e) => {
+        e.stopPropagation(); // Prevent toggle when clicking delete
         if(!confirm(`Remover todo o checklist "${checklist.type}"?`)) return;
         p.checklists.splice(ckIdx, 1);
         renderPieceItemsList(pieceIdx);
         if(window.fbApi && window.fbApi.savePiece){
           window.fbApi.savePiece(p).catch(e=>console.error("Erro salvar peça Firebase",e));
+        }
+      });
+      
+      // Add toggle handler to header
+      checklistHeader.addEventListener("click", () => {
+        const chevron = document.getElementById(`chevron-${ckIdx}`);
+        if(itemsContainer.style.display === "none"){
+          itemsContainer.style.display = "block";
+          chevron.style.transform = "rotate(90deg)";
+        } else {
+          itemsContainer.style.display = "none";
+          chevron.style.transform = "rotate(0deg)";
         }
       });
       
@@ -3364,7 +3379,7 @@
             <button class="btn-icon btn-delete" data-ck-idx="${ckIdx}" data-idx="${idx}">Remover</button>
           </div>
         `;
-        box.appendChild(row);
+        itemsContainer.appendChild(row);
       });
     });
 
