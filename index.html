@@ -1035,12 +1035,30 @@
             </select>
           </div>
           <div class="login-form-group">
+            <label for="login-plant-select">Planta *</label>
+            <select id="login-plant-select">
+              <option value="" disabled selected>Selecione a planta</option>
+              <option value="Matriz">Matriz</option>
+              <option value="Filial">Filial</option>
+              <option value="MG">MG</option>
+            </select>
+          </div>
+          <div class="login-form-group">
             <label for="login-insp-pin">PIN (4 dígitos)</label>
             <input type="password" id="login-insp-pin" maxlength="4" inputmode="numeric" placeholder="••••">
           </div>
         </div>
 
         <div id="login-admin-fields" style="display:none;">
+          <div class="login-form-group">
+            <label for="login-admin-plant-select">Planta *</label>
+            <select id="login-admin-plant-select">
+              <option value="" disabled selected>Selecione a planta</option>
+              <option value="Matriz">Matriz</option>
+              <option value="Filial">Filial</option>
+              <option value="MG">MG</option>
+            </select>
+          </div>
           <div class="login-form-group">
             <label for="login-admin-pin">Senha do administrador</label>
             <input type="password" id="login-admin-pin" placeholder="Digite a senha">
@@ -1133,6 +1151,13 @@
                 <option value="" disabled selected>Selecionar peça</option>
               </select>
             </div>
+            <div class="form-group hide" id="checklist-type-selector-group">
+              <label for="checklist-type-selector">Tipo de Checklist</label>
+              <select id="checklist-type-selector">
+                <option value="" disabled selected>Selecione o tipo</option>
+              </select>
+            </div>
+            <button class="btn-primary hide" id="btn-start-checklist">Iniciar Checklist</button>
           </div>
 
           <div id="checklist-execution" class="card mt-16 hide">
@@ -1140,6 +1165,7 @@
               <div>
                 <div class="checklist-piece-code" id="cl-piece-code"></div>
                 <div class="checklist-piece-desc" id="cl-piece-desc"></div>
+                <div class="checklist-piece-type" id="cl-checklist-type" style="font-size:14px;color:#666;margin-top:4px;"></div>
               </div>
             </div>
             <div id="cl-piece-info" style="margin-top:8px;padding:12px;background:#f0f4f8;border-radius:6px;border:1px solid #c8d3e6;">
@@ -1282,8 +1308,18 @@
                 <label for="piece-items-selector">Selecionar peça</label>
                 <select id="piece-items-selector"></select>
               </div>
+              <div id="piece-checklists-info" style="margin-top:12px;"></div>
               <div id="piece-items-list"></div>
               <div class="divider mt-8 mb-8"></div>
+              <div class="form-group">
+                <label for="item-checklist-type-input">Tipo de Checklist</label>
+                <select id="item-checklist-type-input">
+                  <option value="">Selecione o tipo</option>
+                  <option value="PDI">PDI</option>
+                  <option value="Posto Fixo">Posto Fixo</option>
+                  <option value="Linha">Linha</option>
+                </select>
+              </div>
               <div class="form-group">
                 <label for="item-name-input">Novo item</label>
                 <input type="text" id="item-name-input" placeholder="Ex: Dimensão A (Ø)">
@@ -1471,6 +1507,7 @@
           <div class="card">
             <h2 class="screen-title">Relatórios</h2>
             <div class="report-controls">
+              <button class="btn-secondary" id="btn-config-report">⚙ Configurar Campos</button>
               <button class="btn-secondary" id="btn-export-csv">Exportar CSV</button>
               <div class="form-group small">
                 <label for="report-month-select">Mês:</label>
@@ -1486,7 +1523,7 @@
             <h3 class="card-title">Histórico de inspeções</h3>
             <table class="history-table">
               <thead>
-                <tr>
+                <tr id="reports-header-row">
                   <th>Data</th>
                   <th>Inspetor</th>
                   <th>Peça</th>
@@ -1981,10 +2018,14 @@
   let bibliotecaItems = []; // { id, piece, media?, mediaType?, videoUrl?, imageUrl?, pdfUrl? }
 
   let currentChecklistPiece = null;
+  let currentChecklistType = null; // PDI, Posto Fixo, or Linha
   let checklistItemStates = [];
   let currentPieceSerialNumber = ""; // Serial number for the current piece being inspected
   let currentClient = ""; // Client for current inspection
   let currentStation = ""; // Station for current inspection
+  
+  // Checklist types
+  const CHECKLIST_TYPES = ["PDI", "Posto Fixo", "Linha"];
 
   let dashboardChart = null;
   let chartByStation = null;
@@ -1992,8 +2033,42 @@
   let chartByFailure = null;
   let chartMonthlyVolume = null;
 
-  let currentUser = null; // { role: "admin"|"inspector", name: string }
+  let currentUser = null; // { role: "admin"|"inspector", name: string, plant: string }
   window._appDataLoaded = false;
+
+  // Helper: Ensure piece has checklists structure with backward compatibility
+  function ensureChecklistsStructure(piece){
+    if(!piece) return piece;
+    
+    // If piece has old 'items' array, migrate to checklists
+    if(piece.items && !piece.checklists){
+      piece.checklists = {
+        "PDI": { items: piece.items }
+      };
+      delete piece.items; // Remove old structure
+    }
+    
+    // If piece has no checklists at all, initialize empty
+    if(!piece.checklists){
+      piece.checklists = {};
+    }
+    
+    return piece;
+  }
+  
+  // Helper: Get all items from a piece's specific checklist type
+  function getChecklistItems(piece, checklistType){
+    if(!piece) return [];
+    ensureChecklistsStructure(piece);
+    return piece.checklists[checklistType]?.items || [];
+  }
+  
+  // Helper: Get available checklist types for a piece
+  function getAvailableChecklistTypes(piece){
+    if(!piece) return [];
+    ensureChecklistsStructure(piece);
+    return Object.keys(piece.checklists || {});
+  }
 
   // Util: hash SHA-256 para PIN
   async function hashString(str){
@@ -2059,15 +2134,54 @@
   }
   function showImageModal(src){
     if(!src) return;
-    showModal(`
-      <div class="modal-header">
-        <div class="modal-title">Visualizar imagem</div>
-        <button class="modal-close-btn">&times;</button>
-      </div>
-      <div style="margin-top:8px;text-align:center;">
-        <img src="${src}" style="max-width:100%;max-height:70vh;border-radius:6px;">
-      </div>
-    `);
+    
+    // Create fullscreen modal for image
+    const modal = document.createElement('div');
+    modal.className = 'biblioteca-media-modal';
+    modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.95);z-index:10000;display:flex;align-items:center;justify-content:center;padding:20px;';
+    modal.onclick = (e) => {
+      if(e.target === modal) modal.remove();
+    };
+    
+    const content = document.createElement('div');
+    content.className = 'biblioteca-media-modal-content';
+    content.style.cssText = 'max-width:95vw;max-height:95vh;position:relative;';
+    
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'biblioteca-media-modal-close';
+    closeBtn.innerHTML = '&times;';
+    closeBtn.style.cssText = 'position:absolute;top:-40px;right:0;background:#fff;border:none;border-radius:50%;width:36px;height:36px;font-size:24px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#003366;';
+    closeBtn.onclick = () => modal.remove();
+    closeBtn.onmouseover = () => closeBtn.style.background = '#e0e5f0';
+    closeBtn.onmouseout = () => closeBtn.style.background = '#fff';
+    
+    const img = document.createElement('img');
+    img.src = src;
+    img.style.cssText = 'max-width:100%;max-height:95vh;display:block;border-radius:4px;';
+    img.alt = 'Visualizar imagem';
+    
+    content.appendChild(closeBtn);
+    content.appendChild(img);
+    modal.appendChild(content);
+    document.body.appendChild(modal);
+  }
+  
+  // Helper function to detect if item is dimensional
+  function isDimensionalItem(item){
+    if(!item || !item.name) return false;
+    const name = item.name.toLowerCase();
+    const desc = (item.description || "").toLowerCase();
+    const text = name + " " + desc;
+    // Check for dimensional keywords
+    return text.includes("dimensão") || 
+           text.includes("dimensional") || 
+           text.includes("diâmetro") || 
+           text.includes("ø") ||
+           text.includes("medida") ||
+           text.includes("espessura") ||
+           text.includes("comprimento") ||
+           text.includes("largura") ||
+           text.includes("altura");
   }
 
   // Header - usuário logado
@@ -2085,11 +2199,12 @@
       .slice(0,2)
       .toUpperCase();
     const roleLabel = currentUser.role === "admin" ? "Admin" : "Inspetor";
+    const plantLabel = currentUser.plant ? ` - ${currentUser.plant}` : "";
 
     container.innerHTML = `
       <div class="header-user-avatar">${initials}</div>
       <div class="header-user-info">
-        <span>${roleLabel}</span>
+        <span>${roleLabel}${plantLabel}</span>
         <span>${currentUser.name}</span>
       </div>
       <div class="header-user-actions">
@@ -2258,6 +2373,24 @@
       return;
     }
     
+    ensureChecklistsStructure(currentChecklistPiece);
+    
+    // Get selected checklist type
+    const typeSelect = document.getElementById("checklist-type-selector");
+    currentChecklistType = typeSelect.value;
+    
+    // For backward compatibility with legacy items
+    const availableTypes = getAvailableChecklistTypes(currentChecklistPiece);
+    if(availableTypes.length === 0 && currentChecklistPiece.items && currentChecklistPiece.items.length > 0){
+      // Legacy piece with old items array
+      currentChecklistType = "PDI";
+    }
+    
+    if(!currentChecklistType && availableTypes.length > 0){
+      alert("Selecione o tipo de checklist.");
+      return;
+    }
+    
     // Pull client from piece registration
     currentClient = currentChecklistPiece.client || "";
     currentStation = ""; // Station will be selected during inspection
@@ -2267,9 +2400,20 @@
       return;
     }
     
-    checklistItemStates = (currentChecklistPiece.items||[]).map(()=>({
+    // Get items from selected checklist type
+    const items = getChecklistItems(currentChecklistPiece, currentChecklistType);
+    
+    // Fallback to legacy items if no items in checklist
+    const itemsToUse = items.length > 0 ? items : (currentChecklistPiece.items || []);
+    
+    if(itemsToUse.length === 0){
+      alert("O checklist selecionado não possui itens cadastrados.");
+      return;
+    }
+    
+    checklistItemStates = itemsToUse.map(()=>({
       status:null,motivo:"",encaminhamento:"",nomeTerceiro:"",
-      fotoFile:null,fotoUrl:null,failureMode:""
+      fotoFile:null,fotoUrl:null,failureMode:"",measurement:""
     }));
     currentPieceSerialNumber = ""; // Reset serial number for new inspection
     
@@ -2289,6 +2433,12 @@
 
     document.getElementById("cl-piece-code").textContent = piece.code;
     document.getElementById("cl-piece-desc").textContent = piece.description || "";
+    
+    // Display checklist type
+    const typeEl = document.getElementById("cl-checklist-type");
+    if(typeEl && currentChecklistType){
+      typeEl.textContent = `Checklist: ${currentChecklistType}`;
+    }
     
     // Display client from piece
     document.getElementById("cl-piece-client").textContent = piece.client || "-";
@@ -2336,10 +2486,16 @@
     const listDiv = document.getElementById("checklist-item-list");
     listDiv.innerHTML = "";
 
-    (piece.items||[]).forEach((item,idx)=>{
+    // Get items from selected checklist type, or fallback to legacy items
+    const items = getChecklistItems(piece, currentChecklistType);
+    const itemsToRender = items.length > 0 ? items : (piece.items || []);
+
+    itemsToRender.forEach((item,idx)=>{
       const st = checklistItemStates[idx] || {};
       const statusClass = st.status==="OK" ? "ok" : st.status==="NOK" ? "nok" : "";
       const itemSrc = getItemImageSrc(item);
+      const isDimensional = isDimensionalItem(item);
+      
       const wrap = document.createElement("div");
       wrap.className = `checklist-item ${statusClass}`;
       wrap.innerHTML = `
@@ -2357,6 +2513,28 @@
         </div>
       `;
       listDiv.appendChild(wrap);
+      
+      // Show measurement field for dimensional items when status is OK
+      if(isDimensional && st.status==="OK"){
+        const extraDiv = wrap.querySelector(`#extra-${idx}`);
+        const measurementHtml = `
+          <div style="margin-top:8px;padding:8px;background:#f0f8ff;border:1px solid #b8d4f1;border-radius:4px;">
+            <label style="font-size:12px;font-weight:600;color:#003366;display:block;margin-bottom:4px;">Cota encontrada:</label>
+            <input type="number" step="0.001" id="measurement-${idx}" value="${st.measurement||""}" 
+              placeholder="Digite a medida" 
+              style="width:100%;padding:6px 8px;border:1px solid #cbd3e3;border-radius:4px;font-size:13px;">
+          </div>
+        `;
+        extraDiv.innerHTML = measurementHtml;
+        
+        // Add event listener for measurement input
+        const measurementInput = extraDiv.querySelector(`#measurement-${idx}`);
+        if(measurementInput){
+          measurementInput.addEventListener("input",()=>{
+            checklistItemStates[idx].measurement = measurementInput.value;
+          });
+        }
+      }
 
       if(st.status==="NOK"){
         const extraDiv = wrap.querySelector(`#extra-${idx}`);
@@ -2422,7 +2600,18 @@
             <option value="Solda com sobreposição" ${st.failureMode==="Solda com sobreposição"?"selected":""}>Solda com sobreposição</option>
           `;
         
+        // Build measurement field HTML for dimensional items
+        const measurementFieldHtml = isDimensional ? `
+          <div style="margin-top:8px;margin-bottom:8px;padding:8px;background:#f0f8ff;border:1px solid #b8d4f1;border-radius:4px;">
+            <label style="font-size:12px;font-weight:600;color:#003366;display:block;margin-bottom:4px;">Cota encontrada:</label>
+            <input type="number" step="0.001" id="measurement-${idx}" value="${st.measurement||""}" 
+              placeholder="Digite a medida" 
+              style="width:100%;padding:6px 8px;border:1px solid #cbd3e3;border-radius:4px;font-size:13px;">
+          </div>
+        ` : '';
+        
         extraDiv.innerHTML = `
+          ${measurementFieldHtml}
           <div class="checklist-extra">
             <label>Modo de falha (obrigatório):</label>
             <select id="failure-mode-${idx}" style="width:100%;padding:6px 8px;margin-top:4px;margin-bottom:6px;border:1px solid #cbd3e3;border-radius:4px;font-size:13px;max-height:150px;overflow-y:auto;">
@@ -2459,6 +2648,14 @@
             `:""}
           </div>
         `;
+        
+        // Add event listeners
+        const measurementInput = extraDiv.querySelector(`#measurement-${idx}`);
+        if(measurementInput){
+          measurementInput.addEventListener("input",()=>{
+            checklistItemStates[idx].measurement = measurementInput.value;
+          });
+        }
         const failureModeSelect = extraDiv.querySelector(`#failure-mode-${idx}`);
         const motivo = extraDiv.querySelector(`#motivo-${idx}`);
         const fotoInput = extraDiv.querySelector(`#foto-${idx}`);
@@ -2606,10 +2803,12 @@
 
     const now = new Date();
     const inspName = currentUser ? currentUser.name : "";
+    const inspPlant = currentUser ? currentUser.plant : "";
 
     const inspecToSave = {
       date: now.toLocaleDateString("pt-BR"),
       inspector: inspName,
+      plant: inspPlant,
       piece: currentChecklistPiece.code,
       descricao: "Inspeção realizada",
       serialNumber: currentPieceSerialNumber || "",
@@ -2622,6 +2821,7 @@
         nome_terceiro: s.nomeTerceiro,
         descricao_retrabalho: s.descricaoRetrabalho,
         failureMode: s.failureMode || "",
+        measurement: s.measurement || "",
         foto: s.fotoFile,
         fotoUrl: s.fotoUrl
       }))
@@ -3065,40 +3265,99 @@
 
   function renderPieceItemsList(pieceIdx){
     const box = document.getElementById("piece-items-list");
+    const infoBox = document.getElementById("piece-checklists-info");
     if(!box) return;
     box.innerHTML="";
+    if(infoBox) infoBox.innerHTML="";
+    
     const p = pieces[pieceIdx];
     if(!p) return;
-    (p.items||[]).forEach((it,idx)=>{
-      const row = document.createElement("div");
-      row.className="piece-item-row";
-      const src = getItemImageSrc(it);
-      row.innerHTML = `
-        <div class="piece-item-main">
-          <div class="piece-item-thumb">${src?`<img src="${src}">`:""}</div>
-          <div>
-            <div style="font-size:13px;font-weight:600;">${it.name}</div>
-            <div style="font-size:11px;color:#555;">${it.description||""}</div>
+    
+    ensureChecklistsStructure(p);
+    
+    // Show info about available checklists
+    const availableTypes = getAvailableChecklistTypes(p);
+    if(infoBox && availableTypes.length > 0){
+      infoBox.innerHTML = `<div style="font-size:13px;color:#555;margin-bottom:8px;">
+        <strong>Checklists disponíveis:</strong> ${availableTypes.join(", ")}
+      </div>`;
+    }
+    
+    // For backward compatibility, check if old items array exists
+    if(p.items && p.items.length > 0){
+      const header = document.createElement("div");
+      header.style.cssText = "font-size:14px;font-weight:600;margin:12px 0 8px 0;color:#333;";
+      header.textContent = "PDI (Migrado)";
+      box.appendChild(header);
+      
+      p.items.forEach((it,idx)=>{
+        const row = document.createElement("div");
+        row.className="piece-item-row";
+        const src = getItemImageSrc(it);
+        row.innerHTML = `
+          <div class="piece-item-main">
+            <div class="piece-item-thumb">${src?`<img src="${src}">`:""}</div>
+            <div>
+              <div style="font-size:13px;font-weight:600;">${it.name}</div>
+              <div style="font-size:11px;color:#555;">${it.description||""}</div>
+            </div>
           </div>
-        </div>
-        <div>
-          <button class="btn-icon btn-edit" data-pidx="${pieceIdx}" data-idx="${idx}">Editar</button>
-          <button class="btn-icon btn-delete" data-pidx="${pieceIdx}" data-idx="${idx}">Remover</button>
-        </div>
-      `;
-      box.appendChild(row);
+          <div>
+            <button class="btn-icon btn-delete" data-pidx="${pieceIdx}" data-type="legacy" data-idx="${idx}">Remover</button>
+          </div>
+        `;
+        box.appendChild(row);
+      });
+    }
+    
+    // Render items grouped by checklist type
+    Object.keys(p.checklists || {}).forEach(checklistType=>{
+      const items = p.checklists[checklistType].items || [];
+      if(items.length === 0) return;
+      
+      const header = document.createElement("div");
+      header.style.cssText = "font-size:14px;font-weight:600;margin:12px 0 8px 0;color:#333;";
+      header.textContent = checklistType;
+      box.appendChild(header);
+      
+      items.forEach((it,idx)=>{
+        const row = document.createElement("div");
+        row.className="piece-item-row";
+        const src = getItemImageSrc(it);
+        row.innerHTML = `
+          <div class="piece-item-main">
+            <div class="piece-item-thumb">${src?`<img src="${src}">`:""}</div>
+            <div>
+              <div style="font-size:13px;font-weight:600;">${it.name}</div>
+              <div style="font-size:11px;color:#555;">${it.description||""}</div>
+            </div>
+          </div>
+          <div>
+            <button class="btn-icon btn-delete" data-pidx="${pieceIdx}" data-type="${checklistType}" data-idx="${idx}">Remover</button>
+          </div>
+        `;
+        box.appendChild(row);
+      });
     });
 
-    box.querySelectorAll(".btn-edit").forEach(btn=>{
-      btn.addEventListener("click",()=>openEditItemModal(Number(btn.dataset.pidx),Number(btn.dataset.idx)));
-    });
     box.querySelectorAll(".btn-delete").forEach(btn=>{
       btn.addEventListener("click",()=>{
         const pidx = Number(btn.dataset.pidx);
         const idx = Number(btn.dataset.idx);
+        const type = btn.dataset.type;
         const p = pieces[pidx];
-        if(!confirm(`Remover item "${p.items[idx].name}"?`)) return;
-        p.items.splice(idx,1);
+        
+        let itemName;
+        if(type === "legacy"){
+          itemName = p.items[idx].name;
+          if(!confirm(`Remover item "${itemName}"?`)) return;
+          p.items.splice(idx,1);
+        }else{
+          itemName = p.checklists[type].items[idx].name;
+          if(!confirm(`Remover item "${itemName}" do checklist "${type}"?`)) return;
+          p.checklists[type].items.splice(idx,1);
+        }
+        
         renderPieceItemsList(pidx);
         if(window.fbApi && window.fbApi.savePiece){
           window.fbApi.savePiece(p).catch(e=>console.error("Erro salvar peça Firebase",e));
@@ -3233,12 +3492,109 @@
     });
   }
 
+  // Relatórios - Configuração de campos customizáveis
+  let reportConfig = {
+    data: true,
+    inspetor: true,
+    peca: true,
+    status: true,
+    planta: false,
+    cliente: false,
+    estacao: false,
+    serialNumber: false,
+    medidas: false
+  };
+  
+  // Carregar configuração salva
+  try{
+    const saved = localStorage.getItem("reportConfig");
+    if(saved) reportConfig = {...reportConfig, ...JSON.parse(saved)};
+  }catch(e){ console.warn("Erro carregar config relatório:",e); }
+  
+  function saveReportConfig(){
+    try{
+      localStorage.setItem("reportConfig", JSON.stringify(reportConfig));
+    }catch(e){ console.warn("Erro salvar config relatório:",e); }
+  }
+  
+  function openReportConfig(){
+    showModal(`
+      <div class="modal-header">
+        <div class="modal-title">Configurar Campos do Relatório</div>
+        <button class="modal-close-btn">&times;</button>
+      </div>
+      <div style="margin-top:16px;">
+        <p style="font-size:14px;color:#555;margin-bottom:12px;">Selecione os campos que deseja incluir no relatório e na exportação CSV:</p>
+        <div style="display:grid;gap:8px;">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+            <input type="checkbox" id="cfg-data" ${reportConfig.data?"checked":""}>
+            <span>Data</span>
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+            <input type="checkbox" id="cfg-inspetor" ${reportConfig.inspetor?"checked":""}>
+            <span>Inspetor</span>
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+            <input type="checkbox" id="cfg-peca" ${reportConfig.peca?"checked":""}>
+            <span>Peça</span>
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+            <input type="checkbox" id="cfg-status" ${reportConfig.status?"checked":""}>
+            <span>Status (Aprovada/Reprovada)</span>
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+            <input type="checkbox" id="cfg-planta" ${reportConfig.planta?"checked":""}>
+            <span>Planta</span>
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+            <input type="checkbox" id="cfg-cliente" ${reportConfig.cliente?"checked":""}>
+            <span>Cliente</span>
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+            <input type="checkbox" id="cfg-estacao" ${reportConfig.estacao?"checked":""}>
+            <span>Estação/Linha</span>
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+            <input type="checkbox" id="cfg-serialNumber" ${reportConfig.serialNumber?"checked":""}>
+            <span>Serial Number</span>
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+            <input type="checkbox" id="cfg-medidas" ${reportConfig.medidas?"checked":""}>
+            <span>Medidas Dimensionais</span>
+          </label>
+        </div>
+        <div style="margin-top:20px;display:flex;gap:8px;justify-content:flex-end;">
+          <button class="btn-secondary" onclick="closeModal()">Cancelar</button>
+          <button class="btn-primary" id="btn-save-report-config">Salvar</button>
+        </div>
+      </div>
+    `);
+    
+    document.getElementById("btn-save-report-config").onclick = ()=>{
+      reportConfig.data = document.getElementById("cfg-data").checked;
+      reportConfig.inspetor = document.getElementById("cfg-inspetor").checked;
+      reportConfig.peca = document.getElementById("cfg-peca").checked;
+      reportConfig.status = document.getElementById("cfg-status").checked;
+      reportConfig.planta = document.getElementById("cfg-planta").checked;
+      reportConfig.cliente = document.getElementById("cfg-cliente").checked;
+      reportConfig.estacao = document.getElementById("cfg-estacao").checked;
+      reportConfig.serialNumber = document.getElementById("cfg-serialNumber").checked;
+      reportConfig.medidas = document.getElementById("cfg-medidas").checked;
+      
+      saveReportConfig();
+      closeModal();
+      renderReports();
+      alert("Configuração salva! O relatório foi atualizado.");
+    };
+  }
+
   // Relatórios
   function renderReports(){
     const monthSelect = document.getElementById("report-month-select");
     const tbody = document.getElementById("reports-history-body");
     const totalSpan = document.getElementById("total-inspecoes");
-    if(!monthSelect || !tbody || !totalSpan) return;
+    const headerRow = document.getElementById("reports-header-row");
+    if(!monthSelect || !tbody || !totalSpan || !headerRow) return;
 
     const monthsSet = new Set();
     inspections.forEach(i=>{
@@ -3276,18 +3632,43 @@
       return inspection.itens.every(item => item.status === "OK");
     }
     
+    // Build header based on config
+    const headers = [];
+    if(reportConfig.data) headers.push("Data");
+    if(reportConfig.inspetor) headers.push("Inspetor");
+    if(reportConfig.peca) headers.push("Peça");
+    if(reportConfig.status) headers.push("Status");
+    if(reportConfig.planta) headers.push("Planta");
+    if(reportConfig.cliente) headers.push("Cliente");
+    if(reportConfig.estacao) headers.push("Estação");
+    if(reportConfig.serialNumber) headers.push("Serial Number");
+    if(reportConfig.medidas) headers.push("Medidas");
+    
+    headerRow.innerHTML = headers.map(h=>`<th>${h}</th>`).join("");
+    
+    // Build rows based on config
     tbody.innerHTML = filtered.length
       ? filtered.map(i=>{
           const status = isPieceApproved(i) ? "Aprovada" : "Reprovada";
-          return `
-        <tr>
-          <td>${i.date}</td>
-          <td>${i.inspector}</td>
-          <td>${i.piece}</td>
-          <td>${status}</td>
-        </tr>`;
+          const cells = [];
+          if(reportConfig.data) cells.push(`<td>${i.date||"-"}</td>`);
+          if(reportConfig.inspetor) cells.push(`<td>${i.inspector||"-"}</td>`);
+          if(reportConfig.peca) cells.push(`<td>${i.piece||"-"}</td>`);
+          if(reportConfig.status) cells.push(`<td>${status}</td>`);
+          if(reportConfig.planta) cells.push(`<td>${i.plant||"-"}</td>`);
+          if(reportConfig.cliente) cells.push(`<td>${i.client||"-"}</td>`);
+          if(reportConfig.estacao) cells.push(`<td>${i.station||"-"}</td>`);
+          if(reportConfig.serialNumber) cells.push(`<td>${i.serialNumber||"-"}</td>`);
+          if(reportConfig.medidas){
+            const measurements = (i.itens||[])
+              .filter(it=>it.measurement)
+              .map(it=>it.measurement)
+              .join(", ");
+            cells.push(`<td>${measurements||"-"}</td>`);
+          }
+          return `<tr>${cells.join("")}</tr>`;
         }).join("")
-      : `<tr><td colspan="4" style="text-align:center;">Nenhuma inspeção para o mês selecionado.</td></tr>`;
+      : `<tr><td colspan="${headers.length}" style="text-align:center;">Nenhuma inspeção para o mês selecionado.</td></tr>`;
   }
 
   function exportCSV(){
@@ -3302,16 +3683,41 @@
       return inspection.itens.every(item => item.status === "OK");
     }
     
-    // CSV header: Data, Inspetor, Peça, Status
-    const rows = ["Data,Inspetor,Peça,Status"];
+    // Build CSV header based on config
+    const headers = [];
+    if(reportConfig.data) headers.push("Data");
+    if(reportConfig.inspetor) headers.push("Inspetor");
+    if(reportConfig.peca) headers.push("Peça");
+    if(reportConfig.status) headers.push("Status");
+    if(reportConfig.planta) headers.push("Planta");
+    if(reportConfig.cliente) headers.push("Cliente");
+    if(reportConfig.estacao) headers.push("Estação");
+    if(reportConfig.serialNumber) headers.push("Serial Number");
+    if(reportConfig.medidas) headers.push("Medidas");
+    
+    const rows = [headers.join(",")];
     
     inspections.forEach(i=>{
-      const date = i.date || "";
-      const inspector = (i.inspector || "").replace(/"/g, '""');
-      const piece = (i.piece || "").replace(/"/g, '""');
       const status = isPieceApproved(i) ? "Aprovada" : "Reprovada";
+      const cells = [];
       
-      rows.push(`${date},"${inspector}","${piece}",${status}`);
+      if(reportConfig.data) cells.push(i.date || "");
+      if(reportConfig.inspetor) cells.push(`"${(i.inspector || "").replace(/"/g, '""')}"`);
+      if(reportConfig.peca) cells.push(`"${(i.piece || "").replace(/"/g, '""')}"`);
+      if(reportConfig.status) cells.push(status);
+      if(reportConfig.planta) cells.push(`"${(i.plant || "").replace(/"/g, '""')}"`);
+      if(reportConfig.cliente) cells.push(`"${(i.client || "").replace(/"/g, '""')}"`);
+      if(reportConfig.estacao) cells.push(`"${(i.station || "").replace(/"/g, '""')}"`);
+      if(reportConfig.serialNumber) cells.push(`"${(i.serialNumber || "").replace(/"/g, '""')}"`);
+      if(reportConfig.medidas){
+        const measurements = (i.itens||[])
+          .filter(it=>it.measurement)
+          .map(it=>it.measurement)
+          .join("; ");
+        cells.push(`"${measurements}"`);
+      }
+      
+      rows.push(cells.join(","));
     });
     
     const csvContent = rows.join("\n");
@@ -4483,7 +4889,8 @@
         alert("Já existe uma peça com esse código.");
         return;
       }
-      const newPiece = {code,description:desc,client,image:file,imageUrl:null,items:[],hasSerialNumber:hasSerial};
+      // New pieces use checklists structure
+      const newPiece = {code,description:desc,client,image:file,imageUrl:null,checklists:{},hasSerialNumber:hasSerial};
       pieces.push(newPiece);
       renderPieces();
       renderChecklistSelectors();
@@ -4524,6 +4931,11 @@
         alert("Selecione uma peça.");
         return;
       }
+      const checklistType = document.getElementById("item-checklist-type-input").value;
+      if(!checklistType){
+        alert("Selecione o tipo de checklist.");
+        return;
+      }
       const name = document.getElementById("item-name-input").value.trim();
       const desc = document.getElementById("item-desc-input").value.trim();
       const file = document.getElementById("item-image-input").files[0];
@@ -4539,10 +4951,19 @@
         return;
       }
       
-      pieces[pieceIdx].items.push({name,description:desc,failureMode,image:file,imageUrl:null});
+      const piece = pieces[pieceIdx];
+      ensureChecklistsStructure(piece);
+      
+      // Initialize checklist type if it doesn't exist
+      if(!piece.checklists[checklistType]){
+        piece.checklists[checklistType] = { items: [] };
+      }
+      
+      piece.checklists[checklistType].items.push({name,description:desc,failureMode,image:file,imageUrl:null});
       document.getElementById("item-name-input").value="";
       document.getElementById("item-desc-input").value="";
       document.getElementById("item-image-input").value="";
+      document.getElementById("item-checklist-type-input").value="";
       failureModeSelect.value = ""; // Clear selection
       renderPieceItemsList(pieceIdx);
       if(window.fbApi && window.fbApi.savePiece){
@@ -4551,10 +4972,56 @@
     });
     
     // Auto-start checklist when piece is selected
+    // Handle piece selection - show checklist type selector
     document.getElementById("piece-selector").addEventListener("change",()=>{
+      const pieceCode = document.getElementById("piece-selector").value;
+      const typeGroup = document.getElementById("checklist-type-selector-group");
+      const typeSelect = document.getElementById("checklist-type-selector");
+      const startBtn = document.getElementById("btn-start-checklist");
+      
+      if(!pieceCode){
+        typeGroup.classList.add("hide");
+        startBtn.classList.add("hide");
+        return;
+      }
+      
+      const piece = pieces.find(p=>p.code===pieceCode);
+      if(!piece){
+        typeGroup.classList.add("hide");
+        startBtn.classList.add("hide");
+        return;
+      }
+      
+      ensureChecklistsStructure(piece);
+      const availableTypes = getAvailableChecklistTypes(piece);
+      
+      // If piece has no checklists, start immediately with legacy flow
+      if(availableTypes.length === 0 && (!piece.items || piece.items.length === 0)){
+        alert("Esta peça não possui itens de checklist cadastrados.");
+        typeGroup.classList.add("hide");
+        startBtn.classList.add("hide");
+        return;
+      }
+      
+      // If only legacy items exist, migrate and start
+      if(availableTypes.length === 0 && piece.items && piece.items.length > 0){
+        startChecklist();
+        return;
+      }
+      
+      // Show checklist type selector
+      typeSelect.innerHTML = '<option value="" disabled selected>Selecione o tipo</option>' +
+        availableTypes.map(t=>`<option value="${t}">${t}</option>`).join("");
+      typeGroup.classList.remove("hide");
+      startBtn.classList.remove("hide");
+    });
+    
+    // Handle start checklist button
+    document.getElementById("btn-start-checklist").addEventListener("click",()=>{
       startChecklist();
     });
 
+    document.getElementById("btn-config-report").addEventListener("click",openReportConfig);
     document.getElementById("btn-export-csv").addEventListener("click",exportCSV);
     const reportMonthSelect = document.getElementById("report-month-select");
     if(reportMonthSelect) reportMonthSelect.addEventListener("change",renderReports);
@@ -4695,13 +5162,21 @@
       loginError.textContent = "";
 
       if(loginMode==="admin"){
+        const plant = document.getElementById("login-admin-plant-select").value.trim();
         const pin = document.getElementById("login-admin-pin").value.trim();
+        
+        if(!plant){
+          loginError.textContent="Selecione a planta.";
+          loginError.style.display="block";
+          return;
+        }
+        
         if(pin !== ADMIN_PIN){
           loginError.textContent="Senha de administrador inválida.";
           loginError.style.display="block";
           return;
         }
-        currentUser = { role:"admin", name:"Administrador" };
+        currentUser = { role:"admin", name:"Administrador", plant: plant };
         document.getElementById("login-screen").style.display="none";
         document.getElementById("app-root").style.display="flex";
         updateHeaderUser();
@@ -4710,12 +5185,21 @@
       }else{
         const sel = document.getElementById("login-insp-select");
         const name = (sel && sel.value) ? sel.value.trim() : "";
+        const plant = document.getElementById("login-plant-select").value.trim();
         const pin = document.getElementById("login-insp-pin").value.trim();
+        
         if(!name || !pin){
           loginError.textContent="Selecione o inspetor e informe o PIN.";
           loginError.style.display="block";
           return;
         }
+        
+        if(!plant){
+          loginError.textContent="Selecione a planta.";
+          loginError.style.display="block";
+          return;
+        }
+        
         if(pin.length !== 4){
           loginError.textContent="O PIN deve ter 4 dígitos.";
           loginError.style.display="block";
@@ -4759,7 +5243,7 @@
             return;
           }
 
-          currentUser = { role:"inspector", name: insp.name };
+          currentUser = { role:"inspector", name: insp.name, plant: plant };
           document.getElementById("login-screen").style.display="none";
           document.getElementById("app-root").style.display="flex";
           updateHeaderUser();
