@@ -2077,15 +2077,54 @@
   }
   function showImageModal(src){
     if(!src) return;
-    showModal(`
-      <div class="modal-header">
-        <div class="modal-title">Visualizar imagem</div>
-        <button class="modal-close-btn">&times;</button>
-      </div>
-      <div style="margin-top:8px;text-align:center;">
-        <img src="${src}" style="max-width:100%;max-height:70vh;border-radius:6px;">
-      </div>
-    `);
+    
+    // Create fullscreen modal for image
+    const modal = document.createElement('div');
+    modal.className = 'biblioteca-media-modal';
+    modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.95);z-index:10000;display:flex;align-items:center;justify-content:center;padding:20px;';
+    modal.onclick = (e) => {
+      if(e.target === modal) modal.remove();
+    };
+    
+    const content = document.createElement('div');
+    content.className = 'biblioteca-media-modal-content';
+    content.style.cssText = 'max-width:95vw;max-height:95vh;position:relative;';
+    
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'biblioteca-media-modal-close';
+    closeBtn.innerHTML = '&times;';
+    closeBtn.style.cssText = 'position:absolute;top:-40px;right:0;background:#fff;border:none;border-radius:50%;width:36px;height:36px;font-size:24px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#003366;';
+    closeBtn.onclick = () => modal.remove();
+    closeBtn.onmouseover = () => closeBtn.style.background = '#e0e5f0';
+    closeBtn.onmouseout = () => closeBtn.style.background = '#fff';
+    
+    const img = document.createElement('img');
+    img.src = src;
+    img.style.cssText = 'max-width:100%;max-height:95vh;display:block;border-radius:4px;';
+    img.alt = 'Visualizar imagem';
+    
+    content.appendChild(closeBtn);
+    content.appendChild(img);
+    modal.appendChild(content);
+    document.body.appendChild(modal);
+  }
+  
+  // Helper function to detect if item is dimensional
+  function isDimensionalItem(item){
+    if(!item || !item.name) return false;
+    const name = item.name.toLowerCase();
+    const desc = (item.description || "").toLowerCase();
+    const text = name + " " + desc;
+    // Check for dimensional keywords
+    return text.includes("dimensão") || 
+           text.includes("dimensional") || 
+           text.includes("diâmetro") || 
+           text.includes("ø") ||
+           text.includes("medida") ||
+           text.includes("espessura") ||
+           text.includes("comprimento") ||
+           text.includes("largura") ||
+           text.includes("altura");
   }
 
   // Header - usuário logado
@@ -2359,6 +2398,8 @@
       const st = checklistItemStates[idx] || {};
       const statusClass = st.status==="OK" ? "ok" : st.status==="NOK" ? "nok" : "";
       const itemSrc = getItemImageSrc(item);
+      const isDimensional = isDimensionalItem(item);
+      
       const wrap = document.createElement("div");
       wrap.className = `checklist-item ${statusClass}`;
       wrap.innerHTML = `
@@ -2376,6 +2417,33 @@
         </div>
       `;
       listDiv.appendChild(wrap);
+      
+      // Show measurement field for dimensional items (both OK and NOK)
+      if(isDimensional){
+        const extraDiv = wrap.querySelector(`#extra-${idx}`);
+        const measurementHtml = `
+          <div style="margin-top:8px;padding:8px;background:#f0f8ff;border:1px solid #b8d4f1;border-radius:4px;">
+            <label style="font-size:12px;font-weight:600;color:#003366;display:block;margin-bottom:4px;">Cota encontrada:</label>
+            <input type="number" step="0.001" id="measurement-${idx}" value="${st.measurement||""}" 
+              placeholder="Digite a medida" 
+              style="width:100%;padding:6px 8px;border:1px solid #cbd3e3;border-radius:4px;font-size:13px;">
+          </div>
+        `;
+        if(st.status==="OK"){
+          extraDiv.innerHTML = measurementHtml;
+        }else if(st.status==="NOK"){
+          // For NOK items, prepend measurement field before the failure details
+          extraDiv.insertAdjacentHTML('afterbegin', measurementHtml);
+        }
+        
+        // Add event listener for measurement input
+        const measurementInput = extraDiv.querySelector(`#measurement-${idx}`);
+        if(measurementInput){
+          measurementInput.addEventListener("input",()=>{
+            checklistItemStates[idx].measurement = measurementInput.value;
+          });
+        }
+      }
 
       if(st.status==="NOK"){
         const extraDiv = wrap.querySelector(`#extra-${idx}`);
@@ -2643,6 +2711,7 @@
         nome_terceiro: s.nomeTerceiro,
         descricao_retrabalho: s.descricaoRetrabalho,
         failureMode: s.failureMode || "",
+        measurement: s.measurement || "",
         foto: s.fotoFile,
         fotoUrl: s.fotoUrl
       }))
