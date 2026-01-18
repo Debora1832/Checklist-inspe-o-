@@ -1489,6 +1489,7 @@
           <div class="card">
             <h2 class="screen-title">Relatórios</h2>
             <div class="report-controls">
+              <button class="btn-secondary" id="btn-config-report">⚙ Configurar Campos</button>
               <button class="btn-secondary" id="btn-export-csv">Exportar CSV</button>
               <div class="form-group small">
                 <label for="report-month-select">Mês:</label>
@@ -1504,7 +1505,7 @@
             <h3 class="card-title">Histórico de inspeções</h3>
             <table class="history-table">
               <thead>
-                <tr>
+                <tr id="reports-header-row">
                   <th>Data</th>
                   <th>Inspetor</th>
                   <th>Peça</th>
@@ -3337,12 +3338,109 @@
     });
   }
 
+  // Relatórios - Configuração de campos customizáveis
+  let reportConfig = {
+    data: true,
+    inspetor: true,
+    peca: true,
+    status: true,
+    planta: false,
+    cliente: false,
+    estacao: false,
+    serialNumber: false,
+    medidas: false
+  };
+  
+  // Carregar configuração salva
+  try{
+    const saved = localStorage.getItem("reportConfig");
+    if(saved) reportConfig = {...reportConfig, ...JSON.parse(saved)};
+  }catch(e){ console.warn("Erro carregar config relatório:",e); }
+  
+  function saveReportConfig(){
+    try{
+      localStorage.setItem("reportConfig", JSON.stringify(reportConfig));
+    }catch(e){ console.warn("Erro salvar config relatório:",e); }
+  }
+  
+  function openReportConfig(){
+    showModal(`
+      <div class="modal-header">
+        <div class="modal-title">Configurar Campos do Relatório</div>
+        <button class="modal-close-btn">&times;</button>
+      </div>
+      <div style="margin-top:16px;">
+        <p style="font-size:14px;color:#555;margin-bottom:12px;">Selecione os campos que deseja incluir no relatório e na exportação CSV:</p>
+        <div style="display:grid;gap:8px;">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+            <input type="checkbox" id="cfg-data" ${reportConfig.data?"checked":""}>
+            <span>Data</span>
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+            <input type="checkbox" id="cfg-inspetor" ${reportConfig.inspetor?"checked":""}>
+            <span>Inspetor</span>
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+            <input type="checkbox" id="cfg-peca" ${reportConfig.peca?"checked":""}>
+            <span>Peça</span>
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+            <input type="checkbox" id="cfg-status" ${reportConfig.status?"checked":""}>
+            <span>Status (Aprovada/Reprovada)</span>
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+            <input type="checkbox" id="cfg-planta" ${reportConfig.planta?"checked":""}>
+            <span>Planta</span>
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+            <input type="checkbox" id="cfg-cliente" ${reportConfig.cliente?"checked":""}>
+            <span>Cliente</span>
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+            <input type="checkbox" id="cfg-estacao" ${reportConfig.estacao?"checked":""}>
+            <span>Estação/Linha</span>
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+            <input type="checkbox" id="cfg-serialNumber" ${reportConfig.serialNumber?"checked":""}>
+            <span>Serial Number</span>
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+            <input type="checkbox" id="cfg-medidas" ${reportConfig.medidas?"checked":""}>
+            <span>Medidas Dimensionais</span>
+          </label>
+        </div>
+        <div style="margin-top:20px;display:flex;gap:8px;justify-content:flex-end;">
+          <button class="btn-secondary" onclick="closeModal()">Cancelar</button>
+          <button class="btn-primary" id="btn-save-report-config">Salvar</button>
+        </div>
+      </div>
+    `);
+    
+    document.getElementById("btn-save-report-config").onclick = ()=>{
+      reportConfig.data = document.getElementById("cfg-data").checked;
+      reportConfig.inspetor = document.getElementById("cfg-inspetor").checked;
+      reportConfig.peca = document.getElementById("cfg-peca").checked;
+      reportConfig.status = document.getElementById("cfg-status").checked;
+      reportConfig.planta = document.getElementById("cfg-planta").checked;
+      reportConfig.cliente = document.getElementById("cfg-cliente").checked;
+      reportConfig.estacao = document.getElementById("cfg-estacao").checked;
+      reportConfig.serialNumber = document.getElementById("cfg-serialNumber").checked;
+      reportConfig.medidas = document.getElementById("cfg-medidas").checked;
+      
+      saveReportConfig();
+      closeModal();
+      renderReports();
+      alert("Configuração salva! O relatório foi atualizado.");
+    };
+  }
+
   // Relatórios
   function renderReports(){
     const monthSelect = document.getElementById("report-month-select");
     const tbody = document.getElementById("reports-history-body");
     const totalSpan = document.getElementById("total-inspecoes");
-    if(!monthSelect || !tbody || !totalSpan) return;
+    const headerRow = document.getElementById("reports-header-row");
+    if(!monthSelect || !tbody || !totalSpan || !headerRow) return;
 
     const monthsSet = new Set();
     inspections.forEach(i=>{
@@ -3380,18 +3478,43 @@
       return inspection.itens.every(item => item.status === "OK");
     }
     
+    // Build header based on config
+    const headers = [];
+    if(reportConfig.data) headers.push("Data");
+    if(reportConfig.inspetor) headers.push("Inspetor");
+    if(reportConfig.peca) headers.push("Peça");
+    if(reportConfig.status) headers.push("Status");
+    if(reportConfig.planta) headers.push("Planta");
+    if(reportConfig.cliente) headers.push("Cliente");
+    if(reportConfig.estacao) headers.push("Estação");
+    if(reportConfig.serialNumber) headers.push("Serial Number");
+    if(reportConfig.medidas) headers.push("Medidas");
+    
+    headerRow.innerHTML = headers.map(h=>`<th>${h}</th>`).join("");
+    
+    // Build rows based on config
     tbody.innerHTML = filtered.length
       ? filtered.map(i=>{
           const status = isPieceApproved(i) ? "Aprovada" : "Reprovada";
-          return `
-        <tr>
-          <td>${i.date}</td>
-          <td>${i.inspector}</td>
-          <td>${i.piece}</td>
-          <td>${status}</td>
-        </tr>`;
+          const cells = [];
+          if(reportConfig.data) cells.push(`<td>${i.date||"-"}</td>`);
+          if(reportConfig.inspetor) cells.push(`<td>${i.inspector||"-"}</td>`);
+          if(reportConfig.peca) cells.push(`<td>${i.piece||"-"}</td>`);
+          if(reportConfig.status) cells.push(`<td>${status}</td>`);
+          if(reportConfig.planta) cells.push(`<td>${i.plant||"-"}</td>`);
+          if(reportConfig.cliente) cells.push(`<td>${i.client||"-"}</td>`);
+          if(reportConfig.estacao) cells.push(`<td>${i.station||"-"}</td>`);
+          if(reportConfig.serialNumber) cells.push(`<td>${i.serialNumber||"-"}</td>`);
+          if(reportConfig.medidas){
+            const measurements = (i.itens||[])
+              .filter(it=>it.measurement)
+              .map(it=>it.measurement)
+              .join(", ");
+            cells.push(`<td>${measurements||"-"}</td>`);
+          }
+          return `<tr>${cells.join("")}</tr>`;
         }).join("")
-      : `<tr><td colspan="4" style="text-align:center;">Nenhuma inspeção para o mês selecionado.</td></tr>`;
+      : `<tr><td colspan="${headers.length}" style="text-align:center;">Nenhuma inspeção para o mês selecionado.</td></tr>`;
   }
 
   function exportCSV(){
@@ -3406,16 +3529,41 @@
       return inspection.itens.every(item => item.status === "OK");
     }
     
-    // CSV header: Data, Inspetor, Peça, Status
-    const rows = ["Data,Inspetor,Peça,Status"];
+    // Build CSV header based on config
+    const headers = [];
+    if(reportConfig.data) headers.push("Data");
+    if(reportConfig.inspetor) headers.push("Inspetor");
+    if(reportConfig.peca) headers.push("Peça");
+    if(reportConfig.status) headers.push("Status");
+    if(reportConfig.planta) headers.push("Planta");
+    if(reportConfig.cliente) headers.push("Cliente");
+    if(reportConfig.estacao) headers.push("Estação");
+    if(reportConfig.serialNumber) headers.push("Serial Number");
+    if(reportConfig.medidas) headers.push("Medidas");
+    
+    const rows = [headers.join(",")];
     
     inspections.forEach(i=>{
-      const date = i.date || "";
-      const inspector = (i.inspector || "").replace(/"/g, '""');
-      const piece = (i.piece || "").replace(/"/g, '""');
       const status = isPieceApproved(i) ? "Aprovada" : "Reprovada";
+      const cells = [];
       
-      rows.push(`${date},"${inspector}","${piece}",${status}`);
+      if(reportConfig.data) cells.push(i.date || "");
+      if(reportConfig.inspetor) cells.push(`"${(i.inspector || "").replace(/"/g, '""')}"`);
+      if(reportConfig.peca) cells.push(`"${(i.piece || "").replace(/"/g, '""')}"`);
+      if(reportConfig.status) cells.push(status);
+      if(reportConfig.planta) cells.push(`"${(i.plant || "").replace(/"/g, '""')}"`);
+      if(reportConfig.cliente) cells.push(`"${(i.client || "").replace(/"/g, '""')}"`);
+      if(reportConfig.estacao) cells.push(`"${(i.station || "").replace(/"/g, '""')}"`);
+      if(reportConfig.serialNumber) cells.push(`"${(i.serialNumber || "").replace(/"/g, '""')}"`);
+      if(reportConfig.medidas){
+        const measurements = (i.itens||[])
+          .filter(it=>it.measurement)
+          .map(it=>it.measurement)
+          .join("; ");
+        cells.push(`"${measurements}"`);
+      }
+      
+      rows.push(cells.join(","));
     });
     
     const csvContent = rows.join("\n");
@@ -4659,6 +4807,7 @@
       startChecklist();
     });
 
+    document.getElementById("btn-config-report").addEventListener("click",openReportConfig);
     document.getElementById("btn-export-csv").addEventListener("click",exportCSV);
     const reportMonthSelect = document.getElementById("report-month-select");
     if(reportMonthSelect) reportMonthSelect.addEventListener("change",renderReports);
