@@ -1128,6 +1128,15 @@
           <div class="card" id="piece-selection-card">
             <h2 class="screen-title">Checklist de Inspeção</h2>
             <div class="form-group">
+              <label for="plant-type-selector">Tipo de Planta *</label>
+              <select id="plant-type-selector">
+                <option value="" disabled selected>Selecione o tipo de planta</option>
+                <option value="Matriz">Matriz</option>
+                <option value="Filial">Filial</option>
+                <option value="MG">MG</option>
+              </select>
+            </div>
+            <div class="form-group">
               <label for="piece-selector">Selecione a peça para inspeção</label>
               <select id="piece-selector">
                 <option value="" disabled selected>Selecionar peça</option>
@@ -1143,8 +1152,9 @@
               </div>
             </div>
             <div id="cl-piece-info" style="margin-top:8px;padding:12px;background:#f0f4f8;border-radius:6px;border:1px solid #c8d3e6;">
-              <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;font-size:14px;">
+              <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;font-size:14px;">
                 <div><strong>Cliente:</strong> <span id="cl-piece-client"></span></div>
+                <div><strong>Planta:</strong> <span id="cl-piece-plant-type"></span></div>
                 <div style="display:flex;flex-direction:column;gap:4px;">
                   <label style="font-size:13px;font-weight:600;color:#003366;">Estação/Linha:</label>
                   <select id="cl-piece-station-select" style="padding:6px;border:1px solid #c8d3e6;border-radius:4px;font-size:13px;">
@@ -1257,6 +1267,15 @@
               </div>
             </div>
             <div class="grid-3">
+              <div class="form-group">
+                <label for="piece-plant-type-input">Tipo de Planta *</label>
+                <select id="piece-plant-type-input">
+                  <option value="">Selecione o tipo de planta</option>
+                  <option value="Matriz">Matriz</option>
+                  <option value="Filial">Filial</option>
+                  <option value="MG">MG</option>
+                </select>
+              </div>
               <div class="form-group">
                 <label for="piece-image-input">Imagem da peça</label>
                 <input type="file" id="piece-image-input" accept="image/*">
@@ -1630,6 +1649,7 @@
             code: data.code,
             description: data.description,
             client: data.client || "",
+            plantType: data.plantType || "",
             station: data.station || "",
             image: null,
             imageUrl: data.imageUrl || null,
@@ -1728,6 +1748,7 @@
         code: piece.code,
         description: piece.description,
         client: piece.client || "",
+        plantType: piece.plantType || "",
         station: piece.station || "",
         hasSerialNumber: piece.hasSerialNumber || false,
         imageUrl,
@@ -2225,10 +2246,20 @@
 
   // Checklist
   function renderChecklistSelectors(){
+    const plantTypeSel = document.getElementById("plant-type-selector");
     const pieceSel = document.getElementById("piece-selector");
     if(!pieceSel) return;
+    
+    // Get selected plant type
+    const selectedPlantType = plantTypeSel ? plantTypeSel.value : "";
+    
+    // Filter pieces by plant type if one is selected
+    const filteredPieces = selectedPlantType 
+      ? pieces.filter(p => p.plantType === selectedPlantType)
+      : pieces;
+    
     pieceSel.innerHTML = '<option value="" disabled selected>Selecionar peça</option>' +
-      pieces.map(p=>`<option value="${p.code}">${p.code}</option>`).join("");
+      filteredPieces.map(p=>`<option value="${p.code}">${p.code}</option>`).join("");
 
     // Always ensure piece selection card is visible and execution is hidden
     const selectionCard = document.getElementById("piece-selection-card");
@@ -2245,6 +2276,13 @@
       alert("Nenhum usuário logado.");
       return;
     }
+    
+    const plantType = document.getElementById("plant-type-selector").value;
+    if(!plantType){
+      alert("Selecione o tipo de planta.");
+      return;
+    }
+    
     const pieceCode = document.getElementById("piece-selector").value;
     
     if(!pieceCode){
@@ -2255,6 +2293,12 @@
     currentChecklistPiece = pieces.find(p=>p.code===pieceCode);
     if(!currentChecklistPiece){
       alert("Peça não encontrada.");
+      return;
+    }
+    
+    // Verify that the piece's plant type matches the selected plant type
+    if(currentChecklistPiece.plantType !== plantType){
+      alert("Tipo de planta da peça não corresponde ao tipo selecionado.");
       return;
     }
     
@@ -2290,8 +2334,9 @@
     document.getElementById("cl-piece-code").textContent = piece.code;
     document.getElementById("cl-piece-desc").textContent = piece.description || "";
     
-    // Display client from piece
+    // Display client and plant type from piece
     document.getElementById("cl-piece-client").textContent = piece.client || "-";
+    document.getElementById("cl-piece-plant-type").textContent = piece.plantType || "-";
     
     // Setup station dropdown with dynamic stations
     const stationSelect = document.getElementById("cl-piece-station-select");
@@ -2656,7 +2701,9 @@
     renderChecklistExecution();
 
     // resetar seleção e voltar ao início do checklist
+    const plantTypeSel = document.getElementById("plant-type-selector");
     const pieceSel = document.getElementById("piece-selector");
+    if(plantTypeSel) plantTypeSel.value = "";
     if(pieceSel) pieceSel.value = "";
     currentChecklistPiece = null;
     checklistItemStates = [];
@@ -2920,7 +2967,10 @@
       row.innerHTML = `
         <div class="piece-row-left">
           <div class="piece-thumb">${src?`<img src="${src}">`:""}</div>
-          <div class="piece-label">${p.code} — ${p.description||""}</div>
+          <div>
+            <div class="piece-label">${p.code} — ${p.description||""}</div>
+            <div style="font-size:11px;color:#666;margin-top:2px;">Planta: ${p.plantType||"-"}</div>
+          </div>
         </div>
         <div>
           <button class="btn-icon btn-edit" data-idx="${idx}">Editar</button>
@@ -3028,6 +3078,15 @@
         </select>
       </div>
       <div class="form-group">
+        <label>Tipo de Planta</label>
+        <select id="modal-piece-plant-type">
+          <option value="">Selecione o tipo de planta</option>
+          <option value="Matriz" ${p.plantType==="Matriz"?"selected":""}>Matriz</option>
+          <option value="Filial" ${p.plantType==="Filial"?"selected":""}>Filial</option>
+          <option value="MG" ${p.plantType==="MG"?"selected":""}>MG</option>
+        </select>
+      </div>
+      <div class="form-group">
         <label>Imagem</label>
         <input type="file" id="modal-piece-img" accept="image/*">
       </div>
@@ -3045,14 +3104,16 @@
       const newCode = document.getElementById("modal-piece-code").value.trim();
       const newDesc = document.getElementById("modal-piece-desc").value.trim();
       const newClient = document.getElementById("modal-piece-client").value.trim();
+      const newPlantType = document.getElementById("modal-piece-plant-type").value.trim();
       const file = document.getElementById("modal-piece-img").files[0];
-      if(!newCode || !newDesc || !newClient){ 
-        alert("Preencha código, descrição e cliente."); 
+      if(!newCode || !newDesc || !newClient || !newPlantType){ 
+        alert("Preencha código, descrição, cliente e tipo de planta."); 
         return; 
       }
       p.code=newCode; 
       p.description=newDesc;
       p.client=newClient;
+      p.plantType=newPlantType;
       if(file){ p.image=file; p.imageUrl=null; }
       closeModal();
       renderPieces();
@@ -4473,17 +4534,18 @@
       const code = document.getElementById("piece-code-input").value.trim();
       const desc = document.getElementById("piece-desc-input").value.trim();
       const client = document.getElementById("piece-client-input").value.trim();
+      const plantType = document.getElementById("piece-plant-type-input").value.trim();
       const file = document.getElementById("piece-image-input").files[0];
       const hasSerial = document.getElementById("piece-has-serial-input").checked;
-      if(!code || !desc || !client || !file){
-        alert("Preencha código, descrição, cliente e imagem.");
+      if(!code || !desc || !client || !plantType || !file){
+        alert("Preencha código, descrição, cliente, tipo de planta e imagem.");
         return;
       }
       if(pieces.some(p=>p.code===code)){
         alert("Já existe uma peça com esse código.");
         return;
       }
-      const newPiece = {code,description:desc,client,image:file,imageUrl:null,items:[],hasSerialNumber:hasSerial};
+      const newPiece = {code,description:desc,client,plantType,image:file,imageUrl:null,items:[],hasSerialNumber:hasSerial};
       pieces.push(newPiece);
       renderPieces();
       renderChecklistSelectors();
@@ -4514,6 +4576,7 @@
       document.getElementById("piece-code-input").value="";
       document.getElementById("piece-desc-input").value="";
       document.getElementById("piece-client-input").value="";
+      document.getElementById("piece-plant-type-input").value="";
       document.getElementById("piece-image-input").value="";
       document.getElementById("piece-has-serial-input").checked=false;
     });
@@ -4548,6 +4611,11 @@
       if(window.fbApi && window.fbApi.savePiece){
         window.fbApi.savePiece(pieces[pieceIdx]).catch(e=>console.error("Erro salvar peça Firebase",e));
       }
+    });
+    
+    // Update piece list when plant type changes
+    document.getElementById("plant-type-selector").addEventListener("change",()=>{
+      renderChecklistSelectors();
     });
     
     // Auto-start checklist when piece is selected
