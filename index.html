@@ -1303,6 +1303,18 @@
               <div id="piece-items-list"></div>
               <div class="divider mt-8 mb-8"></div>
               <div class="form-group">
+                <label for="item-checklist-type-input">Tipo de checklist *</label>
+                <select id="item-checklist-type-input">
+                  <option value="">Selecione o tipo de checklist</option>
+                  <option value="PDI">PDI</option>
+                  <option value="Posto Fixo">Posto Fixo</option>
+                  <option value="Linha">Linha</option>
+                  <option value="Dimensional">Dimensional</option>
+                  <option value="Visual">Visual</option>
+                  <option value="Funcional">Funcional</option>
+                </select>
+              </div>
+              <div class="form-group">
                 <label for="item-name-input">Novo item</label>
                 <input type="text" id="item-name-input" placeholder="Ex: Dimensão A (Ø)">
               </div>
@@ -1645,22 +1657,47 @@
         const piecesSnap = await getDocs(collection(db, "pieces"));
         piecesSnap.docs.forEach(d => {
           const data = d.data();
-          pieces.push({
+          const piece = {
             code: data.code,
             description: data.description,
             client: data.client || "",
             station: data.station || "",
             image: null,
             imageUrl: data.imageUrl || null,
-            hasSerialNumber: data.hasSerialNumber || false,
-            items: (data.items || []).map(it => ({
-              name: it.name,
-              description: it.description,
-              failureMode: it.failureMode || "",
-              image: null,
-              imageUrl: it.imageUrl || null
-            }))
-          });
+            hasSerialNumber: data.hasSerialNumber || false
+          };
+          
+          // Support both new (checklists) and old (items) structure
+          if(data.checklists && data.checklists.length > 0){
+            piece.checklists = data.checklists.map(ck => ({
+              id: ck.id || "ck_" + Date.now(),
+              type: ck.type || "PDI",
+              items: (ck.items || []).map(it => ({
+                name: it.name,
+                description: it.description,
+                failureMode: it.failureMode || "",
+                image: null,
+                imageUrl: it.imageUrl || null
+              }))
+            }));
+          } else if(data.items && data.items.length > 0){
+            // Migrate old structure to new
+            piece.checklists = [{
+              id: "ck_migrated_" + Date.now(),
+              type: "PDI",
+              items: (data.items || []).map(it => ({
+                name: it.name,
+                description: it.description,
+                failureMode: it.failureMode || "",
+                image: null,
+                imageUrl: it.imageUrl || null
+              }))
+            }];
+          } else {
+            piece.checklists = [];
+          }
+          
+          pieces.push(piece);
         });
       } catch (err) {
         console.warn("Erro load pieces:", err);
@@ -1992,6 +2029,15 @@
     "Solda Manual / Solda Extra Pesada"
   ];
 
+  const CHECKLIST_TYPES = [
+    "PDI",
+    "Posto Fixo",
+    "Linha",
+    "Dimensional",
+    "Visual",
+    "Funcional"
+  ];
+
   // Estado principal
   let pieces = [];
   let inspectors = []; // { name, pinHash, photoUrl? }
@@ -2000,6 +2046,7 @@
   let bibliotecaItems = []; // { id, piece, media?, mediaType?, videoUrl?, imageUrl?, pdfUrl? }
 
   let currentChecklistPiece = null;
+  let currentChecklistType = null; // Currently selected checklist type for inspection
   let checklistItemStates = [];
   let currentPieceSerialNumber = ""; // Serial number for the current piece being inspected
   let currentClient = ""; // Client for current inspection
@@ -2311,14 +2358,94 @@
       return;
     }
     
-    currentChecklistPiece = pieces.find(p=>p.code===pieceCode);
-    if(!currentChecklistPiece){
+    const piece = pieces.find(p=>p.code===pieceCode);
+    if(!piece){
       alert("Peça não encontrada.");
       return;
     }
     
+    // Check if piece has checklists
+    const checklists = piece.checklists || [];
+    
+    // Migrate old structure if needed (show items as PDI checklist)
+    if(checklists.length === 0 && piece.items && piece.items.length > 0){
+      checklists.push({
+        id: "ck_temp",
+        type: "PDI",
+        items: piece.items
+      });
+    }
+    
+    if(checklists.length === 0){
+      alert("Esta peça não possui checklists cadastrados. Por favor, adicione itens de checklist primeiro.");
+      return;
+    }
+    
+    // Show modal to select checklist type
+    showChecklistSelectionModal(piece, checklists);
+  }
+  
+  function showChecklistSelectionModal(piece, checklists){
+    const modalContent = `
+      <div class="modal-header">
+        <div class="modal-title">Selecionar Checklist - ${escapeHtml(piece.code)}</div>
+        <button class="modal-close-btn">&times;</button>
+      </div>
+      <div style="margin-top:16px;">
+        <p style="font-size:14px;color:#555;margin-bottom:16px;">
+          Selecione o tipo de checklist que deseja realizar para esta peça:
+        </p>
+        <div id="checklist-selection-list" style="display:flex;flex-direction:column;gap:10px;max-height:400px;overflow-y:auto;">
+          ${checklists.map((checklist, idx) => {
+            const itemCount = checklist.items ? checklist.items.length : 0;
+            return `
+              <button class="checklist-selection-btn" data-idx="${idx}" style="
+                border:2px solid #1844F0;
+                background:#f8faff;
+                border-radius:6px;
+                padding:16px;
+                cursor:pointer;
+                text-align:left;
+                transition:all 0.2s;
+                display:flex;
+                justify-content:space-between;
+                align-items:center;
+              " onmouseover="this.style.background='#e8f2ff';this.style.borderColor='#2550ff';" onmouseout="this.style.background='#f8faff';this.style.borderColor='#1844F0';">
+                <div>
+                  <div style="font-size:16px;font-weight:700;color:#003366;margin-bottom:4px;">
+                    📋 ${escapeHtml(checklist.type)}
+                  </div>
+                  <div style="font-size:13px;color:#666;">
+                    ${itemCount} ${itemCount === 1 ? 'item' : 'itens'} de inspeção
+                  </div>
+                </div>
+                <div style="font-size:24px;color:#1844F0;">→</div>
+              </button>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    `;
+    
+    showModal(modalContent);
+    
+    // Add event listeners to checklist selection buttons
+    document.querySelectorAll('.checklist-selection-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const checklistIdx = parseInt(btn.dataset.idx);
+        const selectedChecklist = checklists[checklistIdx];
+        closeModal();
+        startChecklistWithType(piece, selectedChecklist);
+      });
+    });
+  }
+  
+  function startChecklistWithType(piece, checklist){
+    currentChecklistPiece = piece;
+    currentChecklistType = checklist.type;
+    
     // Pull client from piece registration
-    currentClient = currentChecklistPiece.client || "";
+    currentClient = piece.client || "";
     currentStation = ""; // Station will be selected during inspection
     
     if(!currentClient){
@@ -2326,11 +2453,15 @@
       return;
     }
     
-    checklistItemStates = (currentChecklistPiece.items||[]).map(()=>({
+    // Initialize checklist item states for the selected checklist
+    checklistItemStates = (checklist.items||[]).map(()=>({
       status:null,motivo:"",encaminhamento:"",nomeTerceiro:"",
       fotoFile:null,fotoUrl:null,failureMode:""
     }));
     currentPieceSerialNumber = ""; // Reset serial number for new inspection
+    
+    // Store the selected checklist items temporarily
+    currentChecklistPiece._selectedChecklistItems = checklist.items;
     
     // Hide piece selection card and show checklist
     document.getElementById("piece-selection-card").classList.add("hide");
@@ -2347,7 +2478,7 @@
     if(!piece) return;
 
     document.getElementById("cl-piece-code").textContent = piece.code;
-    document.getElementById("cl-piece-desc").textContent = piece.description || "";
+    document.getElementById("cl-piece-desc").textContent = `${piece.description || ""} - ${currentChecklistType || ""}`;
     
     // Display client from piece
     document.getElementById("cl-piece-client").textContent = piece.client || "-";
@@ -2395,7 +2526,10 @@
     const listDiv = document.getElementById("checklist-item-list");
     listDiv.innerHTML = "";
 
-    (piece.items||[]).forEach((item,idx)=>{
+    // Use selected checklist items
+    const items = piece._selectedChecklistItems || piece.items || [];
+    
+    items.forEach((item,idx)=>{
       const st = checklistItemStates[idx] || {};
       const statusClass = st.status==="OK" ? "ok" : st.status==="NOK" ? "nok" : "";
       const itemSrc = getItemImageSrc(item);
@@ -3174,37 +3308,77 @@
     box.innerHTML="";
     const p = pieces[pieceIdx];
     if(!p) return;
-    (p.items||[]).forEach((it,idx)=>{
-      const row = document.createElement("div");
-      row.className="piece-item-row";
-      const src = getItemImageSrc(it);
-      row.innerHTML = `
-        <div class="piece-item-main">
-          <div class="piece-item-thumb">${src?`<img src="${src}">`:""}</div>
-          <div>
-            <div style="font-size:13px;font-weight:600;">${it.name}</div>
-            <div style="font-size:11px;color:#555;">${it.description||""}</div>
-          </div>
-        </div>
-        <div>
-          <button class="btn-icon btn-edit" data-pidx="${pieceIdx}" data-idx="${idx}">Editar</button>
-          <button class="btn-icon btn-delete" data-pidx="${pieceIdx}" data-idx="${idx}">Remover</button>
-        </div>
+    
+    // Support both old (items array) and new (checklists array) structure
+    const checklists = p.checklists || [];
+    
+    // Migrate old structure if needed
+    if(!p.checklists && p.items && p.items.length > 0){
+      checklists.push({
+        id: "ck_default",
+        type: "PDI",
+        items: p.items
+      });
+    }
+    
+    if(checklists.length === 0){
+      box.innerHTML = '<div style="padding:12px;color:#666;font-size:13px;">Nenhum checklist cadastrado para esta peça.</div>';
+      return;
+    }
+    
+    // Render checklists grouped by type
+    checklists.forEach((checklist, ckIdx) => {
+      const checklistHeader = document.createElement("div");
+      checklistHeader.style.cssText = "background:#e8f2ff;padding:8px 12px;border-radius:4px;margin-top:12px;margin-bottom:6px;font-weight:700;font-size:14px;color:#003366;display:flex;justify-content:space-between;align-items:center;";
+      checklistHeader.innerHTML = `
+        <span>📋 ${checklist.type}</span>
+        <button class="btn-icon btn-delete" data-ck-idx="${ckIdx}" style="padding:4px 8px;font-size:11px;">Remover Checklist</button>
       `;
-      box.appendChild(row);
+      box.appendChild(checklistHeader);
+      
+      // Add delete checklist handler
+      checklistHeader.querySelector(".btn-delete").addEventListener("click", () => {
+        if(!confirm(`Remover todo o checklist "${checklist.type}"?`)) return;
+        p.checklists.splice(ckIdx, 1);
+        renderPieceItemsList(pieceIdx);
+        if(window.fbApi && window.fbApi.savePiece){
+          window.fbApi.savePiece(p).catch(e=>console.error("Erro salvar peça Firebase",e));
+        }
+      });
+      
+      (checklist.items||[]).forEach((it,idx)=>{
+        const row = document.createElement("div");
+        row.className="piece-item-row";
+        const src = getItemImageSrc(it);
+        row.innerHTML = `
+          <div class="piece-item-main">
+            <div class="piece-item-thumb">${src?`<img src="${src}">`:""}</div>
+            <div>
+              <div style="font-size:13px;font-weight:600;">${it.name}</div>
+              <div style="font-size:11px;color:#555;">${it.description||""}</div>
+              ${it.failureMode ? `<div style="font-size:10px;color:#888;margin-top:2px;">Falha: ${it.failureMode}</div>` : ""}
+            </div>
+          </div>
+          <div>
+            <button class="btn-icon btn-edit" data-ck-idx="${ckIdx}" data-idx="${idx}">Editar</button>
+            <button class="btn-icon btn-delete" data-ck-idx="${ckIdx}" data-idx="${idx}">Remover</button>
+          </div>
+        `;
+        box.appendChild(row);
+      });
     });
 
     box.querySelectorAll(".btn-edit").forEach(btn=>{
-      btn.addEventListener("click",()=>openEditItemModal(Number(btn.dataset.pidx),Number(btn.dataset.idx)));
+      btn.addEventListener("click",()=>openEditItemModal(pieceIdx, Number(btn.dataset.ckIdx), Number(btn.dataset.idx)));
     });
     box.querySelectorAll(".btn-delete").forEach(btn=>{
       btn.addEventListener("click",()=>{
-        const pidx = Number(btn.dataset.pidx);
+        const ckIdx = Number(btn.dataset.ckIdx);
         const idx = Number(btn.dataset.idx);
-        const p = pieces[pidx];
-        if(!confirm(`Remover item "${p.items[idx].name}"?`)) return;
-        p.items.splice(idx,1);
-        renderPieceItemsList(pidx);
+        const checklist = p.checklists[ckIdx];
+        if(!confirm(`Remover item "${checklist.items[idx].name}"?`)) return;
+        checklist.items.splice(idx,1);
+        renderPieceItemsList(pieceIdx);
         if(window.fbApi && window.fbApi.savePiece){
           window.fbApi.savePiece(p).catch(e=>console.error("Erro salvar peça Firebase",e));
         }
@@ -3212,8 +3386,20 @@
     });
   }
 
-  function openEditItemModal(pieceIdx,idx){
-    const item = pieces[pieceIdx].items[idx];
+  function openEditItemModal(pieceIdx, ckIdx, idx){
+    const p = pieces[pieceIdx];
+    // Support both old and new structure
+    let item;
+    if(p.checklists && p.checklists[ckIdx]){
+      item = p.checklists[ckIdx].items[idx];
+    } else if(p.items) {
+      // Old structure fallback
+      item = p.items[idx];
+      ckIdx = null;
+    }
+    
+    if(!item) return;
+    
     const src = getItemImageSrc(item) || "";
     const failureMode = item.failureMode || item.failureModes?.[0] || ""; // Support old data format
     
@@ -4735,7 +4921,7 @@
         alert("Já existe uma peça com esse código.");
         return;
       }
-      const newPiece = {code,description:desc,client,image:file,imageUrl:null,items:[],hasSerialNumber:hasSerial};
+      const newPiece = {code,description:desc,client,image:file,imageUrl:null,checklists:[],hasSerialNumber:hasSerial};
       pieces.push(newPiece);
       renderPieces();
       renderChecklistSelectors();
@@ -4776,12 +4962,17 @@
         alert("Selecione uma peça.");
         return;
       }
+      const checklistType = document.getElementById("item-checklist-type-input").value.trim();
       const name = document.getElementById("item-name-input").value.trim();
       const desc = document.getElementById("item-desc-input").value.trim();
       const file = document.getElementById("item-image-input").files[0];
       const failureModeSelect = document.getElementById("item-failure-mode-input");
       const failureMode = failureModeSelect.value;
       
+      if(!checklistType){
+        alert("Selecione o tipo de checklist.");
+        return;
+      }
       if(!name || !desc || !file){
         alert("Preencha nome, descrição e imagem do item.");
         return;
@@ -4791,7 +4982,35 @@
         return;
       }
       
-      pieces[pieceIdx].items.push({name,description:desc,failureMode,image:file,imageUrl:null});
+      // Initialize checklists array if piece still uses old structure
+      if(!pieces[pieceIdx].checklists){
+        pieces[pieceIdx].checklists = [];
+        // Migrate old items to default checklist if they exist
+        if(pieces[pieceIdx].items && pieces[pieceIdx].items.length > 0){
+          pieces[pieceIdx].checklists.push({
+            id: "ck_" + Date.now() + "_default",
+            type: "PDI",
+            items: pieces[pieceIdx].items
+          });
+          delete pieces[pieceIdx].items; // Remove old items array
+        }
+      }
+      
+      // Find or create checklist of this type
+      let checklist = pieces[pieceIdx].checklists.find(c => c.type === checklistType);
+      if(!checklist){
+        checklist = {
+          id: "ck_" + Date.now() + "_" + Math.random().toString(36).substr(2, 9),
+          type: checklistType,
+          items: []
+        };
+        pieces[pieceIdx].checklists.push(checklist);
+      }
+      
+      // Add item to the checklist
+      checklist.items.push({name,description:desc,failureMode,image:file,imageUrl:null});
+      
+      document.getElementById("item-checklist-type-input").value="";
       document.getElementById("item-name-input").value="";
       document.getElementById("item-desc-input").value="";
       document.getElementById("item-image-input").value="";
