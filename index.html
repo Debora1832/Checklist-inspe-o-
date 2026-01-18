@@ -1151,6 +1151,13 @@
                 <option value="" disabled selected>Selecionar peça</option>
               </select>
             </div>
+            <div class="form-group hide" id="checklist-type-selector-group">
+              <label for="checklist-type-selector">Tipo de Checklist</label>
+              <select id="checklist-type-selector">
+                <option value="" disabled selected>Selecione o tipo</option>
+              </select>
+            </div>
+            <button class="btn-primary hide" id="btn-start-checklist">Iniciar Checklist</button>
           </div>
 
           <div id="checklist-execution" class="card mt-16 hide">
@@ -1158,6 +1165,7 @@
               <div>
                 <div class="checklist-piece-code" id="cl-piece-code"></div>
                 <div class="checklist-piece-desc" id="cl-piece-desc"></div>
+                <div class="checklist-piece-type" id="cl-checklist-type" style="font-size:14px;color:#666;margin-top:4px;"></div>
               </div>
             </div>
             <div id="cl-piece-info" style="margin-top:8px;padding:12px;background:#f0f4f8;border-radius:6px;border:1px solid #c8d3e6;">
@@ -1300,8 +1308,18 @@
                 <label for="piece-items-selector">Selecionar peça</label>
                 <select id="piece-items-selector"></select>
               </div>
+              <div id="piece-checklists-info" style="margin-top:12px;"></div>
               <div id="piece-items-list"></div>
               <div class="divider mt-8 mb-8"></div>
+              <div class="form-group">
+                <label for="item-checklist-type-input">Tipo de Checklist</label>
+                <select id="item-checklist-type-input">
+                  <option value="">Selecione o tipo</option>
+                  <option value="PDI">PDI</option>
+                  <option value="Posto Fixo">Posto Fixo</option>
+                  <option value="Linha">Linha</option>
+                </select>
+              </div>
               <div class="form-group">
                 <label for="item-name-input">Novo item</label>
                 <input type="text" id="item-name-input" placeholder="Ex: Dimensão A (Ø)">
@@ -2000,10 +2018,14 @@
   let bibliotecaItems = []; // { id, piece, media?, mediaType?, videoUrl?, imageUrl?, pdfUrl? }
 
   let currentChecklistPiece = null;
+  let currentChecklistType = null; // PDI, Posto Fixo, or Linha
   let checklistItemStates = [];
   let currentPieceSerialNumber = ""; // Serial number for the current piece being inspected
   let currentClient = ""; // Client for current inspection
   let currentStation = ""; // Station for current inspection
+  
+  // Checklist types
+  const CHECKLIST_TYPES = ["PDI", "Posto Fixo", "Linha"];
 
   let dashboardChart = null;
   let chartByStation = null;
@@ -2013,6 +2035,40 @@
 
   let currentUser = null; // { role: "admin"|"inspector", name: string, plant: string }
   window._appDataLoaded = false;
+
+  // Helper: Ensure piece has checklists structure with backward compatibility
+  function ensureChecklistsStructure(piece){
+    if(!piece) return piece;
+    
+    // If piece has old 'items' array, migrate to checklists
+    if(piece.items && !piece.checklists){
+      piece.checklists = {
+        "PDI": { items: piece.items }
+      };
+      delete piece.items; // Remove old structure
+    }
+    
+    // If piece has no checklists at all, initialize empty
+    if(!piece.checklists){
+      piece.checklists = {};
+    }
+    
+    return piece;
+  }
+  
+  // Helper: Get all items from a piece's specific checklist type
+  function getChecklistItems(piece, checklistType){
+    if(!piece) return [];
+    ensureChecklistsStructure(piece);
+    return piece.checklists[checklistType]?.items || [];
+  }
+  
+  // Helper: Get available checklist types for a piece
+  function getAvailableChecklistTypes(piece){
+    if(!piece) return [];
+    ensureChecklistsStructure(piece);
+    return Object.keys(piece.checklists || {});
+  }
 
   // Util: hash SHA-256 para PIN
   async function hashString(str){
@@ -2317,6 +2373,24 @@
       return;
     }
     
+    ensureChecklistsStructure(currentChecklistPiece);
+    
+    // Get selected checklist type
+    const typeSelect = document.getElementById("checklist-type-selector");
+    currentChecklistType = typeSelect.value;
+    
+    // For backward compatibility with legacy items
+    const availableTypes = getAvailableChecklistTypes(currentChecklistPiece);
+    if(availableTypes.length === 0 && currentChecklistPiece.items && currentChecklistPiece.items.length > 0){
+      // Legacy piece with old items array
+      currentChecklistType = "PDI";
+    }
+    
+    if(!currentChecklistType && availableTypes.length > 0){
+      alert("Selecione o tipo de checklist.");
+      return;
+    }
+    
     // Pull client from piece registration
     currentClient = currentChecklistPiece.client || "";
     currentStation = ""; // Station will be selected during inspection
@@ -2326,9 +2400,20 @@
       return;
     }
     
-    checklistItemStates = (currentChecklistPiece.items||[]).map(()=>({
+    // Get items from selected checklist type
+    const items = getChecklistItems(currentChecklistPiece, currentChecklistType);
+    
+    // Fallback to legacy items if no items in checklist
+    const itemsToUse = items.length > 0 ? items : (currentChecklistPiece.items || []);
+    
+    if(itemsToUse.length === 0){
+      alert("O checklist selecionado não possui itens cadastrados.");
+      return;
+    }
+    
+    checklistItemStates = itemsToUse.map(()=>({
       status:null,motivo:"",encaminhamento:"",nomeTerceiro:"",
-      fotoFile:null,fotoUrl:null,failureMode:""
+      fotoFile:null,fotoUrl:null,failureMode:"",measurement:""
     }));
     currentPieceSerialNumber = ""; // Reset serial number for new inspection
     
@@ -2348,6 +2433,12 @@
 
     document.getElementById("cl-piece-code").textContent = piece.code;
     document.getElementById("cl-piece-desc").textContent = piece.description || "";
+    
+    // Display checklist type
+    const typeEl = document.getElementById("cl-checklist-type");
+    if(typeEl && currentChecklistType){
+      typeEl.textContent = `Checklist: ${currentChecklistType}`;
+    }
     
     // Display client from piece
     document.getElementById("cl-piece-client").textContent = piece.client || "-";
@@ -2395,7 +2486,11 @@
     const listDiv = document.getElementById("checklist-item-list");
     listDiv.innerHTML = "";
 
-    (piece.items||[]).forEach((item,idx)=>{
+    // Get items from selected checklist type, or fallback to legacy items
+    const items = getChecklistItems(piece, currentChecklistType);
+    const itemsToRender = items.length > 0 ? items : (piece.items || []);
+
+    itemsToRender.forEach((item,idx)=>{
       const st = checklistItemStates[idx] || {};
       const statusClass = st.status==="OK" ? "ok" : st.status==="NOK" ? "nok" : "";
       const itemSrc = getItemImageSrc(item);
@@ -3170,40 +3265,99 @@
 
   function renderPieceItemsList(pieceIdx){
     const box = document.getElementById("piece-items-list");
+    const infoBox = document.getElementById("piece-checklists-info");
     if(!box) return;
     box.innerHTML="";
+    if(infoBox) infoBox.innerHTML="";
+    
     const p = pieces[pieceIdx];
     if(!p) return;
-    (p.items||[]).forEach((it,idx)=>{
-      const row = document.createElement("div");
-      row.className="piece-item-row";
-      const src = getItemImageSrc(it);
-      row.innerHTML = `
-        <div class="piece-item-main">
-          <div class="piece-item-thumb">${src?`<img src="${src}">`:""}</div>
-          <div>
-            <div style="font-size:13px;font-weight:600;">${it.name}</div>
-            <div style="font-size:11px;color:#555;">${it.description||""}</div>
+    
+    ensureChecklistsStructure(p);
+    
+    // Show info about available checklists
+    const availableTypes = getAvailableChecklistTypes(p);
+    if(infoBox && availableTypes.length > 0){
+      infoBox.innerHTML = `<div style="font-size:13px;color:#555;margin-bottom:8px;">
+        <strong>Checklists disponíveis:</strong> ${availableTypes.join(", ")}
+      </div>`;
+    }
+    
+    // For backward compatibility, check if old items array exists
+    if(p.items && p.items.length > 0){
+      const header = document.createElement("div");
+      header.style.cssText = "font-size:14px;font-weight:600;margin:12px 0 8px 0;color:#333;";
+      header.textContent = "PDI (Migrado)";
+      box.appendChild(header);
+      
+      p.items.forEach((it,idx)=>{
+        const row = document.createElement("div");
+        row.className="piece-item-row";
+        const src = getItemImageSrc(it);
+        row.innerHTML = `
+          <div class="piece-item-main">
+            <div class="piece-item-thumb">${src?`<img src="${src}">`:""}</div>
+            <div>
+              <div style="font-size:13px;font-weight:600;">${it.name}</div>
+              <div style="font-size:11px;color:#555;">${it.description||""}</div>
+            </div>
           </div>
-        </div>
-        <div>
-          <button class="btn-icon btn-edit" data-pidx="${pieceIdx}" data-idx="${idx}">Editar</button>
-          <button class="btn-icon btn-delete" data-pidx="${pieceIdx}" data-idx="${idx}">Remover</button>
-        </div>
-      `;
-      box.appendChild(row);
+          <div>
+            <button class="btn-icon btn-delete" data-pidx="${pieceIdx}" data-type="legacy" data-idx="${idx}">Remover</button>
+          </div>
+        `;
+        box.appendChild(row);
+      });
+    }
+    
+    // Render items grouped by checklist type
+    Object.keys(p.checklists || {}).forEach(checklistType=>{
+      const items = p.checklists[checklistType].items || [];
+      if(items.length === 0) return;
+      
+      const header = document.createElement("div");
+      header.style.cssText = "font-size:14px;font-weight:600;margin:12px 0 8px 0;color:#333;";
+      header.textContent = checklistType;
+      box.appendChild(header);
+      
+      items.forEach((it,idx)=>{
+        const row = document.createElement("div");
+        row.className="piece-item-row";
+        const src = getItemImageSrc(it);
+        row.innerHTML = `
+          <div class="piece-item-main">
+            <div class="piece-item-thumb">${src?`<img src="${src}">`:""}</div>
+            <div>
+              <div style="font-size:13px;font-weight:600;">${it.name}</div>
+              <div style="font-size:11px;color:#555;">${it.description||""}</div>
+            </div>
+          </div>
+          <div>
+            <button class="btn-icon btn-delete" data-pidx="${pieceIdx}" data-type="${checklistType}" data-idx="${idx}">Remover</button>
+          </div>
+        `;
+        box.appendChild(row);
+      });
     });
 
-    box.querySelectorAll(".btn-edit").forEach(btn=>{
-      btn.addEventListener("click",()=>openEditItemModal(Number(btn.dataset.pidx),Number(btn.dataset.idx)));
-    });
     box.querySelectorAll(".btn-delete").forEach(btn=>{
       btn.addEventListener("click",()=>{
         const pidx = Number(btn.dataset.pidx);
         const idx = Number(btn.dataset.idx);
+        const type = btn.dataset.type;
         const p = pieces[pidx];
-        if(!confirm(`Remover item "${p.items[idx].name}"?`)) return;
-        p.items.splice(idx,1);
+        
+        let itemName;
+        if(type === "legacy"){
+          itemName = p.items[idx].name;
+          if(!confirm(`Remover item "${itemName}"?`)) return;
+          p.items.splice(idx,1);
+        }else{
+          itemName = p.checklists[type].items[idx].name;
+          if(!confirm(`Remover item "${itemName}" do checklist "${type}"?`)) return;
+          p.checklists[type].items.splice(idx,1);
+        }
+        
         renderPieceItemsList(pidx);
         if(window.fbApi && window.fbApi.savePiece){
           window.fbApi.savePiece(p).catch(e=>console.error("Erro salvar peça Firebase",e));
@@ -4735,7 +4889,8 @@
         alert("Já existe uma peça com esse código.");
         return;
       }
-      const newPiece = {code,description:desc,client,image:file,imageUrl:null,items:[],hasSerialNumber:hasSerial};
+      // New pieces use checklists structure
+      const newPiece = {code,description:desc,client,image:file,imageUrl:null,checklists:{},hasSerialNumber:hasSerial};
       pieces.push(newPiece);
       renderPieces();
       renderChecklistSelectors();
@@ -4776,6 +4931,11 @@
         alert("Selecione uma peça.");
         return;
       }
+      const checklistType = document.getElementById("item-checklist-type-input").value;
+      if(!checklistType){
+        alert("Selecione o tipo de checklist.");
+        return;
+      }
       const name = document.getElementById("item-name-input").value.trim();
       const desc = document.getElementById("item-desc-input").value.trim();
       const file = document.getElementById("item-image-input").files[0];
@@ -4791,10 +4951,19 @@
         return;
       }
       
-      pieces[pieceIdx].items.push({name,description:desc,failureMode,image:file,imageUrl:null});
+      const piece = pieces[pieceIdx];
+      ensureChecklistsStructure(piece);
+      
+      // Initialize checklist type if it doesn't exist
+      if(!piece.checklists[checklistType]){
+        piece.checklists[checklistType] = { items: [] };
+      }
+      
+      piece.checklists[checklistType].items.push({name,description:desc,failureMode,image:file,imageUrl:null});
       document.getElementById("item-name-input").value="";
       document.getElementById("item-desc-input").value="";
       document.getElementById("item-image-input").value="";
+      document.getElementById("item-checklist-type-input").value="";
       failureModeSelect.value = ""; // Clear selection
       renderPieceItemsList(pieceIdx);
       if(window.fbApi && window.fbApi.savePiece){
@@ -4803,7 +4972,52 @@
     });
     
     // Auto-start checklist when piece is selected
+    // Handle piece selection - show checklist type selector
     document.getElementById("piece-selector").addEventListener("change",()=>{
+      const pieceCode = document.getElementById("piece-selector").value;
+      const typeGroup = document.getElementById("checklist-type-selector-group");
+      const typeSelect = document.getElementById("checklist-type-selector");
+      const startBtn = document.getElementById("btn-start-checklist");
+      
+      if(!pieceCode){
+        typeGroup.classList.add("hide");
+        startBtn.classList.add("hide");
+        return;
+      }
+      
+      const piece = pieces.find(p=>p.code===pieceCode);
+      if(!piece){
+        typeGroup.classList.add("hide");
+        startBtn.classList.add("hide");
+        return;
+      }
+      
+      ensureChecklistsStructure(piece);
+      const availableTypes = getAvailableChecklistTypes(piece);
+      
+      // If piece has no checklists, start immediately with legacy flow
+      if(availableTypes.length === 0 && (!piece.items || piece.items.length === 0)){
+        alert("Esta peça não possui itens de checklist cadastrados.");
+        typeGroup.classList.add("hide");
+        startBtn.classList.add("hide");
+        return;
+      }
+      
+      // If only legacy items exist, migrate and start
+      if(availableTypes.length === 0 && piece.items && piece.items.length > 0){
+        startChecklist();
+        return;
+      }
+      
+      // Show checklist type selector
+      typeSelect.innerHTML = '<option value="" disabled selected>Selecione o tipo</option>' +
+        availableTypes.map(t=>`<option value="${t}">${t}</option>`).join("");
+      typeGroup.classList.remove("hide");
+      startBtn.classList.remove("hide");
+    });
+    
+    // Handle start checklist button
+    document.getElementById("btn-start-checklist").addEventListener("click",()=>{
       startChecklist();
     });
 
