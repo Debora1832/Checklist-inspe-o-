@@ -1519,8 +1519,9 @@
             <h2 class="screen-title">Relatórios</h2>
             <div class="report-controls">
               <button class="btn-secondary" id="btn-config-report">⚙ Configurar Campos</button>
-              <button class="btn-secondary" id="btn-export-csv">Exportar CSV</button>
-              <button class="btn-danger" id="btn-clear-inspections" style="margin-left:auto;">🗑️ Limpar Todas as Inspeções</button>
+              <button class="btn-secondary" id="btn-export-csv">Exportar Mês</button>
+              <button class="btn-secondary" id="btn-export-all-csv">Exportar Tudo</button>
+              <button class="btn-danger" id="btn-clear-inspections" style="margin-left:auto;display:none;">🗑️ Limpar Todas as Inspeções</button>
               <div class="form-group small">
                 <label for="report-month-select">Mês:</label>
                 <select id="report-month-select"></select>
@@ -3832,7 +3833,13 @@
     const tbody = document.getElementById("reports-history-body");
     const totalSpan = document.getElementById("total-inspecoes");
     const headerRow = document.getElementById("reports-header-row");
+    const clearBtn = document.getElementById("btn-clear-inspections");
     if(!monthSelect || !tbody || !totalSpan || !headerRow) return;
+    
+    // Show clear button only for admin
+    if(clearBtn){
+      clearBtn.style.display = (currentUser && currentUser.role === "admin") ? "inline-block" : "none";
+    }
 
     const monthsSet = new Set();
     inspections.forEach(i=>{
@@ -3976,7 +3983,81 @@
     URL.revokeObjectURL(url);
   }
 
+  function exportAllCSV(){
+    if(!inspections.length){
+      alert("Sem inspeções para exportar.");
+      return;
+    }
+    
+    // Helper function to check if piece is approved
+    function isPieceApproved(inspection){
+      if(!inspection.itens || inspection.itens.length === 0) return true;
+      return inspection.itens.every(item => item.status === "OK");
+    }
+    
+    // Build CSV header based on config
+    const headers = [];
+    if(reportConfig.data) headers.push("Data");
+    if(reportConfig.inspetor) headers.push("Inspetor");
+    if(reportConfig.peca) headers.push("Peça");
+    if(reportConfig.status) headers.push("Status");
+    if(reportConfig.planta) headers.push("Planta");
+    if(reportConfig.cliente) headers.push("Cliente");
+    if(reportConfig.estacao) headers.push("Estação");
+    if(reportConfig.serialNumber) headers.push("Serial Number");
+    if(reportConfig.medidas) headers.push("Medidas");
+    if(reportConfig.tempoInspecao) headers.push("Tempo de Inspeção");
+    
+    const rows = [headers.join(",")];
+    
+    // Export ALL inspections (no filtering by month)
+    inspections.forEach(i=>{
+      const status = isPieceApproved(i) ? "Aprovada" : "Reprovada";
+      const cells = [];
+      
+      if(reportConfig.data) cells.push(i.date || "");
+      if(reportConfig.inspetor) cells.push(`"${(i.inspector || "").replace(/"/g, '""')}"`);
+      if(reportConfig.peca) cells.push(`"${(i.piece || "").replace(/"/g, '""')}"`);
+      if(reportConfig.status) cells.push(status);
+      if(reportConfig.planta) cells.push(`"${(i.plant || "").replace(/"/g, '""')}"`);
+      if(reportConfig.cliente) cells.push(`"${(i.client || "").replace(/"/g, '""')}"`);
+      if(reportConfig.estacao) cells.push(`"${(i.station || "").replace(/"/g, '""')}"`);
+      if(reportConfig.serialNumber) cells.push(`"${(i.serialNumber || "").replace(/"/g, '""')}"`);
+      if(reportConfig.medidas){
+        const measurements = (i.itens||[])
+          .filter(it=>it.measurement)
+          .map(it=>it.measurement)
+          .join("; ");
+        cells.push(`"${measurements}"`);
+      }
+      if(reportConfig.tempoInspecao){
+        const duration = i.inspectionDurationFormatted || (i.inspectionDuration ? formatDuration(i.inspectionDuration) : "-");
+        cells.push(`"${duration}"`);
+      }
+      
+      rows.push(cells.join(","));
+    });
+    
+    const csvContent = rows.join("\n");
+    const BOM = "\uFEFF"; // UTF-8 BOM for Excel compatibility
+    const blob = new Blob([BOM + csvContent], {type: "text/csv;charset=utf-8;"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `relatorio_completo_inspecoes_${inspections.length}_registros.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
   async function clearAllInspections(){
+    // Check if user is admin
+    if(!currentUser || currentUser.role !== "admin"){
+      alert("⚠️ Apenas administradores podem limpar inspeções.");
+      return;
+    }
+    
     if(!confirm("⚠️ ATENÇÃO: Esta ação irá DELETAR PERMANENTEMENTE todas as inspeções do Firebase.\n\nEsta ação NÃO PODE SER DESFEITA!\n\nDeseja realmente continuar?")){
       return;
     }
@@ -5321,6 +5402,7 @@
 
     document.getElementById("btn-config-report").addEventListener("click",openReportConfig);
     document.getElementById("btn-export-csv").addEventListener("click",exportCSV);
+    document.getElementById("btn-export-all-csv").addEventListener("click",exportAllCSV);
     document.getElementById("btn-clear-inspections").addEventListener("click",clearAllInspections);
     const reportMonthSelect = document.getElementById("report-month-select");
     if(reportMonthSelect) reportMonthSelect.addEventListener("change",renderReports);
