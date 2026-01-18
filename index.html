@@ -1520,6 +1520,7 @@
             <div class="report-controls">
               <button class="btn-secondary" id="btn-config-report">⚙ Configurar Campos</button>
               <button class="btn-secondary" id="btn-export-csv">Exportar CSV</button>
+              <button class="btn-danger" id="btn-clear-inspections" style="margin-left:auto;">🗑️ Limpar Todas as Inspeções</button>
               <div class="form-group small">
                 <label for="report-month-select">Mês:</label>
                 <select id="report-month-select"></select>
@@ -1956,7 +1957,22 @@
       await deleteDoc(doc(db, "biblioteca", id));
     }
 
-    window.fbApi = { loadAll, savePiece, deletePiece, setInspectors, saveInspection, loadBiblioteca, saveBibliotecaItem, deleteBibliotecaItem };
+    async function clearAllInspections() {
+      try {
+        const inspecSnap = await getDocs(collection(db, "inspections"));
+        const deletePromises = [];
+        inspecSnap.docs.forEach(d => {
+          deletePromises.push(deleteDoc(doc(db, "inspections", d.id)));
+        });
+        await Promise.all(deletePromises);
+        return { success: true, deletedCount: deletePromises.length };
+      } catch (err) {
+        console.error("Erro ao limpar inspeções:", err);
+        throw err;
+      }
+    }
+
+    window.fbApi = { loadAll, savePiece, deletePiece, setInspectors, saveInspection, loadBiblioteca, saveBibliotecaItem, deleteBibliotecaItem, clearAllInspections };
   </script>
 
   <!-- SCRIPT PRINCIPAL (UI) -->
@@ -3960,6 +3976,41 @@
     URL.revokeObjectURL(url);
   }
 
+  async function clearAllInspections(){
+    if(!confirm("⚠️ ATENÇÃO: Esta ação irá DELETAR PERMANENTEMENTE todas as inspeções do Firebase.\n\nEsta ação NÃO PODE SER DESFEITA!\n\nDeseja realmente continuar?")){
+      return;
+    }
+    
+    // Double confirmation for safety
+    if(!confirm("Confirme novamente: Tem certeza que deseja LIMPAR TODAS as inspeções?\n\nTodas as inspeções serão perdidas permanentemente.")){
+      return;
+    }
+    
+    try {
+      if(window.fbApi && window.fbApi.clearAllInspections){
+        const result = await window.fbApi.clearAllInspections();
+        
+        // Clear local array
+        inspections = [];
+        
+        // Update UI
+        renderReports();
+        renderDashboard();
+        
+        alert(`✅ Sucesso! ${result.deletedCount} inspeção(ões) foram removidas do Firebase.\n\nO relatório foi zerado.`);
+      } else {
+        // Fallback: clear only local data if Firebase not available
+        inspections = [];
+        renderReports();
+        renderDashboard();
+        alert("⚠️ Firebase não disponível. Inspeções removidas apenas localmente.");
+      }
+    } catch(err){
+      console.error("Erro ao limpar inspeções:", err);
+      alert("❌ Erro ao limpar inspeções do Firebase. Verifique o console para mais detalhes.");
+    }
+  }
+
   function ensureDashboardChart(){
     const ctx = document.getElementById("dashboard-chart")?.getContext("2d");
     if(!ctx) return;
@@ -5270,6 +5321,7 @@
 
     document.getElementById("btn-config-report").addEventListener("click",openReportConfig);
     document.getElementById("btn-export-csv").addEventListener("click",exportCSV);
+    document.getElementById("btn-clear-inspections").addEventListener("click",clearAllInspections);
     const reportMonthSelect = document.getElementById("report-month-select");
     if(reportMonthSelect) reportMonthSelect.addEventListener("change",renderReports);
 
