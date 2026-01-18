@@ -1312,6 +1312,21 @@
                   <option value="Inspeção Final">Inspeção Final</option>
                 </select>
               </div>
+              <div class="form-group" id="process-selection-group" style="display:none;">
+                <label for="item-process-input">Processo *</label>
+                <select id="item-process-input">
+                  <option value="">Selecione o processo</option>
+                  <option value="Solda">Solda</option>
+                  <option value="Usinagem">Usinagem</option>
+                  <option value="Corte">Corte</option>
+                  <option value="Dobra">Dobra</option>
+                  <option value="Pintura">Pintura</option>
+                  <option value="Montagem">Montagem</option>
+                  <option value="Tratamento Térmico">Tratamento Térmico</option>
+                  <option value="Jateamento">Jateamento</option>
+                  <option value="Estamparia">Estamparia</option>
+                </select>
+              </div>
               <div class="form-group">
                 <label for="item-name-input">Novo item</label>
                 <input type="text" id="item-name-input" placeholder="Ex: Dimensão A (Ø)">
@@ -2034,6 +2049,18 @@
     "Inspeção Final"
   ];
 
+  const MANUFACTURING_PROCESSES = [
+    "Solda",
+    "Usinagem",
+    "Corte",
+    "Dobra",
+    "Pintura",
+    "Montagem",
+    "Tratamento Térmico",
+    "Jateamento",
+    "Estamparia"
+  ];
+
   // Estado principal
   let pieces = [];
   let inspectors = []; // { name, pinHash, photoUrl? }
@@ -2043,6 +2070,7 @@
 
   let currentChecklistPiece = null;
   let currentChecklistType = null; // Currently selected checklist type for inspection
+  let currentChecklistProcess = null; // Currently selected process for Linha/Posto Fixo checklists
   let checklistItemStates = [];
   let currentPieceSerialNumber = ""; // Serial number for the current piece being inspected
   let currentClient = ""; // Client for current inspection
@@ -2394,6 +2422,9 @@
         <div id="checklist-selection-list" style="display:flex;flex-direction:column;gap:10px;max-height:400px;overflow-y:auto;">
           ${checklists.map((checklist, idx) => {
             const itemCount = checklist.items ? checklist.items.length : 0;
+            const displayName = checklist.process 
+              ? `${checklist.type} - ${checklist.process}`
+              : checklist.type;
             return `
               <button class="checklist-selection-btn" data-idx="${idx}" style="
                 border:2px solid #1844F0;
@@ -2409,7 +2440,7 @@
               " onmouseover="this.style.background='#e8f2ff';this.style.borderColor='#2550ff';" onmouseout="this.style.background='#f8faff';this.style.borderColor='#1844F0';">
                 <div>
                   <div style="font-size:16px;font-weight:700;color:#003366;margin-bottom:4px;">
-                    📋 ${escapeHtml(checklist.type)}
+                    📋 ${escapeHtml(displayName)}
                   </div>
                   <div style="font-size:13px;color:#666;">
                     ${itemCount} ${itemCount === 1 ? 'item' : 'itens'} de inspeção
@@ -2439,6 +2470,7 @@
   function startChecklistWithType(piece, checklist){
     currentChecklistPiece = piece;
     currentChecklistType = checklist.type;
+    currentChecklistProcess = checklist.process || null;
     
     // Pull client from piece registration
     currentClient = piece.client || "";
@@ -2474,7 +2506,10 @@
     if(!piece) return;
 
     document.getElementById("cl-piece-code").textContent = piece.code;
-    document.getElementById("cl-piece-desc").textContent = `${piece.description || ""} - ${currentChecklistType || ""}`;
+    const checklistDisplay = currentChecklistProcess 
+      ? `${piece.description || ""} - ${currentChecklistType} - ${currentChecklistProcess}`
+      : `${piece.description || ""} - ${currentChecklistType || ""}`;
+    document.getElementById("cl-piece-desc").textContent = checklistDisplay;
     
     // Display client from piece
     document.getElementById("cl-piece-client").textContent = piece.client || "-";
@@ -3326,8 +3361,14 @@
     checklists.forEach((checklist, ckIdx) => {
       const checklistHeader = document.createElement("div");
       checklistHeader.style.cssText = "background:#e8f2ff;padding:8px 12px;border-radius:4px;margin-top:12px;margin-bottom:6px;font-weight:700;font-size:14px;color:#003366;display:flex;justify-content:space-between;align-items:center;cursor:pointer;";
+      
+      // Display type and process (if applicable)
+      const displayName = checklist.process 
+        ? `${checklist.type} - ${checklist.process}`
+        : checklist.type;
+      
       checklistHeader.innerHTML = `
-        <span><span id="chevron-${ckIdx}" style="display:inline-block;transition:transform 0.2s;">▶</span> 📋 ${checklist.type}</span>
+        <span><span id="chevron-${ckIdx}" style="display:inline-block;transition:transform 0.2s;">▶</span> 📋 ${displayName}</span>
         <button class="btn-icon btn-delete" data-ck-idx="${ckIdx}" style="padding:4px 8px;font-size:11px;">Remover Checklist</button>
       `;
       box.appendChild(checklistHeader);
@@ -4971,6 +5012,20 @@
       document.getElementById("piece-has-serial-input").checked=false;
     });
 
+    // Show/hide process dropdown based on checklist type
+    document.getElementById("item-checklist-type-input").addEventListener("change", (e) => {
+      const type = e.target.value;
+      const processGroup = document.getElementById("process-selection-group");
+      const processInput = document.getElementById("item-process-input");
+      
+      if(type === "Linha" || type === "Posto Fixo"){
+        processGroup.style.display = "block";
+      } else {
+        processGroup.style.display = "none";
+        processInput.value = ""; // Clear selection when hidden
+      }
+    });
+
     document.getElementById("btn-add-item").addEventListener("click",()=>{
       const pieceIdx = Number(document.getElementById("piece-items-selector").value);
       if(Number.isNaN(pieceIdx) || !pieces[pieceIdx]){
@@ -4978,6 +5033,7 @@
         return;
       }
       const checklistType = document.getElementById("item-checklist-type-input").value.trim();
+      const process = document.getElementById("item-process-input").value.trim();
       const name = document.getElementById("item-name-input").value.trim();
       const desc = document.getElementById("item-desc-input").value.trim();
       const file = document.getElementById("item-image-input").files[0];
@@ -4988,6 +5044,13 @@
         alert("Selecione o tipo de checklist.");
         return;
       }
+      
+      // Check if process is required for Linha or Posto Fixo
+      if((checklistType === "Linha" || checklistType === "Posto Fixo") && !process){
+        alert("Selecione o processo para este tipo de checklist.");
+        return;
+      }
+      
       if(!name || !desc || !file){
         alert("Preencha nome, descrição e imagem do item.");
         return;
@@ -5011,12 +5074,24 @@
         }
       }
       
-      // Find or create checklist of this type
-      let checklist = pieces[pieceIdx].checklists.find(c => c.type === checklistType);
+      // Create checklist identifier (type + process for Linha/Posto Fixo)
+      const checklistIdentifier = (checklistType === "Linha" || checklistType === "Posto Fixo") && process
+        ? `${checklistType} - ${process}`
+        : checklistType;
+      
+      // Find or create checklist of this type and process
+      let checklist = pieces[pieceIdx].checklists.find(c => {
+        const cIdentifier = (c.type === "Linha" || c.type === "Posto Fixo") && c.process
+          ? `${c.type} - ${c.process}`
+          : c.type;
+        return cIdentifier === checklistIdentifier;
+      });
+      
       if(!checklist){
         checklist = {
           id: "ck_" + Date.now() + "_" + Math.random().toString(36).substr(2, 9),
           type: checklistType,
+          process: process || null,
           items: []
         };
         pieces[pieceIdx].checklists.push(checklist);
@@ -5026,6 +5101,8 @@
       checklist.items.push({name,description:desc,failureMode,image:file,imageUrl:null});
       
       document.getElementById("item-checklist-type-input").value="";
+      document.getElementById("item-process-input").value="";
+      document.getElementById("process-selection-group").style.display="none";
       document.getElementById("item-name-input").value="";
       document.getElementById("item-desc-input").value="";
       document.getElementById("item-image-input").value="";
