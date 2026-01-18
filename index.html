@@ -2702,15 +2702,17 @@
       `;
       listDiv.appendChild(wrap);
       
-      // Show measurement field for dimensional items when status is OK
-      if(isDimensional && st.status==="OK"){
+      // Show measurement field for dimensional items when status is OK OR when failure mode is dimensional
+      const isDimensionalFailure = st.failureMode === "Dimensional fora do especificado";
+      if((isDimensional || isDimensionalFailure) && st.status==="OK"){
         const extraDiv = wrap.querySelector(`#extra-${idx}`);
         const measurementHtml = `
           <div style="margin-top:8px;padding:8px;background:#f0f8ff;border:1px solid #b8d4f1;border-radius:4px;">
-            <label style="font-size:12px;font-weight:600;color:#003366;display:block;margin-bottom:4px;">Cota encontrada:</label>
+            <label style="font-size:12px;font-weight:600;color:#003366;display:block;margin-bottom:4px;">📏 Cota encontrada:</label>
             <input type="number" step="0.001" id="measurement-${idx}" value="${st.measurement||""}" 
-              placeholder="Digite a medida" 
+              placeholder="Digite a medida achada (ex: 25.5)" 
               style="width:100%;padding:6px 8px;border:1px solid #cbd3e3;border-radius:4px;font-size:13px;">
+            <small style="color:#666;font-size:11px;display:block;margin-top:4px;">💡 Esta medida será salva para controle futuro de falhas</small>
           </div>
         `;
         extraDiv.innerHTML = measurementHtml;
@@ -2788,15 +2790,17 @@
             <option value="Solda com sobreposição" ${st.failureMode==="Solda com sobreposição"?"selected":""}>Solda com sobreposição</option>
           `;
         
-        // Build measurement field HTML for dimensional items
-        const measurementFieldHtml = isDimensional ? `
-          <div style="margin-top:8px;margin-bottom:8px;padding:8px;background:#f0f8ff;border:1px solid #b8d4f1;border-radius:4px;">
-            <label style="font-size:12px;font-weight:600;color:#003366;display:block;margin-bottom:4px;">Cota encontrada:</label>
+        // Build measurement field HTML for dimensional items or when dimensional failure mode is selected
+        const showMeasurementField = isDimensional || st.failureMode === "Dimensional fora do especificado";
+        const measurementFieldHtml = showMeasurementField ? `
+          <div id="measurement-field-${idx}" style="margin-top:8px;margin-bottom:8px;padding:8px;background:#f0f8ff;border:1px solid#b8d4f1;border-radius:4px;">
+            <label style="font-size:12px;font-weight:600;color:#003366;display:block;margin-bottom:4px;">📏 Cota encontrada:</label>
             <input type="number" step="0.001" id="measurement-${idx}" value="${st.measurement||""}" 
-              placeholder="Digite a medida" 
+              placeholder="Digite a medida achada (ex: 25.5)" 
               style="width:100%;padding:6px 8px;border:1px solid #cbd3e3;border-radius:4px;font-size:13px;">
+            <small style="color:#666;font-size:11px;display:block;margin-top:4px;">💡 Esta medida será salva para controle futuro de falhas</small>
           </div>
-        ` : '';
+        ` : `<div id="measurement-field-${idx}" style="display:none;"></div>`;
         
         extraDiv.innerHTML = `
           ${measurementFieldHtml}
@@ -2853,6 +2857,32 @@
 
         failureModeSelect.addEventListener("change",()=>{
           checklistItemStates[idx].failureMode = failureModeSelect.value;
+          
+          // Show/hide measurement field based on failure mode
+          const measurementFieldDiv = extraDiv.querySelector(`#measurement-field-${idx}`);
+          if(measurementFieldDiv){
+            if(failureModeSelect.value === "Dimensional fora do especificado"){
+              measurementFieldDiv.style.display = "block";
+              measurementFieldDiv.innerHTML = `
+                <div style="margin-top:8px;margin-bottom:8px;padding:8px;background:#f0f8ff;border:1px solid #b8d4f1;border-radius:4px;">
+                  <label style="font-size:12px;font-weight:600;color:#003366;display:block;margin-bottom:4px;">📏 Cota encontrada:</label>
+                  <input type="number" step="0.001" id="measurement-${idx}" value="${checklistItemStates[idx].measurement||""}" 
+                    placeholder="Digite a medida achada (ex: 25.5)" 
+                    style="width:100%;padding:6px 8px;border:1px solid #cbd3e3;border-radius:4px;font-size:13px;">
+                  <small style="color:#666;font-size:11px;display:block;margin-top:4px;">💡 Esta medida será salva para controle futuro de falhas</small>
+                </div>
+              `;
+              // Re-attach event listener
+              const newMeasurementInput = measurementFieldDiv.querySelector(`#measurement-${idx}`);
+              if(newMeasurementInput){
+                newMeasurementInput.addEventListener("input",()=>{
+                  checklistItemStates[idx].measurement = newMeasurementInput.value;
+                });
+              }
+            } else if(!isDimensional){
+              measurementFieldDiv.style.display = "none";
+            }
+          }
         });
         motivo.addEventListener("input",()=>{
           checklistItemStates[idx].motivo = motivo.value;
