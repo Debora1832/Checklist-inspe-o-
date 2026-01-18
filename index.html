@@ -2418,8 +2418,8 @@
       `;
       listDiv.appendChild(wrap);
       
-      // Show measurement field for dimensional items (both OK and NOK)
-      if(isDimensional){
+      // Show measurement field for dimensional items when status is OK
+      if(isDimensional && st.status==="OK"){
         const extraDiv = wrap.querySelector(`#extra-${idx}`);
         const measurementHtml = `
           <div style="margin-top:8px;padding:8px;background:#f0f8ff;border:1px solid #b8d4f1;border-radius:4px;">
@@ -2429,12 +2429,7 @@
               style="width:100%;padding:6px 8px;border:1px solid #cbd3e3;border-radius:4px;font-size:13px;">
           </div>
         `;
-        if(st.status==="OK"){
-          extraDiv.innerHTML = measurementHtml;
-        }else if(st.status==="NOK"){
-          // For NOK items, prepend measurement field before the failure details
-          extraDiv.insertAdjacentHTML('afterbegin', measurementHtml);
-        }
+        extraDiv.innerHTML = measurementHtml;
         
         // Add event listener for measurement input
         const measurementInput = extraDiv.querySelector(`#measurement-${idx}`);
@@ -2509,7 +2504,18 @@
             <option value="Solda com sobreposição" ${st.failureMode==="Solda com sobreposição"?"selected":""}>Solda com sobreposição</option>
           `;
         
+        // Build measurement field HTML for dimensional items
+        const measurementFieldHtml = isDimensional ? `
+          <div style="margin-top:8px;margin-bottom:8px;padding:8px;background:#f0f8ff;border:1px solid #b8d4f1;border-radius:4px;">
+            <label style="font-size:12px;font-weight:600;color:#003366;display:block;margin-bottom:4px;">Cota encontrada:</label>
+            <input type="number" step="0.001" id="measurement-${idx}" value="${st.measurement||""}" 
+              placeholder="Digite a medida" 
+              style="width:100%;padding:6px 8px;border:1px solid #cbd3e3;border-radius:4px;font-size:13px;">
+          </div>
+        ` : '';
+        
         extraDiv.innerHTML = `
+          ${measurementFieldHtml}
           <div class="checklist-extra">
             <label>Modo de falha (obrigatório):</label>
             <select id="failure-mode-${idx}" style="width:100%;padding:6px 8px;margin-top:4px;margin-bottom:6px;border:1px solid #cbd3e3;border-radius:4px;font-size:13px;max-height:150px;overflow-y:auto;">
@@ -2546,6 +2552,14 @@
             `:""}
           </div>
         `;
+        
+        // Add event listeners
+        const measurementInput = extraDiv.querySelector(`#measurement-${idx}`);
+        if(measurementInput){
+          measurementInput.addEventListener("input",()=>{
+            checklistItemStates[idx].measurement = measurementInput.value;
+          });
+        }
         const failureModeSelect = extraDiv.querySelector(`#failure-mode-${idx}`);
         const motivo = extraDiv.querySelector(`#motivo-${idx}`);
         const fotoInput = extraDiv.querySelector(`#foto-${idx}`);
