@@ -2702,9 +2702,17 @@
       `;
       listDiv.appendChild(wrap);
       
-      // Show measurement field for dimensional items when status is OK OR when failure mode is dimensional
-      const isDimensionalFailure = st.failureMode === "Dimensional fora do especificado";
-      if((isDimensional || isDimensionalFailure) && st.status==="OK"){
+      // Show measurement field for dimensional items when status is OK OR when failure mode requires measurement
+      const measurementRequiredFailureModes = [
+        "Dimensional fora do especificado",
+        "Ângulo fora do especificado",
+        "Componente soldado deslocado",
+        "Comprimento do cordão de solda fora do especificado",
+        "Espaçamento entre componentes",
+        "Gap"
+      ];
+      const requiresMeasurement = measurementRequiredFailureModes.includes(st.failureMode);
+      if((isDimensional || requiresMeasurement) && st.status==="OK"){
         const extraDiv = wrap.querySelector(`#extra-${idx}`);
         const measurementHtml = `
           <div style="margin-top:8px;padding:8px;background:#f0f8ff;border:1px solid #b8d4f1;border-radius:4px;">
@@ -2790,8 +2798,16 @@
             <option value="Solda com sobreposição" ${st.failureMode==="Solda com sobreposição"?"selected":""}>Solda com sobreposição</option>
           `;
         
-        // Build measurement field HTML for dimensional items or when dimensional failure mode is selected
-        const showMeasurementField = isDimensional || st.failureMode === "Dimensional fora do especificado";
+        // Build measurement field HTML for dimensional items or when failure mode requires measurement
+        const measurementRequiredFailureModes = [
+          "Dimensional fora do especificado",
+          "Ângulo fora do especificado",
+          "Componente soldado deslocado",
+          "Comprimento do cordão de solda fora do especificado",
+          "Espaçamento entre componentes",
+          "Gap"
+        ];
+        const showMeasurementField = isDimensional || measurementRequiredFailureModes.includes(st.failureMode);
         const measurementFieldHtml = showMeasurementField ? `
           <div id="measurement-field-${idx}" style="margin-top:8px;margin-bottom:8px;padding:8px;background:#f0f8ff;border:1px solid#b8d4f1;border-radius:4px;">
             <label style="font-size:12px;font-weight:600;color:#003366;display:block;margin-bottom:4px;">📏 Cota encontrada:</label>
@@ -2861,7 +2877,15 @@
           // Show/hide measurement field based on failure mode
           const measurementFieldDiv = extraDiv.querySelector(`#measurement-field-${idx}`);
           if(measurementFieldDiv){
-            if(failureModeSelect.value === "Dimensional fora do especificado"){
+            const measurementRequiredFailureModes = [
+              "Dimensional fora do especificado",
+              "Ângulo fora do especificado",
+              "Componente soldado deslocado",
+              "Comprimento do cordão de solda fora do especificado",
+              "Espaçamento entre componentes",
+              "Gap"
+            ];
+            if(measurementRequiredFailureModes.includes(failureModeSelect.value)){
               measurementFieldDiv.style.display = "block";
               measurementFieldDiv.innerHTML = `
                 <div style="margin-top:8px;margin-bottom:8px;padding:8px;background:#f0f8ff;border:1px solid #b8d4f1;border-radius:4px;">
