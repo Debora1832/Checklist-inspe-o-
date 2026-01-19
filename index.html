@@ -1454,6 +1454,12 @@
                   <option value="">Todos</option>
                 </select>
               </div>
+              <div class="form-group" style="margin:0;min-width:150px;">
+                <label style="font-size:12px;margin-bottom:4px;">Turno</label>
+                <select id="filter-shift" style="padding:6px 8px;font-size:13px;border:1px solid #cbd3e3;border-radius:4px;width:100%;">
+                  <option value="">Todos</option>
+                </select>
+              </div>
               <div style="display:flex;align-items:flex-end;">
                 <button class="btn-primary" id="btn-apply-filters" style="padding:6px 16px;font-size:13px;">Aplicar Filtros</button>
               </div>
@@ -3047,12 +3053,17 @@
     const inspName = currentUser ? currentUser.name : "";
     const inspPlant = currentUser ? currentUser.plant : "";
     
+    // Get inspector shift
+    const currentInspector = inspectors.find(i => i.name === inspName);
+    const inspShift = currentInspector ? (currentInspector.shift || "") : "";
+    
     // Stop timer and get final duration
     stopInspectionTimer();
 
     const inspecToSave = {
       date: now.toLocaleDateString("pt-BR"),
       inspector: inspName,
+      shift: inspShift,
       plant: inspPlant,
       piece: currentChecklistPiece.code,
       descricao: "Inspeção realizada",
@@ -3829,6 +3840,10 @@
             <span>Inspetor</span>
           </label>
           <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+            <input type="checkbox" id="cfg-turno" ${reportConfig.turno?"checked":""}>
+            <span>Turno</span>
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
             <input type="checkbox" id="cfg-peca" ${reportConfig.peca?"checked":""}>
             <span>Peça</span>
           </label>
@@ -3871,6 +3886,7 @@
     document.getElementById("btn-save-report-config").onclick = ()=>{
       reportConfig.data = document.getElementById("cfg-data").checked;
       reportConfig.inspetor = document.getElementById("cfg-inspetor").checked;
+      reportConfig.turno = document.getElementById("cfg-turno").checked;
       reportConfig.peca = document.getElementById("cfg-peca").checked;
       reportConfig.status = document.getElementById("cfg-status").checked;
       reportConfig.planta = document.getElementById("cfg-planta").checked;
@@ -3941,6 +3957,7 @@
     const headers = [];
     if(reportConfig.data) headers.push("Data");
     if(reportConfig.inspetor) headers.push("Inspetor");
+    if(reportConfig.turno) headers.push("Turno");
     if(reportConfig.peca) headers.push("Peça");
     if(reportConfig.status) headers.push("Status");
     if(reportConfig.planta) headers.push("Planta");
@@ -3959,6 +3976,7 @@
           const cells = [];
           if(reportConfig.data) cells.push(`<td>${i.date||"-"}</td>`);
           if(reportConfig.inspetor) cells.push(`<td>${i.inspector||"-"}</td>`);
+          if(reportConfig.turno) cells.push(`<td>${i.shift||"-"}</td>`);
           if(reportConfig.peca) cells.push(`<td>${i.piece||"-"}</td>`);
           if(reportConfig.status) cells.push(`<td>${status}</td>`);
           if(reportConfig.planta) cells.push(`<td>${i.plant||"-"}</td>`);
@@ -3997,6 +4015,7 @@
     const headers = [];
     if(reportConfig.data) headers.push("Data");
     if(reportConfig.inspetor) headers.push("Inspetor");
+    if(reportConfig.turno) headers.push("Turno");
     if(reportConfig.peca) headers.push("Peça");
     if(reportConfig.status) headers.push("Status");
     if(reportConfig.planta) headers.push("Planta");
@@ -4004,6 +4023,7 @@
     if(reportConfig.estacao) headers.push("Estação");
     if(reportConfig.serialNumber) headers.push("Serial Number");
     if(reportConfig.medidas) headers.push("Medidas");
+    if(reportConfig.tempoInspecao) headers.push("Tempo de Inspeção");
     
     const rows = [headers.join(",")];
     
@@ -4013,6 +4033,7 @@
       
       if(reportConfig.data) cells.push(i.date || "");
       if(reportConfig.inspetor) cells.push(`"${(i.inspector || "").replace(/"/g, '""')}"`);
+      if(reportConfig.turno) cells.push(`"${(i.shift || "").replace(/"/g, '""')}"`);
       if(reportConfig.peca) cells.push(`"${(i.piece || "").replace(/"/g, '""')}"`);
       if(reportConfig.status) cells.push(status);
       if(reportConfig.planta) cells.push(`"${(i.plant || "").replace(/"/g, '""')}"`);
@@ -4025,6 +4046,10 @@
           .map(it=>it.measurement)
           .join("; ");
         cells.push(`"${measurements}"`);
+      }
+      if(reportConfig.tempoInspecao){
+        const duration = i.inspectionDurationFormatted || (i.inspectionDuration ? formatDuration(i.inspectionDuration) : "");
+        cells.push(`"${duration}"`);
       }
       
       rows.push(cells.join(","));
@@ -4059,6 +4084,7 @@
     const headers = [];
     if(reportConfig.data) headers.push("Data");
     if(reportConfig.inspetor) headers.push("Inspetor");
+    if(reportConfig.turno) headers.push("Turno");
     if(reportConfig.peca) headers.push("Peça");
     if(reportConfig.status) headers.push("Status");
     if(reportConfig.planta) headers.push("Planta");
@@ -4077,6 +4103,7 @@
       
       if(reportConfig.data) cells.push(i.date || "");
       if(reportConfig.inspetor) cells.push(`"${(i.inspector || "").replace(/"/g, '""')}"`);
+      if(reportConfig.turno) cells.push(`"${(i.shift || "").replace(/"/g, '""')}"`);
       if(reportConfig.peca) cells.push(`"${(i.piece || "").replace(/"/g, '""')}"`);
       if(reportConfig.status) cells.push(status);
       if(reportConfig.planta) cells.push(`"${(i.plant || "").replace(/"/g, '""')}"`);
@@ -4413,6 +4440,14 @@
       inspectorFilter.innerHTML = '<option value="">Todos</option>' +
         inspectors.map(i=>`<option value="${escapeHtml(i.name)}">${escapeHtml(i.name)}</option>`).join("");
     }
+
+    // Populate shifts
+    const shiftFilter = document.getElementById("filter-shift");
+    if(shiftFilter){
+      const shifts = ["1º Turno", "2º Turno", "3º Turno"];
+      shiftFilter.innerHTML = '<option value="">Todos</option>' +
+        shifts.map(s=>`<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join("");
+    }
   }
 
   function applyDashboardFilters(){
@@ -4423,6 +4458,7 @@
     const itemFilter = document.getElementById("filter-item")?.value || "";
     const failureModeFilter = document.getElementById("filter-failure-mode")?.value || "";
     const inspectorFilter = document.getElementById("filter-inspector")?.value || "";
+    const shiftFilter = document.getElementById("filter-shift")?.value || "";
 
     // Filter inspections
     const filtered = inspections.filter(i=>{
@@ -4466,6 +4502,9 @@
       
       // Inspector filter
       if(inspectorFilter && i.inspector !== inspectorFilter) return false;
+      
+      // Shift filter
+      if(shiftFilter && i.shift !== shiftFilter) return false;
       
       // Failure mode filter (at least one item matches)
       if(failureModeFilter){
