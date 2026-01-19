@@ -3198,10 +3198,16 @@
     if(header){
       header.style.display = "none";
     }
+    // Hide sidebar completely
+    const sidebar = document.querySelector(".sidebar");
+    if(sidebar){
+      sidebar.style.display = "none";
+    }
     // Adjust main content to fill the space
     const mainContent = document.querySelector(".main-content");
     if(mainContent){
       mainContent.style.paddingTop = "0";
+      mainContent.style.marginLeft = "0";
     }
   }
 
@@ -3210,10 +3216,16 @@
     if(header){
       header.style.display = "";
     }
-    // Restore main content padding
+    // Show sidebar again
+    const sidebar = document.querySelector(".sidebar");
+    if(sidebar){
+      sidebar.style.display = "";
+    }
+    // Restore main content padding and margin
     const mainContent = document.querySelector(".main-content");
     if(mainContent){
       mainContent.style.paddingTop = "";
+      mainContent.style.marginLeft = "";
     }
   }
 
