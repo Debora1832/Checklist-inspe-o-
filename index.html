@@ -2561,8 +2561,9 @@
     document.getElementById("piece-selection-card").classList.add("hide");
     document.getElementById("checklist-execution").classList.remove("hide");
     
-    // Collapse sidebar when checklist opens
+    // Collapse sidebar and hide header when checklist opens (fullscreen mode for tablets)
     collapseSidebar();
+    hideHeaderForChecklist();
     
     // Start inspection timer
     startInspectionTimer();
@@ -3137,8 +3138,9 @@
     const exec = document.getElementById("checklist-execution");
     if(exec) exec.classList.add("hide");
     
-    // Expand sidebar when returning to piece selection
+    // Expand sidebar and show header when returning to piece selection
     expandSidebar();
+    showHeaderAfterChecklist();
     
     window.scrollTo({top:0,behavior:"smooth"});
   }
@@ -3170,8 +3172,9 @@
     const exec = document.getElementById("checklist-execution");
     if(exec) exec.classList.add("hide");
     
-    // Expand sidebar when returning to piece selection
+    // Expand sidebar and show header when returning to piece selection
     expandSidebar();
+    showHeaderAfterChecklist();
     
     window.scrollTo({top:0,behavior:"smooth"});
   }
@@ -3187,6 +3190,30 @@
     const sidebar = document.querySelector(".sidebar");
     if(sidebar){
       sidebar.classList.remove("collapsed");
+    }
+  }
+
+  function hideHeaderForChecklist(){
+    const header = document.querySelector(".header");
+    if(header){
+      header.style.display = "none";
+    }
+    // Adjust main content to fill the space
+    const mainContent = document.querySelector(".main-content");
+    if(mainContent){
+      mainContent.style.paddingTop = "0";
+    }
+  }
+
+  function showHeaderAfterChecklist(){
+    const header = document.querySelector(".header");
+    if(header){
+      header.style.display = "";
+    }
+    // Restore main content padding
+    const mainContent = document.querySelector(".main-content");
+    if(mainContent){
+      mainContent.style.paddingTop = "";
     }
   }
 
